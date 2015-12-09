@@ -23,6 +23,7 @@ import time
 # WMArchive modules
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.FileIO import FileStorage
+from WMArchive.Storage.AvroIO import AvroStorage
 
 class WMArchiveManager(object):
     def __init__(self, config=None):
@@ -35,8 +36,10 @@ class WMArchiveManager(object):
             self.mgr = MongoStorage(config.short_storage_uri)
         elif config.short_storage_uri.startswith('fileio'):
             self.mgr = FileStorage(config.short_storage_uri)
+        elif config.short_storage_uri.startswith('avro'):
+            self.mgr = AvroStorage(config.short_storage_uri)
         else:
-            self.mgr = FileStorage()
+            self.mgr = FileStorage(os.getenv('WMA_STORAGE_ROOT', '/tmp/wma_storage'))
         self._version = "1.0.0"
 
     def info(self):
