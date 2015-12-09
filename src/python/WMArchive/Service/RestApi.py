@@ -19,9 +19,10 @@ from WMCore.REST.Server import RESTApi
 from WMCore.REST.Format import RawFormat
 from WMArchive.Service.Data import WMAData
 
-class RestApiHub(RESTApi):
+class RestInterface(RESTApi):
     """
-    Server object for REST data access API.
+    RestInterface defines REST APIs for WMArchive.
+    They are mounted to entry point defined in _add method.
     """
     def __init__(self, app, config, mount):
         """
@@ -32,6 +33,6 @@ class RestApiHub(RESTApi):
         RESTApi.__init__(self, app, config, mount)
         
         cherrypy.log("WMArchive entire configuration:\n%s" % Configuration.getInstance())    
-        cherrypy.log("WMArchive REST hub configuration subset:\n%s" % config)
+        cherrypy.log("WMArchive REST configuration subset:\n%s" % config)
         
         self._add({"data": WMAData(app, self, config, mount)})
