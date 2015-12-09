@@ -20,6 +20,10 @@ import os
 import sys
 import time
 
+# WMArchive modules
+from WMArchive.Storage.MongoIO import MongoStorage
+from WMArchive.Storage.FileIO import FileStorage
+
 class WMArchiveManager(object):
     def __init__(self, config=None):
         """
@@ -27,6 +31,12 @@ class WMArchiveManager(object):
         file will provide details of proxy server, agent information, etc.
         """
         self.config = config
+        if  config.short_storage_uri.startswith('mongo'):
+            self.mgr = MongoStorage(config.short_storage_uri)
+        elif config.short_storage_uri.startswith('fileio'):
+            self.mgr = FileStorage(config.short_storage_uri)
+        else:
+            self.mgr = FileStorage()
         self._version = "1.0.0"
 
     def info(self):
@@ -68,6 +78,7 @@ class WMArchiveManager(object):
             data = [data]
         if  not isinstance(data, list):
             raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
+        self.mgr.write(data)
 #        ids = self.get_ids(data)
 #        docs = self.encode(data)
         # write docs into back-end
