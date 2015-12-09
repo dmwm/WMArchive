@@ -51,9 +51,6 @@ class AvroStorage(Storage):
                         writer.append(rec)
                 elif isinstance(data, dict):
                     writer.append(data)
-#            writer = DataFileWriter(ostream, DatumWriter(), schema)
-#            writer.append(data)
-#            writer.close()
 
     def read(self, query=None):
         "Read API"
