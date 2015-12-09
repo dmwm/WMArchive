@@ -4,7 +4,8 @@
 """
 File       : AvroIO.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: WMArchive File storage module
+Description: WMArchive Avro storage module based on apache Avro python module
+https://avro.apache.org/docs/1.7.6/gettingstartedpython.html
 """
 
 # futures
