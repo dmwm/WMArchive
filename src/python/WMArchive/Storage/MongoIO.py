@@ -15,6 +15,7 @@ import itertools
 
 # Mongo modules
 from pymongo import MongoClient
+from pymongo.errors import InvalidDocument, InvalidOperation, DuplicateKeyError
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
@@ -29,6 +30,8 @@ class MongoStorage(Storage):
         self.chunk_size = 100
 
     def write(self, data):
+        "MongoIO write API"
+        inserted = 0
         try:
             while True:
                 nres = self.coll.insert(itertools.islice(data, self.chunk_size))
@@ -37,12 +40,14 @@ class MongoStorage(Storage):
                 else:
                     break
         except InvalidDocument as exp:
-            print(tstamp('WMA WARNING'), 'InvalidDocument during merge', str(exp))
+            print(tstamp('WMA WARNING'), 'InvalidDocument during injection', str(exp))
         except InvalidOperation as exp:
-            print(tstamp('WMA WARNING'), 'InvalidOperation during merge', str(exp))
-            pass
-        except DuplicateKeyError as err:
-            print(tstamp('WMA WARNING'), 'DuplicateKeyError during merge')
+            print(tstamp('WMA WARNING'), 'InvalidOperation during injection', str(exp))
+        except DuplicateKeyError as exp:
+            print(tstamp('WMA WARNING'), 'DuplicateKeyError during injection', str(exp))
+        except Exception as exp:
+            print(tstamp('WMA WARNING'), 'Uncaught exception', str(exp))
 
     def read(self, query=None):
+        "MongoIO read API"
         pass
