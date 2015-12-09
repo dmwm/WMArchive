@@ -15,6 +15,7 @@ from __future__ import print_function, division
 import re
 import json
 import cherrypy
+import traceback
 
 # WMCore modules
 import WMCore
@@ -75,4 +76,5 @@ class WMAData(RESTEntity):
             data = json.load(cherrypy.request.body)
             status = self.mgr.write(data)
         except Exception as exp:
+            traceback.print_exc()
             raise cherrypy.HTTPError(str(exp))
