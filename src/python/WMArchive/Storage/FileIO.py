@@ -19,7 +19,8 @@ from types import GeneratorType
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Utils import tstamp, wmaHash
+from WMArchive.Utils.Utils import tstamp
+from WMArchive.Utils.Regexp import PAT_UID
 
 class FileStorage(Storage):
     "Storage based on FileDB back-end"
@@ -31,16 +32,28 @@ class FileStorage(Storage):
             os.makedirs(self.uri)
 
     def write(self, data):
-        "Write API"
-        fname = '%s/%s.gz' % (self.uri, wmaHash(data))
-        print(tstamp('WMA FileIO::write'), fname, data)
-        with gzip.open(fname, 'w') as ostream:
-            if  isinstance(data, list) or isinstance(data, GeneratorType):
-                for rec in data:
+        "Write API, return ids of stored documents"
+        uids = []
+        if  isinstance(data, list) or isinstance(data, GeneratorType):
+            for rec in data:
+                uid = rec['uid']
+                fname = '%s/%s.gz' % (self.uri, uid)
+                with gzip.open(fname, 'w') as ostream:
                     ostream.write(json.dumps(rec))
-            elif isinstance(data, dict):
+                uids.append(uid)
+        elif isinstance(data, dict):
+            uid = data['uid']
+            fname = '%s/%s.gz' % (self.uri, uid)
+            with gzip.open(fname, 'w') as ostream:
                 ostream.write(json.dumps(data))
+            uids.append(uid)
+        return uids
 
     def read(self, query=None):
-        "Read API"
-        pass
+        "Read API, return data"
+        if  PAT_UID.match(query): # requested to read concrete file
+            fname = '%s/%s.gz' % (self.uri, query)
+            data = json.load(gzip.open(fname))
+            self.check(data)
+            return data
+        return {}

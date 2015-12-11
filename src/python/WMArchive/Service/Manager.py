@@ -24,6 +24,7 @@ import time
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.FileIO import FileStorage
 from WMArchive.Storage.AvroIO import AvroStorage
+from WMArchive.Utils.Utils import wmaHash
 
 class WMArchiveManager(object):
     def __init__(self, config=None):
@@ -52,8 +53,8 @@ class WMArchiveManager(object):
         Yield encoded documents to the client.
         """
         for doc in docs:
-            doc['ts'] = time.time()
-            # do more transformation
+            uid = wmaHash(doc)
+            doc['uid'] = uid
             yield doc
 
     def decode(self, docs):
@@ -63,13 +64,6 @@ class WMArchiveManager(object):
         """
         for doc in docs:
             yield doc
-
-    def get_ids(self, docs):
-        """
-        Extract ids from given set of documents
-        """
-        for doc in docs:
-            yield doc['uid']
 
     def write(self, data, chunk_size=None):
         """
@@ -81,12 +75,11 @@ class WMArchiveManager(object):
             data = [data]
         if  not isinstance(data, list):
             raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
-        self.mgr.write(data)
-#        ids = self.get_ids(data)
-#        docs = self.encode(data)
-        # write docs into back-end
-        # get doc-ids of written docs
-        return True
+        docs = self.encode(data)
+        ids = self.mgr.write(docs)
+        status = 'Accepted'
+        result = {'status': status, 'ids': ids}
+        return result
 
     def read(self, query):
         """
@@ -94,6 +87,10 @@ class WMArchiveManager(object):
         Yield list of found documents or None.
         """
         # request data from back-end
+        status = 'ok'
+        data = self.mgr.read(query)
+        result = {'query': query, 'data': data, 'status': status}
+        return result
 
     def ack(self, docIds):
         """
@@ -101,3 +98,6 @@ class WMArchiveManager(object):
         Return true or false if data is present on back-end server.
         """
         # request confirmation about the data from ba
+        status = 'Stored'
+        result = {'status': status, 'ids': docIds}
+        return result

@@ -16,6 +16,7 @@ import re
 import json
 import cherrypy
 import traceback
+from types import GeneratorType
 
 # WMCore modules
 import WMCore
@@ -26,10 +27,7 @@ from WMCore.REST.Format import JSONFormat
 
 # WMArchive modules
 from WMArchive.Service.Manager import WMArchiveManager
-
-# global regexp
-PAT_QUERY = re.compile(r"^[a-zA-Z]+")
-PAT_INFO = re.compile(r"^[0-9]$")
+from WMArchive.Utils.Regexp import PAT_UID, PAT_QUERY, PAT_INFO
 
 class WMAData(RESTEntity):
     def __init__(self, app, api, config, mount):
@@ -50,6 +48,11 @@ class WMAData(RESTEntity):
                 validate_str('query', param, safe, PAT_QUERY, optional=True)
             if 'info' in param.kwargs.keys():
                 validate_str('info', param, safe, PAT_INFO, optional=True)
+            # test if user provided uid
+            if len(param.args) == 1 and PAT_UID.match(param.args[0]):
+                safe.args.append(param.args[0])
+                param.args.remove(param.args[0])
+                return True
         elif method == 'POST':
             if  not param.args or not param.kwargs:
                 return False # this class does not need any parameters
@@ -57,24 +60,37 @@ class WMAData(RESTEntity):
 
     @restcall(formats = [('application/json', JSONFormat())])
     @tools.expires(secs=-1)
-    def get(self, **kwds):
-        "GET request with given query, all the work is done by WMArchiveManager"
-        query = kwds.get('query', '')
-        if  query:
-            docs = self.mgr.read(query)
-            return docs
+    def get(self, *args, **kwds):
+        """
+        Implement GET request with given uid or set of parameters
+        All work is done by WMArchiveManager
+        """
         info = kwds.get('info', '')
         if  info:
             return json.dumps(self.mgr.info())
+        if  args and len(args)==1: # requested uid
+            return json.dumps(self.mgr.read(args[0]))
+        return json.dumps({'request': kwds, 'results': 'Not available'})
 
     @restcall(formats = [('application/json', JSONFormat())])
     @tools.expires(secs=-1)
     def post(self):
-        "POST request with given data, all the work is done by WMArchiveManager"
-        data = {}
+        """
+        Implement POST request API, all work is done by WMArchiveManager.
+        The request should either provide query to fetch results from back-end
+        or data to store to the back-end.
+        """
+        result = {'status':'Not supported, expect "data", "query" attributes in your request', 'data':[]}
         try :
-            data = json.load(cherrypy.request.body)
-            status = self.mgr.write(data)
+            request = json.load(cherrypy.request.body)
+            if  'query' in request.keys():
+                result = self.mgr.read(request['query'])
+            elif 'data' in request.keys():
+                result = self.mgr.write(request['data'])
+            if  isinstance(result, GeneratorType):
+                result = [r for r in result]
+#            print("results", result, type(result), isinstance(result, GeneratorType))
+            return json.dumps(result)
         except Exception as exp:
             traceback.print_exc()
             raise cherrypy.HTTPError(str(exp))
