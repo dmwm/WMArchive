@@ -16,6 +16,7 @@ from __future__ import print_function, division
 # system modules
 import os
 import io
+import gzip
 import itertools
 from types import GeneratorType
 
@@ -33,7 +34,7 @@ from WMArchive.Utils.Regexp import PAT_UID
 
 def fileName(uri, uid):
     "Construct common file name"
-    return '%s/%s.avro' % (uri, uid)
+    return '%s/%s.avro.gz' % (uri, uid)
 
 class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
@@ -57,7 +58,13 @@ class HdfsStorage(Storage):
         # create Avro writer and binary encoder
 	writer = avro.io.DatumWriter(self.schema)
 	bytes_writer = io.BytesIO()
-	encoder = avro.io.BinaryEncoder(bytes_writer)
+
+        # example of plain binary reader
+        # encoder = avro.io.BinaryEncoder(bytes_writer)
+
+        # use gzip'ed writer with BytesIO file object
+        gzip_writer = gzip.GzipFile(fileobj=bytes_writer, mode='wb')
+	encoder = avro.io.BinaryEncoder(gzip_writer)
 
         # write records from given data stream to binary writer
 	if  isinstance(data, list) or isinstance(data, GeneratorType):
@@ -75,8 +82,14 @@ class HdfsStorage(Storage):
         if  PAT_UID.match(query): # requested to read concrete file
             fname = fileName(self.uri, query)
             data = hdfs.load(fname)
-            bytes_reader = io.BytesIO(data)
-            decoder = avro.io.BinaryDecoder(bytes_reader)
+
+            # example of non-zipped reader
+            # bytes_reader = io.BytesIO(data)
+            # decoder = avro.io.BinaryDecoder(bytes_reader)
+
+            # use gzip'ed reader and pass to it BytesIO as file object
+            gzip_reader = gzip.GzipFile(fileobj=io.BytesIO(data))
+            decoder = avro.io.BinaryDecoder(gzip_reader)
             reader = avro.io.DatumReader(self.schema)
             while True:
                 rec = reader.read(decoder)
