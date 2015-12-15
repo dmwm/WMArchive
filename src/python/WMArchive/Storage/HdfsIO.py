@@ -45,7 +45,7 @@ def fileName(uri, uid):
 
 class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
-    def __init__(self, uri):
+    def __init__(self, uri, compress=True):
         # hdfs uri: hdfsio:/path/schema.avsc
         schema = uri.replace('hdfsio:', '')
         uripath, _ = schema.rsplit('/', 1)
@@ -56,6 +56,7 @@ class HdfsStorage(Storage):
         if  not hdfs.path.isdir(self.uri):
             hdfs.mkdir(self.uri)
         self.schema = avro.schema.parse(open(schema).read())
+        self.compress = compress
 
     def write(self, data):
         "Write API"
@@ -66,12 +67,14 @@ class HdfsStorage(Storage):
 	writer = avro.io.DatumWriter(self.schema)
 	bytes_writer = io.BytesIO()
 
-        # example of plain binary reader
-        # encoder = avro.io.BinaryEncoder(bytes_writer)
+        if  self.compress:
+            # use gzip'ed writer with BytesIO file object
+            gzip_writer = gzip.GzipFile(fileobj=bytes_writer, mode='wb')
+            encoder = avro.io.BinaryEncoder(gzip_writer)
+        else:
+            # plain binary reader
+            encoder = avro.io.BinaryEncoder(bytes_writer)
 
-        # use gzip'ed writer with BytesIO file object
-        gzip_writer = gzip.GzipFile(fileobj=bytes_writer, mode='wb')
-	encoder = avro.io.BinaryEncoder(gzip_writer)
 
         # write records from given data stream to binary writer
 	if  isinstance(data, list) or isinstance(data, GeneratorType):
@@ -90,13 +93,15 @@ class HdfsStorage(Storage):
             fname = fileName(self.uri, query)
             data = hdfs.load(fname)
 
-            # example of non-zipped reader
-            # bytes_reader = io.BytesIO(data)
-            # decoder = avro.io.BinaryDecoder(bytes_reader)
+            if  self.compress:
+                # use gzip'ed reader and pass to it BytesIO as file object
+                gzip_reader = gzip.GzipFile(fileobj=io.BytesIO(data))
+                decoder = avro.io.BinaryDecoder(gzip_reader)
+            else:
+                # use non-compressed reader
+                bytes_reader = io.BytesIO(data)
+                decoder = avro.io.BinaryDecoder(bytes_reader)
 
-            # use gzip'ed reader and pass to it BytesIO as file object
-            gzip_reader = gzip.GzipFile(fileobj=io.BytesIO(data))
-            decoder = avro.io.BinaryDecoder(gzip_reader)
             reader = avro.io.DatumReader(self.schema)
             while True:
                 rec = reader.read(decoder)
