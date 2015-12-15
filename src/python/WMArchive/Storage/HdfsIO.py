@@ -12,6 +12,9 @@ Description: WMArchive HDFS storage module based on pydoop python module
 
     python gzip: https://docs.python.org/2/library/gzip.html
     python io: https://docs.python.org/2/library/io.html
+
+    Usage of GzipFile with file-like object, e.g. io.BytesIO
+    http://stackoverflow.com/questions/4204604/how-can-i-create-a-gzipfile-instance-from-the-file-like-object-that-urllib-url
 """
 
 # futures
