@@ -49,13 +49,14 @@ class HdfsStorage(Storage):
         "ctor with hdfs uri: hdfsio:/path/schema.avsc"
         schema = uri.replace('hdfsio:', '')
         uripath, _ = schema.rsplit('/', 1)
-        if  not os.path.exists(schema):
+        if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
         Storage.__init__(self, uripath)
         print(tstamp('WMA HdfsIO storage'), uri)
         if  not hdfs.path.isdir(self.uri):
             hdfs.mkdir(self.uri)
-        self.schema = avro.schema.parse(open(schema).read())
+        schemaData = hdfs.load(schema)
+        self.schema = avro.schema.parse(schemaData)
         self.compress = compress
 
     def write(self, data):
