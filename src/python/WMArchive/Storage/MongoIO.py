@@ -53,7 +53,7 @@ class MongoStorage(Storage):
         "MongoIO read API"
         if  not query:
             query = {}
-        docs = self.coll.find(query)
+        docs = [r for r in self.coll.find(query)]
         return docs
 
     def update(self, ids, spec):
