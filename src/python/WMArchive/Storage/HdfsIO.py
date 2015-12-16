@@ -86,8 +86,15 @@ class HdfsStorage(Storage):
         else:
             writer.write(data, encoder)
 
+        # close gzip stream if necessary
+        if  self.compress:
+            gzip_writer.flush()
+            gzip_writer.close()
+
         # store raw data to hadoop via HDFS
         hdfs.dump(bytes_writer.getvalue(), fname)
+
+        return wmaid
 
     def read(self, query=None):
         "Read API"
