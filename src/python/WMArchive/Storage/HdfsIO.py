@@ -39,9 +39,9 @@ from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Utils import tstamp, wmaHash
 from WMArchive.Utils.Regexp import PAT_UID
 
-def fileName(uri, uid):
+def fileName(uri, wmaid):
     "Construct common file name"
-    return '%s/%s.avro.gz' % (uri, uid)
+    return '%s/%s.avro.gz' % (uri, wmaid)
 
 class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"

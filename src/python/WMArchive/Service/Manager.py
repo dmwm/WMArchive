@@ -33,11 +33,15 @@ class WMArchiveManager(object):
         file will provide details of proxy server, agent information, etc.
         """
         self.config = config
+        self.storage = 'fileio'
         if  config.short_storage_uri.startswith('mongo'):
+            self.storage = 'mongo'
             self.mgr = MongoStorage(config.short_storage_uri)
         elif config.short_storage_uri.startswith('fileio'):
+            self.storage = 'fileio'
             self.mgr = FileStorage(config.short_storage_uri)
         elif config.short_storage_uri.startswith('avro'):
+            self.storage = 'avroio'
             self.mgr = AvroStorage(config.short_storage_uri)
         else:
             self.mgr = FileStorage(os.getenv('WMA_STORAGE_ROOT', '/tmp/wma_storage'))
@@ -53,8 +57,7 @@ class WMArchiveManager(object):
         Yield encoded documents to the client.
         """
         for doc in docs:
-            uid = wmaHash(doc)
-            doc['uid'] = uid
+            doc['wmaid'] = wmaHash(doc)
             yield doc
 
     def decode(self, docs):
@@ -77,8 +80,7 @@ class WMArchiveManager(object):
             raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
         docs = self.encode(data)
         ids = self.mgr.write(docs)
-        status = 'Accepted'
-        result = {'status': status, 'ids': ids}
+        result = {'status': self.storage, 'ids': ids}
         return result
 
     def read(self, query):
@@ -87,9 +89,8 @@ class WMArchiveManager(object):
         Yield list of found documents or None.
         """
         # request data from back-end
-        status = 'ok'
         data = self.mgr.read(query)
-        result = {'query': query, 'data': data, 'status': status}
+        result = {'query': query, 'data': data, 'status': self.storage}
         return result
 
     def ack(self, docIds):

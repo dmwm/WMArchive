@@ -33,21 +33,21 @@ class FileStorage(Storage):
 
     def write(self, data):
         "Write API, return ids of stored documents"
-        uids = []
+        wmaids = []
         if  isinstance(data, list) or isinstance(data, GeneratorType):
             for rec in data:
-                uid = rec['uid']
-                fname = '%s/%s.gz' % (self.uri, uid)
+                wmaid = rec['wmaid']
+                fname = '%s/%s.gz' % (self.uri, wmaid)
                 with gzip.open(fname, 'w') as ostream:
                     ostream.write(json.dumps(rec))
-                uids.append(uid)
+                wmaids.append(wmaid)
         elif isinstance(data, dict):
-            uid = data['uid']
-            fname = '%s/%s.gz' % (self.uri, uid)
+            wmaid = data['wmaid']
+            fname = '%s/%s.gz' % (self.uri, wmaid)
             with gzip.open(fname, 'w') as ostream:
                 ostream.write(json.dumps(data))
-            uids.append(uid)
-        return uids
+            wmaids.append(wmaid)
+        return wmaids
 
     def read(self, query=None):
         "Read API, return data"

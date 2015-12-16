@@ -26,12 +26,12 @@ class Storage(object):
         "Update documents with given set of document ids and update spec"
         pass
     def check(self, data):
-        "Cross-check the data based on its uid"
+        "Cross-check the data based on its wmaid"
         try:
-            uid = data.pop('uid')
+            wmaid = data.pop('wmaid')
         except:
-            uid = ''
+            wmaid = ''
         hid = wmaHash(data)
-        if  hid != uid:
-            raise Exception("Invalid data hash, hid=%s, uid=%s, data=%s" \
-                    % (hid, uid, data))
+        if  hid != wmaid:
+            raise Exception("Invalid data hash, hid=%s, wmaid=%s, data=%s" \
+                    % (hid, wmaid, data))
