@@ -32,16 +32,27 @@ def migrate(muri, huri):
 
     # read data from MongoDB
     query = {'status': 'mongo'}
-    docs = mstg.read(query)
+    mdocs = mstg.read(query)
 
     # store data to HDFS
-    hstg.write(docs)
+    wmaid = hstg.write(docs)
+
+    # read data from HDFS
+    hdocs = hstg.read(wmaid)
+
+    # now we can compare MongoDB docs with HDFS docs, a la cross-check
+    for mdoc, hdoc in zip(mdocs, hdocs):
+        # drop statuses for time being
+        del mdoc['status']
+        del hdoc['status']
+        if mdoc != hdoc:
+            print "ERROR", mdoc, hdoc
+            sys.exit(1)
 
     # update status attributes of docs in MongoDB
     ids = [d['wmaid'] for d in docs]
     query = {'$set' : {'status': 'hdfs'}}
     mstg.update(ids, query)
-
 
 def main():
     "Main function"
