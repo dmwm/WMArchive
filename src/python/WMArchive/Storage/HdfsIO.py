@@ -104,10 +104,11 @@ class HdfsStorage(Storage):
 
             reader = avro.io.DatumReader(self.schema)
             while True:
-                rec = reader.read(decoder)
-                out.append(rec)
-            except:
-                break
+                try:
+                    rec = reader.read(decoder)
+                    out.append(rec)
+                except:
+                    break
         return out
 
     def update(self, ids, spec):
