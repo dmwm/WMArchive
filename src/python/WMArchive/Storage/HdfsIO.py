@@ -39,13 +39,15 @@ from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Utils import tstamp, wmaHash
 from WMArchive.Utils.Regexp import PAT_UID
 
-def fileName(uri, wmaid):
+def fileName(uri, wmaid, compress):
     "Construct common file name"
-    return '%s/%s.avro.gz' % (uri, wmaid)
+    if  compress:
+        return '%s/%s.avro.gz' % (uri, wmaid)
+    return '%s/%s.avro' % (uri, wmaid)
 
 class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
-    def __init__(self, uri, compress=True):
+    def __init__(self, uri, compress=False):
         "ctor with hdfs uri: hdfsio:/path/schema.avsc"
         schema = uri.replace('hdfsio:', '')
         uripath, _ = schema.rsplit('/', 1)
@@ -62,7 +64,7 @@ class HdfsStorage(Storage):
     def write(self, data):
         "Write API"
         wmaid = wmaHash(data)
-        fname = fileName(self.uri, wmaid)
+        fname = fileName(self.uri, wmaid, self.compress)
         print(tstamp('WMA HdfsIO::write'), fname, data)
 
         # create Avro writer and binary encoder
@@ -91,7 +93,7 @@ class HdfsStorage(Storage):
         "Read API"
         out = []
         if  PAT_UID.match(query): # requested to read concrete file
-            fname = fileName(self.uri, query)
+            fname = fileName(self.uri, query, self.compress)
             data = hdfs.load(fname)
 
             if  self.compress:
