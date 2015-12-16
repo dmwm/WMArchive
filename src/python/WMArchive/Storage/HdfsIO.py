@@ -61,12 +61,13 @@ class HdfsStorage(Storage):
 
     def write(self, data):
         "Write API"
-        fname = fileName(self.uri, wmaHash(data))
+        wmaid = wmaHash(data)
+        fname = fileName(self.uri, wmaid)
         print(tstamp('WMA HdfsIO::write'), fname, data)
 
         # create Avro writer and binary encoder
-	writer = avro.io.DatumWriter(self.schema)
-	bytes_writer = io.BytesIO()
+        writer = avro.io.DatumWriter(self.schema)
+        bytes_writer = io.BytesIO()
 
         if  self.compress:
             # use gzip'ed writer with BytesIO file object
@@ -76,16 +77,15 @@ class HdfsStorage(Storage):
             # plain binary reader
             encoder = avro.io.BinaryEncoder(bytes_writer)
 
-
         # write records from given data stream to binary writer
-	if  isinstance(data, list) or isinstance(data, GeneratorType):
-	    for rec in data:
-		writer.write(rec, encoder)
-	else:
-	    writer.write(data, encoder)
+        if  isinstance(data, list) or isinstance(data, GeneratorType):
+            for rec in data:
+                writer.write(rec, encoder)
+        else:
+            writer.write(data, encoder)
 
-	# store raw data to hadoop via HDFS
-	hdfs.dump(bytes_writer.getvalue(), fname)
+        # store raw data to hadoop via HDFS
+        hdfs.dump(bytes_writer.getvalue(), fname)
 
     def read(self, query=None):
         "Read API"
