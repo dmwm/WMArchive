@@ -82,8 +82,12 @@ class HdfsStorage(Storage):
         # write records from given data stream to binary writer
         if  isinstance(data, list) or isinstance(data, GeneratorType):
             for rec in data:
+                # set appropirate status for the record
+                rec['status'] = 'hdfs'
                 writer.write(rec, encoder)
         else:
+            # set appropirate status for the record
+            data['status'] = 'hdfs'
             writer.write(data, encoder)
 
         # close gzip stream if necessary
