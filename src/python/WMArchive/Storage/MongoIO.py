@@ -53,7 +53,10 @@ class MongoStorage(Storage):
         "MongoIO read API"
         if  not query:
             query = {}
-        docs = [r for r in self.coll.find(query)]
+        docs = []
+        for rec in self.coll.find(query):
+            del rec['_id'] # internal MongoDB id
+            docs.append(rec)
         return docs
 
     def update(self, ids, spec):
