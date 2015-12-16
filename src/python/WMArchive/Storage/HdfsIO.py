@@ -109,3 +109,7 @@ class HdfsStorage(Storage):
             except:
                 break
         return out
+
+    def update(self, ids, spec):
+        "Update documents with given set of document ids and update spec"
+        pass

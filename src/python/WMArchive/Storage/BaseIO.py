@@ -22,6 +22,9 @@ class Storage(object):
     def read(self, query=None):
         "Read data from local storage for given query"
         pass
+    def update(self, ids, spec):
+        "Update documents with given set of document ids and update spec"
+        pass
     def check(self, data):
         "Cross-check the data based on its uid"
         try:

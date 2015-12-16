@@ -57,3 +57,7 @@ class FileStorage(Storage):
             self.check(data)
             return data
         return {}
+
+    def update(self, ids, spec):
+        "Update documents with given set of document ids and update spec"
+        pass

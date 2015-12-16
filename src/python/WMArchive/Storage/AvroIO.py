@@ -56,3 +56,7 @@ class AvroStorage(Storage):
     def read(self, query=None):
         "Read API"
         pass
+
+    def update(self, ids, spec):
+        "Update documents with given set of document ids and update spec"
+        pass

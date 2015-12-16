@@ -50,4 +50,12 @@ class MongoStorage(Storage):
 
     def read(self, query=None):
         "MongoIO read API"
-        pass
+        if  not query:
+            query = {}
+        docs = self.coll.find(query)
+        return docs
+
+    def update(self, ids, spec):
+        "Update documents with given set of document ids and update spec"
+        doc_query = {'wmaid' : {'$in': ids}}
+        self.coll.update(doc_query, spec, multi=True)
