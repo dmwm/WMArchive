@@ -79,6 +79,13 @@ class WMAData(RESTEntity):
         Implement POST request API, all work is done by WMArchiveManager.
         The request should either provide query to fetch results from back-end
         or data to store to the back-end.
+
+        The input HTTP request should be either
+        {"data":some_data} for posting the data into WMArchive or
+        {"query":some_query} for querying the data in WMArchive.
+        The some_data should be proper JSON document(s).
+        The some_query should be either MongoDB or Hive or other supported
+        queries.
         """
         result = {'status':'Not supported, expect "data", "query" attributes in your request', 'data':[]}
         try :
@@ -90,6 +97,28 @@ class WMAData(RESTEntity):
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
 #            print("results", result, type(result), isinstance(result, GeneratorType))
+            return json.dumps(result)
+        except Exception as exp:
+            traceback.print_exc()
+            raise cherrypy.HTTPError(str(exp))
+
+    @restcall(formats = [('application/json', JSONFormat())])
+    @tools.expires(secs=-1)
+    def put(self):
+        """
+        Implement PUT request API, all work is done by WMArchiveManager.
+        The request should either provide query to fetch results from back-end
+        or data to store to the back-end.
+
+        The input HTTP request should be in a form
+        {"ids":[list_of_ids], "spec": update_spec}
+        """
+        result = {'status':'Not supported, expect "data", "query" attributes in your request', 'data':[]}
+        try :
+            request = json.load(cherrypy.request.body)
+            result = self.mgr.update(request['ids'], request['spec'])
+            if  isinstance(result, GeneratorType):
+                result = [r for r in result]
             return json.dumps(result)
         except Exception as exp:
             traceback.print_exc()
