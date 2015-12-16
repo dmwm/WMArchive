@@ -12,6 +12,10 @@ import os
 import sys
 import argparse
 
+# WMARchive modules
+from WMArchive.Storage.MongoIO import MongoStorage
+from WMArchive.Storage.HdfsIO import HdfsStorage
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
@@ -23,7 +27,21 @@ class OptionParser():
 
 def migrate(muri, huri):
     "Migrate data from MongoDB (muri) to HDFS (huri)"
-    pass
+    mstg = MongoStorage(muri)
+    hstg = HdfsStorage(huri)
+
+    # read data from MongoDB
+    query = {'status': 'mongo'}
+    docs = mstg.read(query)
+
+    # store data to HDFS
+    hstg.write(docs)
+
+    # update status attributes of docs in MongoDB
+    ids = [d['wmaid'] for d in docs]
+    query = {'$set' : {'status': 'hdfs'}}
+    mstg.update(ids, query)
+
 
 def main():
     "Main function"
