@@ -30,7 +30,7 @@ from WMArchive.Utils.Utils import tstamp, wmaHash
 class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
     def __init__(self, uri):
-        # avro uri: avro:/path/schema.avsc
+        "ctor with avro uri: avroio:/path/schema.avsc"
         schema = uri.replace('avroio:', '')
         uripath, _ = schema.rsplit('/', 1)
         if  not os.path.exists(schema):

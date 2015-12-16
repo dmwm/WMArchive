@@ -46,7 +46,7 @@ def fileName(uri, wmaid):
 class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
     def __init__(self, uri, compress=True):
-        # hdfs uri: hdfsio:/path/schema.avsc
+        "ctor with hdfs uri: hdfsio:/path/schema.avsc"
         schema = uri.replace('hdfsio:', '')
         uripath, _ = schema.rsplit('/', 1)
         if  not os.path.exists(schema):
