@@ -66,8 +66,8 @@ class Storage(object):
             out = []
             for item in spec:
                 res = self._read(item)
-                if  res:
-                    out.append(res)
+                if  res and len(res) == 1:
+                    out.append(res[0])
             return out
         return self._read(spec)
 
