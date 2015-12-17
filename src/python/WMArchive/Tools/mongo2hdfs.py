@@ -34,6 +34,10 @@ def migrate(muri, huri):
     query = {'status': 'mongo'}
     mdocs = mstg.read(query)
 
+    # do nothing if no documents is found
+    if  not len(mdocs):
+        return
+
     # store data to HDFS
     wmaid = hstg.write(docs)
 
