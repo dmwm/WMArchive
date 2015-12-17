@@ -12,6 +12,7 @@ https://avro.apache.org/docs/1.7.6/gettingstartedpython.html
 from __future__ import print_function, division
 
 # system modules
+import io
 import os
 import json
 import gzip
@@ -25,38 +26,44 @@ from avro.io import DatumReader, DatumWriter
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Utils import tstamp, wmaHash
+from WMArchive.Utils.Regexp import PAT_UID
+
+def fileName(uri, wmaid):
+    "Construct common file name"
+    return '%s/%s.avro' % (uri, wmaid)
 
 class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
     def __init__(self, uri):
         "ctor with avro uri: avroio:/path/schema.avsc"
+        self.log(uri)
         schema = uri.replace('avroio:', '')
         uripath, _ = schema.rsplit('/', 1)
         if  not os.path.exists(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
         Storage.__init__(self, uripath)
-        print(tstamp('WMA AvroIO storage'), uri)
         if  not os.path.exists(self.uri):
             os.makedirs(self.uri)
         self.schema = avro.schema.parse(open(schema).read())
 
-    def write(self, data):
-        "Write API"
-        fname = '%s/%s.avro.gz' % (self.uri, wmaHash(data))
-        print(tstamp('WMA AvroIO::write'), fname, data)
-        with gzip.open(fname, 'w') as ostream:
+    def _write(self, data):
+        "Internal write API"
+        wmaid = data['wmaid']
+        fname = fileName(self.uri, wmaid)
+        with open(fname, 'w') as ostream:
             with DataFileWriter(ostream, DatumWriter(), self.schema) as writer:
-                if  isinstance(data, list) or isinstance(data, GeneratorType):
-                    for rec in data:
-                        writer.append(rec)
-                elif isinstance(data, dict):
-                    writer.append(data)
+                writer.append(data)
 
-    def read(self, query=None):
-        "Read API"
-        pass
-
-    def update(self, ids, spec):
-        "Update documents with given set of document ids and update spec"
-        pass
+    def _read(self, query=None):
+        "Internal read API"
+        if  PAT_UID.match(query): # requested to read concrete file
+            out = []
+            fname = fileName(self.uri, query)
+            with open(fname) as istream:
+                reader = DataFileReader(istream, DatumReader())
+                for rec in reader:
+                    print("rec", rec)
+                    self.check(rec)
+                    out.append(rec)
+            return out
+        return self.empty_data

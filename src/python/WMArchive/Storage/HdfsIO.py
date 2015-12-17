@@ -49,23 +49,22 @@ class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
     def __init__(self, uri, compress=False):
         "ctor with hdfs uri: hdfsio:/path/schema.avsc"
+        self.log(uri)
         schema = uri.replace('hdfsio:', '')
         uripath, _ = schema.rsplit('/', 1)
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
         Storage.__init__(self, uripath)
-        print(tstamp('WMA HdfsIO storage'), uri)
         if  not hdfs.path.isdir(self.uri):
             hdfs.mkdir(self.uri)
         schemaData = hdfs.load(schema)
         self.schema = avro.schema.parse(schemaData)
         self.compress = compress
 
-    def write(self, data):
-        "Write API"
-        wmaid = wmaHash(data)
+    def _write(self, rec):
+        "Internal Write API"
+        wmaid = rec['wmaid']
         fname = fileName(self.uri, wmaid, self.compress)
-        print(tstamp('WMA HdfsIO::write'), fname, data)
 
         # create Avro writer and binary encoder
         writer = avro.io.DatumWriter(self.schema)
@@ -80,15 +79,9 @@ class HdfsStorage(Storage):
             encoder = avro.io.BinaryEncoder(bytes_writer)
 
         # write records from given data stream to binary writer
-        if  isinstance(data, list) or isinstance(data, GeneratorType):
-            for rec in data:
-                # set appropirate status for the record
-                rec['status'] = 'hdfs'
-                writer.write(rec, encoder)
-        else:
-            # set appropirate status for the record
-            data['status'] = 'hdfs'
-            writer.write(data, encoder)
+        # set appropirate status for the record
+        rec['status'] = 'hdfs'
+        writer.write(rec, encoder)
 
         # close gzip stream if necessary
         if  self.compress:
@@ -98,12 +91,10 @@ class HdfsStorage(Storage):
         # store raw data to hadoop via HDFS
         hdfs.dump(bytes_writer.getvalue(), fname)
 
-        return wmaid
-
-    def read(self, query=None):
-        "Read API"
-        out = []
+    def _read(self, query=None):
+        "Internal read API"
         if  PAT_UID.match(query): # requested to read concrete file
+            out = []
             fname = fileName(self.uri, query, self.compress)
             data = hdfs.load(fname)
 
@@ -123,8 +114,5 @@ class HdfsStorage(Storage):
                     out.append(rec)
                 except:
                     break
-        return out
-
-    def update(self, ids, spec):
-        "Update documents with given set of document ids and update spec"
-        pass
+            return out
+        return self.empty_data
