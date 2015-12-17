@@ -40,7 +40,7 @@ class FileStorage(Storage):
 
     def _read(self, query=None):
         "Internal read API"
-        if  PAT_UID.match(query): # requested to read concrete file
+        if  PAT_UID.match(str(query)): # requested to read concrete file
             fname = '%s/%s.gz' % (self.uri, query)
             data = json.load(gzip.open(fname))
             self.check(data)
