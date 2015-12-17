@@ -54,7 +54,7 @@ def migrate(muri, huri):
             sys.exit(1)
 
     # update status attributes of docs in MongoDB
-    ids = [d['wmaid'] for d in docs]
+    ids = [d['wmaid'] for d in mdocs]
     query = {'$set' : {'status': 'hdfs'}}
     mstg.update(ids, query)
 
