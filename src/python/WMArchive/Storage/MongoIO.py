@@ -55,7 +55,7 @@ class MongoStorage(Storage):
         docs = []
         if  isinstance(query, list):
             query = {'wmaid': {'$in': query}}
-        elif  PAT_UID.match(query):
+        elif  PAT_UID.match(str(query)):
             query = {'wmaid': query}
         for rec in self.coll.find(query):
             del rec['_id'] # internal MongoDB id

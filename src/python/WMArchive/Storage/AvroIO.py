@@ -56,7 +56,7 @@ class AvroStorage(Storage):
 
     def _read(self, query=None):
         "Internal read API"
-        if  PAT_UID.match(query): # requested to read concrete file
+        if  PAT_UID.match(str(query)): # requested to read concrete file
             out = []
             fname = fileName(self.uri, query)
             with open(fname) as istream:
