@@ -35,7 +35,7 @@ def migrate(muri, huri):
     mdocs = mstg.read(query)
 
     # store data to HDFS
-    wmaid = hstg.write(docs)
+    wmaid = hstg.write(mdocs)
 
     # read data from HDFS
     hdocs = hstg.read(wmaid)
