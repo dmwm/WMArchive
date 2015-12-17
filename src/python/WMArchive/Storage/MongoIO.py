@@ -19,7 +19,7 @@ from pymongo.errors import InvalidDocument, InvalidOperation, DuplicateKeyError
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Utils import tstamp
+from WMArchive.Utils.Regexp import PAT_UID
 
 class MongoStorage(Storage):
     "Storage based on MongoDB back-end"
@@ -31,29 +31,32 @@ class MongoStorage(Storage):
         self.chunk_size = 100
 
     def write(self, data):
-        "MongoIO write API"
-        inserted = 0
+        "Write API, return ids of stored documents"
+        wmaids = self.getids(data)
         try:
             while True:
                 nres = self.coll.insert(itertools.islice(data, self.chunk_size))
-                if  nres and isinstance(nres, list):
-                    inserted += len(nres)
-                else:
+                if  not nres:
                     break
         except InvalidDocument as exp:
-            print(tstamp('WMA WARNING'), 'InvalidDocument during injection', str(exp))
+            self.log('WARNING InvalidDocument: %s' % str(exp))
         except InvalidOperation as exp:
-            print(tstamp('WMA WARNING'), 'InvalidOperation during injection', str(exp))
+            self.log('WARNING InvalidOperation: %s' % str(exp))
         except DuplicateKeyError as exp:
-            print(tstamp('WMA WARNING'), 'DuplicateKeyError during injection', str(exp))
+            pass
         except Exception as exp:
             print(tstamp('WMA WARNING'), 'Uncaught exception', str(exp))
+        return wmaids
 
     def read(self, query=None):
-        "MongoIO read API"
+        "Read API"
         if  not query:
             query = {}
         docs = []
+        if  isinstance(query, list):
+            query = {'wmaid': {'$in': query}}
+        elif  PAT_UID.match(query):
+            query = {'wmaid': query}
         for rec in self.coll.find(query):
             del rec['_id'] # internal MongoDB id
             docs.append(rec)

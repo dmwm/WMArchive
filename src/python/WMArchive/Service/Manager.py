@@ -78,7 +78,7 @@ class WMArchiveManager(object):
             data = [data]
         if  not isinstance(data, list):
             raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
-        docs = self.encode(data)
+        docs = [r for r in self.encode(data)]
         ids = self.mgr.write(docs)
         result = {'status': self.storage, 'ids': ids}
         return result
