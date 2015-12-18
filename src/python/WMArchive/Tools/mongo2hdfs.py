@@ -33,6 +33,7 @@ def migrate(muri, huri):
     # read data from MongoDB
     query = {'stype': mstg.stype}
     mdocs = mstg.read(query)
+    mids = [d['wmaid'] for d in mdocs]
 
     # do nothing if no documents is found
     if  not len(mdocs):
@@ -57,9 +58,8 @@ def migrate(muri, huri):
             sys.exit(1)
 
     # update status attributes of docs in MongoDB
-    ids = [d['wmaid'] for d in mdocs]
     query = {'$set' : {'stype': hstg.stype}}
-    mstg.update(ids, query)
+    mstg.update(mids, query)
 
 def main():
     "Main function"
