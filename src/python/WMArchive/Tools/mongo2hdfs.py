@@ -31,7 +31,7 @@ def migrate(muri, huri):
     hstg = HdfsStorage(huri)
 
     # read data from MongoDB
-    query = {'stype': mstd.stype}
+    query = {'stype': mstg.stype}
     mdocs = mstg.read(query)
 
     # do nothing if no documents is found
