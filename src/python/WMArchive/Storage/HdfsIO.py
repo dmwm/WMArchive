@@ -53,8 +53,8 @@ class HdfsStorage(Storage):
         schema = self.uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        if  not hdfs.path.isdir(self.uri):
-            hdfs.mkdir(self.uri)
+        if  not hdfs.path.isdir(self.uri.rsplit('/', 1)):
+            raise Exception('HDFS path %s does not exists' % self.uri.rsplit('/', 1))
         schemaData = hdfs.load(schema)
         self.schema = avro.schema.parse(schemaData)
         self.compress = compress
