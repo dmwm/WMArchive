@@ -53,9 +53,9 @@ class HdfsStorage(Storage):
         schema = self.uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        hdir = self.uri.rsplit('/', 1)[0]
-        if  not hdfs.path.isdir(hdir):
-            raise Exception('HDFS path %s does not exists' % hdir)
+        self.hdir = self.uri.rsplit('/', 1)[0]
+        if  not hdfs.path.isdir(self.hdir):
+            raise Exception('HDFS path %s does not exists' % self.hdir)
         schemaData = hdfs.load(schema)
         self.schema = avro.schema.parse(schemaData)
         self.compress = compress
@@ -63,7 +63,7 @@ class HdfsStorage(Storage):
     def _write(self, rec):
         "Internal Write API"
         wmaid = rec['wmaid']
-        fname = fileName(self.uri, wmaid, self.compress)
+        fname = fileName(self.hdir, wmaid, self.compress)
 
         # create Avro writer and binary encoder
         writer = avro.io.DatumWriter(self.schema)
@@ -92,7 +92,7 @@ class HdfsStorage(Storage):
         "Internal read API"
         if  PAT_UID.match(str(query)): # requested to read concrete file
             out = []
-            fname = fileName(self.uri, query, self.compress)
+            fname = fileName(self.hdir, query, self.compress)
             data = hdfs.load(fname)
 
             if  self.compress:
