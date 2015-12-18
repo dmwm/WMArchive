@@ -24,12 +24,15 @@ from WMArchive.Utils.Utils import tstamp
 class Storage(object):
     "Base class which defines storage APIs"
     def __init__(self, uri=None):
-        self.uri = uri
+        if  not uri:
+            raise Exception('Unable to init storage, invalid uri %s' % uri)
+        self.log(uri)
+        self.stype, self.uri = uri.split(':')
         self.empty_data = [] # we will always return a list
 
     def log(self, msg):
-        "log API"
-        print(tstamp('WMA %s' % self.__class__.__name__), msg)
+        "Write given message to log stream"
+        print(tstamp(self.__class__.__name__), msg)
 
     def _write(self, data):
         "Internal write API, should be implemented in subclasses"
@@ -87,6 +90,8 @@ class Storage(object):
             wmaid = data.pop('wmaid')
         except:
             wmaid = ''
+        if  'stype' in data:
+            del data['stype']
         hid = wmaHash(data)
         if  hid != wmaid:
             raise Exception("Invalid data hash, hid=%s, wmaid=%s, data=%s" \

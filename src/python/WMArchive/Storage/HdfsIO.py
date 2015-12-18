@@ -49,12 +49,10 @@ class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
     def __init__(self, uri, compress=False):
         "ctor with hdfs uri: hdfsio:/path/schema.avsc"
-        self.log(uri)
-        schema = uri.replace('hdfsio:', '')
-        uripath, _ = schema.rsplit('/', 1)
+        Storage.__init__(self, uri)
+        schema = self.uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        Storage.__init__(self, uripath)
         if  not hdfs.path.isdir(self.uri):
             hdfs.mkdir(self.uri)
         schemaData = hdfs.load(schema)
@@ -79,8 +77,6 @@ class HdfsStorage(Storage):
             encoder = avro.io.BinaryEncoder(bytes_writer)
 
         # write records from given data stream to binary writer
-        # set appropirate status for the record
-        rec['status'] = 'hdfs'
         writer.write(rec, encoder)
 
         # close gzip stream if necessary

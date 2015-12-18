@@ -26,7 +26,7 @@ class MongoStorage(Storage):
     def __init__(self, uri):
         "ctor with mongo uri: mongodb://host:port"
         Storage.__init__(self, uri)
-        self.client = MongoClient(self.uri)
+        self.client = MongoClient(uri)
         self.coll = self.client['fwjr']['db']
         self.chunk_size = 100
 
