@@ -47,8 +47,10 @@ def migrate(muri, huri):
     # now we can compare MongoDB docs with HDFS docs, a la cross-check
     for mdoc, hdoc in zip(mdocs, hdocs):
         # drop stypes for time being
-        del mdoc['stype']
-        del hdoc['stype']
+        if  'stype' in mdoc:
+            del mdoc['stype']
+        if  'stype' in hdoc:
+            del hdoc['stype']
         if mdoc != hdoc:
             print "ERROR", mdoc, hdoc
             sys.exit(1)
