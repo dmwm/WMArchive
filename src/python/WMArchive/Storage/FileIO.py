@@ -25,10 +25,8 @@ class FileStorage(Storage):
     "Storage based on FileDB back-end"
     def __init__(self, uri):
         "ctor with fileio uri: fileio:/path"
-        self.log(uri)
-        uri = uri.replace('fileio:', '')
         Storage.__init__(self, uri)
-        if  not os.path.exists(uri):
+        if  not os.path.exists(self.uri):
             os.makedirs(self.uri)
 
     def _write(self, data):

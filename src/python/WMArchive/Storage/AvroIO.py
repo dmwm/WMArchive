@@ -36,12 +36,10 @@ class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
     def __init__(self, uri):
         "ctor with avro uri: avroio:/path/schema.avsc"
-        self.log(uri)
-        schema = uri.replace('avroio:', '')
-        uripath, _ = schema.rsplit('/', 1)
+        Storage.__init__(self, uri)
+        schema = self.uri
         if  not os.path.exists(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        Storage.__init__(self, uripath)
         if  not os.path.exists(self.uri):
             os.makedirs(self.uri)
         self.schema = avro.schema.parse(open(schema).read())
