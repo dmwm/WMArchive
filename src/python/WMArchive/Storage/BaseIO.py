@@ -27,7 +27,7 @@ class Storage(object):
         if  not uri:
             raise Exception('Unable to init storage, invalid uri %s' % uri)
         self.log(uri)
-        self.stype, self.uri = uri.split(':')
+        self.stype, self.uri = uri.split(':', 1)
         self.empty_data = [] # we will always return a list
 
     def log(self, msg):
