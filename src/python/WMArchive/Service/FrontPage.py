@@ -42,8 +42,7 @@ class FrontPage(RESTFrontPage):
           }
 
         }
-        # location of frontpage in of the roots, e.g. wmarchive
-        # Here the root is taken from roots, e.g. /path/data
-        # and within this dir we'll have /path/data/templates/wma.html
-        frontpage = "%s/templates/wma.html" % mainroot
+        # location of frontpage in the root, e.g. wmarchive
+        uic = config.dictionary_()
+        frontpage = "%s/wma.html" % uic.get('templates', '')
         RESTFrontPage.__init__(self, app, config, mount, frontpage, roots)
