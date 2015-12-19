@@ -40,9 +40,7 @@ class FrontPage(RESTFrontPage):
             "root": "%s/%sdata/" % (content, xlib),
             "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:css|js|png|gif|html)$")
           }
-
         }
         # location of frontpage in the root, e.g. wmarchive
-        uic = config.dictionary_()
-        frontpage = "%s/wma.html" % uic.get('templates', '')
+        frontpage = "%s/templates/wma.html" % mainroot
         RESTFrontPage.__init__(self, app, config, mount, frontpage, roots)
