@@ -8,12 +8,16 @@ Description: WMArchive front page module which defines its web UI.
              Code design follows SiteDB interface.
 """
 
+# futures
+from __future__ import print_function, division
+
 # system modules
 import os
 import re
 
 # WMCore modules
 from WMCore.REST.Server import RESTFrontPage
+from WMArchive.Utils.Utils import tstamp
 
 class FrontPage(RESTFrontPage):
     """WMArchive front page.
@@ -33,11 +37,13 @@ class FrontPage(RESTFrontPage):
         mainroot = 'wmarchive' # entry point in access URL
         content = os.path.abspath(__file__).rsplit('/', 5)[0]
         xlib = (__file__.find("/xlib/") >= 0 and "x") or ""
+        wpath = "%s/%sdata/" % (content, xlib)
+        print(tstamp(self.__class__.__name__), "static content: %s" % wpath)
         roots = \
         {
           mainroot:
           {
-            "root": "%s/%sdata/" % (content, xlib),
+            "root": wpath,
             "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:css|js|png|gif|html)$")
           }
         }
