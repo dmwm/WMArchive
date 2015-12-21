@@ -60,6 +60,10 @@ class HdfsStorage(Storage):
         self.schema = avro.schema.parse(schemaData)
         self.compress = compress
 
+    def dump(self, data, fname):
+        "Dump given data directly to HDFS"
+        hdfs.dump(data, fname)
+
     def _write(self, rec):
         "Internal Write API"
         wmaid = rec['wmaid']
