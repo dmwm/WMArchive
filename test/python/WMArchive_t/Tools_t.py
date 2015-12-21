@@ -2,9 +2,9 @@
 #-*- coding: utf-8 -*-
 #pylint: disable=
 """
-File       : Utils_t.py
+File       : Tools_t.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: Unit test for WMArchive.Utils.Utils.py module
+Description: Unit test for WMArchive.Tools module
 """
 # futures
 from __future__ import print_function, division
