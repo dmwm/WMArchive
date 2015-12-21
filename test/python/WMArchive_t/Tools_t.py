@@ -2,9 +2,9 @@
 #-*- coding: utf-8 -*-
 #pylint: disable=
 """
-File       : Utils_t.py
+File       : Tools_t.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: Unit test for WMArchive.Utils.Utils.py module
+Description: Unit test for WMArchive.Tools module
 """
 # futures
 from __future__ import print_function, division
@@ -63,6 +63,7 @@ class WMBaseTest(unittest.TestCase):
         "Test genSchema function with static data"
         tdir = os.path.join('/'.join(__file__.split('/')[:-3]), 'data')
         for fname in os.listdir(tdir):
+            print("\nRead: %s" % fname)
             with open(os.path.join(tdir, fname)) as istream:
                 data = json.load(istream)
                 json_data = json2avro2json(data)
