@@ -63,6 +63,7 @@ class WMBaseTest(unittest.TestCase):
         "Test genSchema function with static data"
         tdir = os.path.join('/'.join(__file__.split('/')[:-3]), 'data')
         for fname in os.listdir(tdir):
+            print("\nRead: %s" % fname)
             with open(os.path.join(tdir, fname)) as istream:
                 data = json.load(istream)
                 json_data = json2avro2json(data)
