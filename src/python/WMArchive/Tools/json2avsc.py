@@ -5,6 +5,16 @@
 File       : json2avsc.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: Tool to generate Avro schema out of provided JSON file
+Avro schema definition can be found here:
+    https://avro.apache.org/docs/1.7.7/spec.html#Arrays
+    http://docs.oracle.com/cd/E26161_02/html/GettingStartedGuide/avroschemas.html
+The conversion logic relies on few constraints:
+    - list data type should contain values of identical types, e.g.
+      integers, floats, another dictionaries
+    - int/floats are stored as long and double
+    - primitive types do not include bytes support (it can be easily extended though)
+    - complex data types are limited to array/union but no support for Enums and Maps
+    - this tool auto generates namespace names, but preserve key names
 """
 
 # system modules
