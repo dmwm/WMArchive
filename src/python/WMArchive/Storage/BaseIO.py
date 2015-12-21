@@ -55,6 +55,11 @@ class Storage(object):
                 data = [data]
             docs = self.read(wmaids)
             for rec1, rec2 in zip(data, docs):
+                for attr in ['wmaid', 'stype']:
+                    if  attr in rec1:
+                        del rec1[attr]
+                    if  attr in rec2:
+                        del rec2[attr]
                 if rec1 != rec2:
                     raise Exception('Data mismatch: %s %s' % (rec1, rec2))
         return wmaids
