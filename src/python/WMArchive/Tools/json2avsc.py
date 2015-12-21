@@ -41,7 +41,11 @@ def baseTypes(val):
         return True
     elif isinstance(val, int):
         return True
+    elif isinstance(val, long):
+        return True
     elif isinstance(val, float):
+        return True
+    elif isinstance(val, bool):
         return True
     elif isinstance(val, NoneType):
         return True
@@ -52,9 +56,13 @@ def stype(val):
     if isinstance(val, basestring):
         return 'string'
     elif isinstance(val, int):
-        return 'int'
+        return 'long'
+    elif isinstance(val, long):
+        return 'long'
+    elif isinstance(val, bool):
+        return 'boolean'
     elif isinstance(val, float):
-        return 'float'
+        return 'double'
     elif isinstance(val, NoneType):
         return 'null'
     return 'null'
