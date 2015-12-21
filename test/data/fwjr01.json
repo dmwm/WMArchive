@@ -1,0 +1,511 @@
+{
+   "id": "3268289-0",
+   "_rev": "1-2e4094bfb2b17affa3a52967e42ba226",
+   "time_stamp": 1445525006,
+   "jobid": 3268289,
+   "retrycount": 0,
+   "fwjr": {
+       "task": "/fabozzi_Run2015BCharmonium-16Oct2015_7414_151016_150741_9653/DataProcessing",
+       "skippedFiles": [
+       ],
+       "fallbackFiles": [
+       ],
+       "steps": {
+           "logArch1": {
+               "status": 0,
+               "logs": {
+               },
+               "stop": 1445523082,
+               "site": "T1_US_FNAL_Disk",
+               "input": {
+               },
+               "errors": [
+               ],
+               "parameters": {
+               },
+               "output": {
+                   "logArchive": [
+                       {
+                           "runs": {
+                           },
+                           "lfn": "/store/unmerged/logs/prod/2015/10/22/fabozzi_Run2015BCharmonium-16Oct2015_7414_151016_150741_9653/DataProcessing/0000/0/37d35a6a-78c1-11e5-9155-a0369f23cf8a-0-0-logArchive.tar.gz",
+                           "pfn": "root://cmseos.fnal.gov//lustre/unmerged/logs/prod/2015/10/22/fabozzi_Run2015BCharmonium-16Oct2015_7414_151016_150741_9653/DataProcessing/0000/0/37d35a6a-78c1-11e5-9155-a0369f23cf8a-0-0-logArchive.tar.gz<root://cmseos.fnal.gov/lustre/unmerged/logs/prod/2015/10/22/fabozzi_Run2015BCharmonium-16Oct2015_7414_151016_150741_9653/DataProcessing/0000/0/37d35a6a-78c1-11e5-9155-a0369f23cf8a-0-0-logArchive.tar.gz>",
+                           "module_label": "logArchive",
+                           "location": "T1_US_FNAL_Disk",
+                           "checksums": {
+                               "adler32": "f988e720",
+                               "cksum": "2163890675"
+                           },
+                           "events": 0,
+                           "merged": false,
+                           "size": 0
+                       }
+                   ],
+                   "analysis": [
+                   ]
+               },
+               "analysis": {
+               },
+               "start": 1445523081,
+               "cleanup": {
+               },
+               "performance": {
+                   "storage": {
+                   },
+                   "multicore": {
+                   },
+                   "memory": {
+                   },
+                   "cpu": {
+                   }
+               }
+           },
+           "cmsRun1": {
+               "status": 0,
+               "logs": {
+               },
+               "stop": 1445523079,
+               "site": "T1_US_FNAL_Disk",
+               "input": {
+                   "source": [
+                       {
+                           "runs": {
+                               "mlist": [
+                                   15,
+                                   17,
+                                   18,
+                                   21,
+                                   22,
+                                   23,
+                                   24,
+                                   27,
+                                   28,
+                                   29,
+                                   30,
+                                   31,
+                                   32,
+                                   33,
+                                   34,
+                                   35,
+                                   36,
+                                   37,
+                                   38,
+                                   39,
+                                   40,
+                                   41,
+                                   42,
+                                   43,
+                                   44,
+                                   45,
+                                   46,
+                                   47
+                               ]
+                           },
+                           "input_source_class": "PoolSource",
+                           "input_type": "primaryFiles",
+                           "lfn": "/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root",
+                           "pfn": "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root<root://cmsxrootd-site.fnal.gov/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root>",
+                           "catalog": "",
+                           "module_label": "source",
+                           "guid": "A4449AC2-AD25-E511-B0F2-02163E011BFC",
+                           "events": 15
+                       }
+                   ]
+               },
+               "errors": [
+               ],
+               "parameters": {
+               },
+               "output": {
+                   "MINIAODoutput": [
+                       {
+                           "branch_hash": "6c01a9cc00a590f29d6332092d4383b6",
+                           "user_dn": "null",
+                           "lfn": "/store/unmerged/Run2015B/Charmonium/MINIAOD/16Oct2015-v1/10000/905E0A5E-C678-E511-9A00-002618943868.root",
+                           "dataset": {
+                               "applicationName": "cmsRun",
+                               "applicationVersion": "CMSSW_7_4_14",
+                               "processedDataset": "Run2015B-16Oct2015-v1",
+                               "dataTier": "MINIAOD",
+                               "primaryDataset": "Charmonium"
+                           },
+                           "InputPFN": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/MINIAODoutput.root",
+                           "checksums": {
+                               "adler32": "09a23a8f",
+                               "cksum": "2619659958"
+                           },
+                           "guid": "905E0A5E-C678-E511-9A00-002618943868",
+                           "size": 2623186,
+                           "acquisitionEra": "Run2015B",
+                           "configURL": "https://cmsweb.cern.ch/couchdb;;reqmgr_config_cache;;1c4b90c4d66344fbea2f18b0e36be86c",
+                           "location": "T1_US_FNAL_Disk",
+                           "input": [
+                               "/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root"
+                           ],
+                           "events": 15,
+                           "merged": false,
+                           "validStatus": "PRODUCTION",
+                           "ouput_module_class": "PoolOutputModule",
+                           "globalTag": "74X_dataRun2_v4",
+                           "inputpfns": [
+                               "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root<root://cmsxrootd-site.fnal.gov/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root>"
+                           ],
+                           "pfn": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/MINIAODoutput.root",
+                           "catalog": "",
+                           "module_label": "MINIAODoutput",
+                           "async_dest": "null",
+                           "inputPath": "/Charmonium/Run2015B-v1/RAW",
+                           "StageOutCommand": "stageout-xrdcp-fnal",
+                           "runs": {
+                               "mlist": [
+                                   15,
+                                   17,
+                                   18,
+                                  21,
+                                   22,
+                                   23,
+                                   24,
+                                   27,
+                                   28,
+                                   29,
+                                   30,
+                                   31,
+                                   32,
+                                   33,
+                                   34,
+                                   35,
+                                   36,
+                                   37,
+                                   38,
+                                   39,
+                                   40,
+                                   41,
+                                   42,
+                                   43,
+                                   44,
+                                   45,
+                                   46,
+                                   47
+                               ]
+                           },
+                           "OutputPFN": "root://cmseos.fnal.gov//lustre/unmerged/Run2015B/Charmonium/MINIAOD/16Oct2015-v1/10000/905E0A5E-C678-E511-9A00-002618943868.root<root://cmseos.fnal.gov/lustre/unmerged/Run2015B/Charmonium/MINIAOD/16Oct2015-v1/10000/905E0A5E-C678-E511-9A00-002618943868.root>",
+                           "user_vogroup": "DEFAULT",
+                           "user_vorole": "DEFAULT",
+                           "processingVer": 1,
+                           "processingStr": "16Oct2015",
+                           "prep_id": "ReReco-Run2015B-16Oct2015-0042"
+                       }
+                   ],
+                   "analysis": [
+                   ],
+                   "RECOoutput": [
+                       {
+                           "branch_hash": "b3445288d8c12995e3ad4abb363e2da9",
+                           "user_dn": "null",
+                           "lfn": "/store/unmerged/Run2015B/Charmonium/RECO/16Oct2015-v1/10000/5C9F205E-C678-E511-9A00-002618943868.root",
+                           "dataset": {
+                               "applicationName": "cmsRun",
+                               "applicationVersion": "CMSSW_7_4_14",
+                               "processedDataset": "Run2015B-16Oct2015-v1",
+                               "dataTier": "RECO",
+                               "primaryDataset": "Charmonium"
+                           },
+                           "InputPFN": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/RECOoutput.root",
+                           "checksums": {
+                               "adler32": "9b46b3ac",
+                               "cksum": "2439536754"
+                           },
+                           "guid": "5C9F205E-C678-E511-9A00-002618943868",
+                           "size": 18625411,
+                           "acquisitionEra": "Run2015B",
+                           "configURL": "https://cmsweb.cern.ch/couchdb;;reqmgr_config_cache;;1c4b90c4d66344fbea2f18b0e36be86c",
+                           "location": "T1_US_FNAL_Disk",
+                           "input": [
+                               "/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root"
+                           ],
+                           "events": 15,
+                           "merged": false,
+                           "validStatus": "PRODUCTION",
+                           "ouput_module_class": "PoolOutputModule",
+                           "globalTag": "74X_dataRun2_v4",
+                           "inputpfns": [
+                               "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root<root://cmsxrootd-site.fnal.gov/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root>"
+                           ],
+                           "pfn": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/RECOoutput.root",
+                           "catalog": "",
+                           "module_label": "RECOoutput",
+                           "async_dest": "null",
+                           "inputPath": "/Charmonium/Run2015B-v1/RAW",
+                           "StageOutCommand": "stageout-xrdcp-fnal",
+                           "runs": {
+                               "mlist": [
+                                   15,
+                                  17,
+                                   18,
+                                   21,
+                                   22,
+                                   23,
+                                   24,
+                                   27,
+                                   28,
+                                   29,
+                                   30,
+                                   31,
+                                   32,
+                                   33,
+                                   34,
+                                   35,
+                                   36,
+                                   37,
+                                   38,
+                                   39,
+                                   40,
+                                   41,
+                                   42,
+                                   43,
+                                   44,
+                                   45,
+                                   46,
+                                   47
+                               ]
+                           },
+                           "OutputPFN": "root://cmseos.fnal.gov//lustre/unmerged/Run2015B/Charmonium/RECO/16Oct2015-v1/10000/5C9F205E-C678-E511-9A00-002618943868.root<root://cmseos.fnal.gov/lustre/unmerged/Run2015B/Charmonium/RECO/16Oct2015-v1/10000/5C9F205E-C678-E511-9A00-002618943868.root>",
+                           "user_vogroup": "DEFAULT",
+                           "user_vorole": "DEFAULT",
+                           "processingVer": 1,
+                           "processingStr": "16Oct2015",
+                           "prep_id": "ReReco-Run2015B-16Oct2015-0042"
+                       }
+                   ],
+                   "DQMoutput": [
+                       {
+                           "branch_hash": "d41d8cd98f00b204e9800998ecf8427e",
+                           "user_dn": "null",
+                           "lfn": "/store/unmerged/Run2015B/Charmonium/DQMIO/16Oct2015-v1/10000/B294B25D-C678-E511-9A00-002618943868.root",
+                           "dataset": {
+                               "applicationName": "cmsRun",
+                               "applicationVersion": "CMSSW_7_4_14",
+                               "processedDataset": "Run2015B-16Oct2015-v1",
+                               "dataTier": "DQMIO",
+                               "primaryDataset": "Charmonium"
+                           },
+                           "InputPFN": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/DQMoutput.root",
+                           "checksums": {
+                               "adler32": "3dd646f4",
+                               "cksum": "1229468073"
+                           },
+                           "guid": "B294B25D-C678-E511-9A00-002618943868",
+                           "size": 8822134,
+                           "acquisitionEra": "Run2015B",
+                           "configURL": "https://cmsweb.cern.ch/couchdb;;reqmgr_config_cache;;1c4b90c4d66344fbea2f18b0e36be86c",
+                           "location": "T1_US_FNAL_Disk",
+                           "input": [
+                               "/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root"
+                           ],
+                           "events": 0,
+                           "merged": false,
+                           "validStatus": "PRODUCTION",
+                           "ouput_module_class": "DQMRootOutputModule",
+                           "globalTag": "74X_dataRun2_v4",
+                           "inputpfns": [
+                               "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root<root://cmsxrootd-site.fnal.gov/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root>"
+                           ],
+                           "pfn": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/DQMoutput.root",
+                           "catalog": "",
+                           "module_label": "DQMoutput",
+                           "async_dest": "null",
+                           "inputPath": "/Charmonium/Run2015B-v1/RAW",
+                           "StageOutCommand": "stageout-xrdcp-fnal",
+                           "runs": {
+                               "mlist": [
+                                   15,
+                                   17,
+                                   18,
+                                   21,
+                                   22,
+                                   23,
+                                   24,
+                                   27,
+                                   28,
+                                   29,
+                                   30,
+                                   31,
+                                   32,
+                                   33,
+                                   34,
+                                   35,
+                                   36,
+                                   37,
+                                   38,
+                                   39,
+                                   40,
+                                   41,
+                                   42,
+                                   43,
+                                   44,
+                                   45,
+                                   46,
+                                   47
+                               ]
+                           },
+                           "OutputPFN": "root://cmseos.fnal.gov//lustre/unmerged/Run2015B/Charmonium/DQMIO/16Oct2015-v1/10000/B294B25D-C678-E511-9A00-002618943868.root<root://cmseos.fnal.gov/lustre/unmerged/Run2015B/Charmonium/DQMIO/16Oct2015-v1/10000/B294B25D-C678-E511-9A00-002618943868.root>",
+                           "user_vogroup": "DEFAULT",
+                           "user_vorole": "DEFAULT",
+                           "processingVer": 1,
+                           "processingStr": "16Oct2015",
+                           "prep_id": "ReReco-Run2015B-16Oct2015-0042"
+                       }
+                   ],
+                   "AODoutput": [
+                       {
+                           "branch_hash": "58ef76042e21a0a17727871aef726de0",
+                           "user_dn": "null",
+                           "lfn": "/store/unmerged/Run2015B/Charmonium/AOD/16Oct2015-v1/10000/A865AA5D-C678-E511-9A00-002618943868.root",
+                           "dataset": {
+                               "applicationName": "cmsRun",
+                               "applicationVersion": "CMSSW_7_4_14",
+                               "processedDataset": "Run2015B-16Oct2015-v1",
+                               "dataTier": "AOD",
+                               "primaryDataset": "Charmonium"
+                           },
+                           "InputPFN": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/AODoutput.root",
+                           "checksums": {
+                               "adler32": "0fbd876f",
+                               "cksum": "1695543401"
+                           },
+                           "guid": "A865AA5D-C678-E511-9A00-002618943868",
+                           "size": 5988626,
+                           "acquisitionEra": "Run2015B",
+                           "configURL": "https://cmsweb.cern.ch/couchdb;;reqmgr_config_cache;;1c4b90c4d66344fbea2f18b0e36be86c",
+                           "location": "T1_US_FNAL_Disk",
+                           "input": [
+                               "/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root"
+                           ],
+                           "events": 15,
+                           "merged": false,
+                           "validStatus": "PRODUCTION",
+                           "ouput_module_class": "PoolOutputModule",
+                           "globalTag": "74X_dataRun2_v4",
+                           "inputpfns": [
+                               "root://cmsxrootd-site.fnal.gov//store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root<root://cmsxrootd-site.fnal.gov/store/data/Run2015B/Charmonium/RAW/v1/000/251/162/00000/A4449AC2-AD25-E511-B0F2-02163E011BFC.root>"
+                           ],
+                           "pfn": "/storage/local/data1/condor/execute/dir_31718/glide_Sg5vh6/execute/dir_25095/job/WMTaskSpace/cmsRun1/AODoutput.root",
+                           "catalog": "",
+                           "module_label": "AODoutput",
+                           "async_dest": "null",
+                           "inputPath": "/Charmonium/Run2015B-v1/RAW",
+                           "StageOutCommand": "stageout-xrdcp-fnal",
+                           "runs": {
+                               "mlist": [
+                                   15,
+                                   17,
+                                   18,
+                                   21,
+                                   22,
+                                   23,
+                                   24,
+                                   27,
+                                   28,
+                                   29,
+                                   30,
+                                   31,
+                                   32,
+                                   33,
+                                   34,
+                                   35,
+                                   36,
+                                   37,
+                                   38,
+                                   39,
+                                   40,
+                                   41,
+                                   42,
+                                   43,
+                                   44,
+                                   45,
+                                   46,
+                                   47
+                               ]
+                           },
+                           "OutputPFN": "root://cmseos.fnal.gov//lustre/unmerged/Run2015B/Charmonium/AOD/16Oct2015-v1/10000/A865AA5D-C678-E511-9A00-002618943868.root<root://cmseos.fnal.gov/lustre/unmerged/Run2015B/Charmonium/AOD/16Oct2015-v1/10000/A865AA5D-C678-E511-9A00-002618943868.root>",
+                           "user_vogroup": "DEFAULT",
+                           "user_vorole": "DEFAULT",
+                           "processingVer": 1,
+                           "processingStr": "16Oct2015",
+                           "prep_id": "ReReco-Run2015B-16Oct2015-0042"
+                       }
+                   ]
+               },
+               "analysis": {
+               },
+               "start": 1445522530,
+               "cleanup": {
+               },
+               "performance": {
+                   "storage": {
+                       "writeTotalMB": 25.9757,
+                       "readPercentageOps": 1.27777777778,
+                       "readAveragekB": 266.263703374,
+                       "readTotalMB": 5.9805324,
+                       "readNumOps": 18,
+                       "readCachePercentageOps": 0,
+                       "readMBSec": 0.00095346795485,
+                       "readMaxMSec": 1981.88,
+                       "readTotalSecs": 0,
+                       "writeTotalSecs": 133378
+                   },
+                   "multicore": {
+                   },
+                   "memory": {
+                       "PeakValueRss": "2031",
+                       "PeakValueVsize": "2674.67"
+                   },
+                   "cpu": {
+                       "TotalJobCPU": "158.998",
+                       "EventThroughput": "0.100054",
+                       "AvgEventTime": "7.62466",
+                       "MaxEventTime": "33.9117",
+                       "TotalJobTime": "168.463",
+                       "TotalLoopCPU": "141.129",
+                       "MinEventTime": "2.65781"
+                   }
+               }
+           },
+           "stageOut1": {
+               "status": 0,
+               "logs": {
+               },
+               "stop": 1445523081,
+               "site": "T1_US_FNAL_Disk",
+               "input": {
+               },
+               "errors": [
+               ],
+               "parameters": {
+               },
+               "output": {
+                   "analysis": [
+                   ]
+               },
+               "analysis": {
+               },
+               "start": 1445523079,
+               "cleanup": {
+               },
+               "performance": {
+                   "storage": {
+                   },
+                   "multicore": {
+                   },
+                   "memory": {
+                   },
+                   "cpu": {
+                   }
+               }
+           }
+       }
+   },
+   "type": "fwjr"
+}
+
+
