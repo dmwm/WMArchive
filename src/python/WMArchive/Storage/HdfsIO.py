@@ -92,20 +92,23 @@ class HdfsStorage(Storage):
         # store raw data to hadoop via HDFS
         hdfs.dump(bytes_writer.getvalue(), fname)
 
+        # close bytes stream
+        bytes_writer.close()
+
     def _read(self, query=None):
         "Internal read API"
         if  PAT_UID.match(str(query)): # requested to read concrete file
             out = []
             fname = fileName(self.hdir, query, self.compress)
             data = hdfs.load(fname)
+            bytes_reader = io.BytesIO(data)
 
             if  self.compress:
                 # use gzip'ed reader and pass to it BytesIO as file object
-                gzip_reader = gzip.GzipFile(fileobj=io.BytesIO(data))
+                gzip_reader = gzip.GzipFile(fileobj=bytes_reader)
                 decoder = avro.io.BinaryDecoder(gzip_reader)
             else:
                 # use non-compressed reader
-                bytes_reader = io.BytesIO(data)
                 decoder = avro.io.BinaryDecoder(bytes_reader)
 
             reader = avro.io.DatumReader(self.schema)
@@ -115,5 +118,10 @@ class HdfsStorage(Storage):
                     out.append(rec)
                 except:
                     break
+            # close gzip stream if necessary
+            if  self.compress:
+                gzip_reader.close()
+            # close bytes stream
+            bytes_reader.close()
             return out
         return self.empty_data
