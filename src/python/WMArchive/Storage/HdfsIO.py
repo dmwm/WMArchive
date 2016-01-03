@@ -36,7 +36,7 @@ import pydoop.hdfs as hdfs
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Utils import tstamp, wmaHash
+from WMArchive.Utils.Utils import tstamp, wmaHash, today
 from WMArchive.Utils.Regexp import PAT_UID
 
 def fileName(uri, wmaid, compress):
@@ -67,7 +67,11 @@ class HdfsStorage(Storage):
     def _write(self, rec):
         "Internal Write API"
         wmaid = rec['wmaid']
-        fname = fileName(self.hdir, wmaid, self.compress)
+        year, month, _ = today()
+        hdir = '%s/%s/%s' % (self.hdir, year, month)
+        if  not hdfs.path.isdir(hdir):
+            hdfs.mkdir(hdir)
+        fname = fileName(hdir, wmaid, self.compress)
 
         # create Avro writer and binary encoder
         writer = avro.io.DatumWriter(self.schema)
@@ -99,7 +103,9 @@ class HdfsStorage(Storage):
         "Internal read API"
         if  PAT_UID.match(str(query)): # requested to read concrete file
             out = []
-            fname = fileName(self.hdir, query, self.compress)
+            year, month, _ = today()
+            hdir = '%s/%s/%s' % (self.hdir, year, month)
+            fname = fileName(hdir, query, self.compress)
             data = hdfs.load(fname)
             bytes_reader = io.BytesIO(data)
 

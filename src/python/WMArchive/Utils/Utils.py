@@ -26,11 +26,6 @@ def tstamp(msg='WMA'):
 
 def wmaHash(data):
     "Return md5 hash of given data"
-#    if  isinstance(data, dict):
-#        if  '_rev' in data:
-#            md5 = data['_rev'].split('-')[-1]
-#            if  len(md5) == 32:
-#                return md5
     if  not isinstance(data, basestring):
         data = str(data)
     data = ''.join(sorted(data)) # to insure that all keys are in order
@@ -38,3 +33,11 @@ def wmaHash(data):
     keyhash = hashlib.md5()
     keyhash.update(rec)
     return keyhash.hexdigest()
+
+def today():
+    "Return today representation YYYY, MM, DD"
+    tst = time.localtime()
+    year = time.strftime('%Y', tst)
+    month = time.strftime('%02m', tst)
+    date = time.strftime('%02d', tst)
+    return year, month, date
