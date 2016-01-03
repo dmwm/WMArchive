@@ -4,8 +4,10 @@
 """
 File       : mongo2hdfs.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: 
+Description: Mongo -> HDFS migration script. It puts data from MongoDB into HDFS.
 """
+# futures
+from __future__ import print_function, division
 
 # system modules
 import os
@@ -19,7 +21,7 @@ from WMArchive.Storage.HdfsIO import HdfsStorage
 class OptionParser():
     def __init__(self):
         "User based option parser"
-        self.parser = argparse.ArgumentParser(prog='PROG')
+        self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
         self.parser.add_argument("--mongo", action="store",
             dest="muri", default="", help="MongoDB URI")
         self.parser.add_argument("--hdfs", action="store",
@@ -54,7 +56,7 @@ def migrate(muri, huri):
             if  key in hdoc:
                 del hdoc[key]
         if mdoc != hdoc:
-            print "ERROR", mdoc, hdoc
+            print("ERROR", mdoc, hdoc)
             sys.exit(1)
 
     # update status attributes of docs in MongoDB

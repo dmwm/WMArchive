@@ -6,6 +6,8 @@ File       : dump2hdfs.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: Write given Avro schema file into HDFS
 """
+# futures
+from __future__ import print_function, division
 
 # system modules
 import os
@@ -18,7 +20,7 @@ from WMArchive.Storage.HdfsIO import HdfsStorage
 class OptionParser():
     def __init__(self):
         "User based option parser"
-        self.parser = argparse.ArgumentParser(prog='PROG')
+        self.parser = argparse.ArgumentParser(prog='dump2hdfs')
         self.parser.add_argument("--fin", action="store",
             dest="fin", default="", help="Input avro schema file")
 

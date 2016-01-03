@@ -16,6 +16,8 @@ The conversion logic relies on few constraints:
     - complex data types are limited to array/union but no support for Enums and Maps
     - this tool auto generates namespace names, but preserve key names
 """
+# futures
+from __future__ import print_function, division
 
 # system modules
 import os
@@ -30,7 +32,7 @@ COUNTER = 0 # global namespace counter, used to generate proper namespaces
 class OptionParser():
     def __init__(self):
         "User based option parser"
-        self.parser = argparse.ArgumentParser(prog='PROG')
+        self.parser = argparse.ArgumentParser(prog='json2avsc')
         self.parser.add_argument("--fin", action="store",
             dest="fin", default="", help="Input JSON file")
         self.parser.add_argument("--fout", action="store",
