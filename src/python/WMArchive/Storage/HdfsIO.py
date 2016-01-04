@@ -47,7 +47,7 @@ def fileName(uri, wmaid, compress):
 
 class HdfsStorage(Storage):
     "Storage based on Hdfs back-end"
-    def __init__(self, uri, compress=False):
+    def __init__(self, uri, compress=True):
         "ctor with hdfs uri: hdfsio:/path/schema.avsc"
         Storage.__init__(self, uri)
         schema = self.uri
