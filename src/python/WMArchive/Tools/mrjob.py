@@ -15,6 +15,7 @@ import os
 import sys
 import stat
 import time
+import inspect
 import argparse
 from tempfile import NamedTemporaryFile
 
@@ -28,10 +29,33 @@ except:
 # WMArchive modules
 from WMArchive.MapReduce.Skeleton import Reader
 
+def skeleton_file(verbose):
+    "Return location of skeleton file"
+    sname = inspect.getfile(Reader)
+    if  sname.endswith('pyc'):
+        sname = sname[:-1] # use .py instead of .pyc
+    if  verbose:
+        print("Skeleton %s" % sname)
+    return sname
+
+def usage():
+    "Generate usage message"
+    sfile = skeleton_file()
+    efile = sfile.replace('Skeleton', 'mruser')
+    msg = """
+This tools either generates or executes MR script.
+The code is generated from MR skeleton provided by WMArchive
+and user based MR file. The later must contain two functions:
+    def mapper(ctx)
+    def reducer(ctx)
+which defines mapper and reducer for given context. For examples
+please see %s""" % efile
+    return msg
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
-        self.parser = argparse.ArgumentParser(prog='mrjob')
+        self.parser = argparse.ArgumentParser(prog='mrjob', description=usage())
         self.parser.add_argument("--hdir", action="store",
             dest="hdir", default="/test", help="HDFS input data directory")
         self.parser.add_argument("--odir", action="store",
@@ -46,6 +70,8 @@ class OptionParser():
             dest="avro", default="avro.tgz", help="avro archive file, e.g. /path/avro.tgz")
         self.parser.add_argument("--execute", action="store_true",
             dest="execute", default=False, help="Execute generate mr job script")
+        self.parser.add_argument("--verbose", action="store_true",
+            dest="verbose", default=False, help="Verbose output")
 
 def run(cmd):
     "Run given command in subprocess"
@@ -70,17 +96,13 @@ def hdfs_dir(hdir):
         return '%s%s' % (hdfs_prefix, hdir)
     return '%s/%s' % (hdfs_prefix, hdir)
 
-def create_mrpy(usermr, sname=None):
+def create_mrpy(usermr, verbose=None):
     "Create MR python script from skeleton and user provided code"
-    if  not sname:
-        sname = inspect.getfile(Reader)
-        if  sname.endswith('pyc'):
-            sname = sname[:-1] # use .py instead of .pyc
-        print("Read skeleton: %s" % sname)
+    sname = skeleton_file(verbose)
     code = open(sname).read() + '\n' + open(usermr).read()
     return code
 
-def mrjob(hdir, odir, schema, mrpy, execute, arch_pydoop, arch_avro):
+def mrjob(hdir, odir, schema, mrpy, execute, arch_pydoop, arch_avro, verbose):
     "Generates and executes MR job script"
     hdir = hdfs_dir(hdir)
     odir = hdfs_dir(odir)
@@ -88,23 +110,27 @@ def mrjob(hdir, odir, schema, mrpy, execute, arch_pydoop, arch_avro):
 
     if  PYDOOP:
         for name in [hdir, odir,]:
-            print("Checking %s" % name)
+            if  verbose:
+                print("Checking %s" % name)
             if  not hdfs.path.isdir(name):
                 print("ERROR: %s does not exists" % name)
                 sys.exit(1)
-        print("Checking %s" % schema)
+        if  verbose:
+            print("Checking %s" % schema)
         if  not hdfs.path.isfile(schema):
             print("ERROR: %s does not exists" % name)
             sys.exit(1)
     else:
-        print("WARNING: hdfs module is not present on this system, will use input as is without checking")
+        if  verbose:
+            print("WARNING: hdfs module is not present on this system, will use input as is without checking")
     for name in [mrpy, arch_pydoop, arch_avro]:
-        print("Checking %s" % name)
+        if  verbose:
+            print("Checking %s" % name)
         if  not os.path.isfile(name):
             print("ERROR: %s does not exists" % name)
             sys.exit(1)
     module = mrpy.split('/')[-1].split('.')[0]
-    code = create_mrpy(mrpy)
+    code = create_mrpy(mrpy, verbose)
     user = os.getenv('USER')
     tstamp = int(time.time())
 
@@ -143,15 +169,19 @@ pydoop submit \
     if  execute:
 	run(fobj.name)
     else:
-        print("Generated script:")
+        if  verbose:
+            print("------- Generated script --------")
         print(open(fobj.name, 'r').read())
+        if  verbose:
+            print("---------------------------------")
     os.unlink(fobj.name)
 
 def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    mrjob(opts.hdir, opts.odir, opts.schema, opts.mrpy, opts.execute, opts.pydoop, opts.avro)
+    mrjob(opts.hdir, opts.odir, opts.schema, opts.mrpy,
+            opts.execute, opts.pydoop, opts.avro, opts.verbose)
 
 if __name__ == '__main__':
     main()
