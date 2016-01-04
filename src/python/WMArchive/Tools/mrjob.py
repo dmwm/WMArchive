@@ -14,6 +14,7 @@ from __future__ import print_function, division
 import os
 import sys
 import stat
+import time
 import argparse
 from tempfile import NamedTemporaryFile
 
@@ -24,22 +25,25 @@ try:
 except:
     PYDOOP = False
 
+# WMArchive modules
+from WMArchive.MapReduce.Skeleton import Reader
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='mrjob')
         self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default="", help="HDFS input data directory")
+            dest="hdir", default="/test", help="HDFS input data directory")
         self.parser.add_argument("--odir", action="store",
-            dest="odir", default="", help="HDFS output directory for MR jobs")
+            dest="odir", default="/mrout", help="HDFS output directory for MR jobs")
         self.parser.add_argument("--schema", action="store",
-            dest="schema", default="", help="Data schema file on HDFS")
+            dest="schema", default="/schema.avsc", help="Data schema file on HDFS")
         self.parser.add_argument("--mrpy", action="store",
-            dest="mrpy", default="", help="MapReduce python script")
+            dest="mrpy", default="mr.py", help="MapReduce python script")
         self.parser.add_argument("--pydoop", action="store",
-            dest="pydoop", default="", help="pydoop archive file, e.g. /path/pydoop.tgz")
+            dest="pydoop", default="pydoop.tgz", help="pydoop archive file, e.g. /path/pydoop.tgz")
         self.parser.add_argument("--avro", action="store",
-            dest="avro", default="", help="avro archive file, e.g. /path/avro.tgz")
+            dest="avro", default="avro.tgz", help="avro archive file, e.g. /path/avro.tgz")
         self.parser.add_argument("--execute", action="store_true",
             dest="execute", default=False, help="Execute generate mr job script")
 
@@ -66,6 +70,16 @@ def hdfs_dir(hdir):
         return '%s%s' % (hdfs_prefix, hdir)
     return '%s/%s' % (hdfs_prefix, hdir)
 
+def create_mrpy(usermr, sname=None):
+    "Create MR python script from skeleton and user provided code"
+    if  not sname:
+        sname = inspect.getfile(Reader)
+        if  sname.endswith('pyc'):
+            sname = sname[:-1] # use .py instead of .pyc
+        print("Read skeleton: %s" % sname)
+    code = open(sname).read() + '\n' + open(usermr).read()
+    return code
+
 def mrjob(hdir, odir, schema, mrpy, execute, arch_pydoop, arch_avro):
     "Generates and executes MR job script"
     hdir = hdfs_dir(hdir)
@@ -73,26 +87,39 @@ def mrjob(hdir, odir, schema, mrpy, execute, arch_pydoop, arch_avro):
     schema = hdfs_dir(schema)
 
     if  PYDOOP:
-        for name in [hdir, odir, schame]:
-            if  not hdfs.path.isfile(name):
+        for name in [hdir, odir,]:
+            print("Checking %s" % name)
+            if  not hdfs.path.isdir(name):
                 print("ERROR: %s does not exists" % name)
                 sys.exit(1)
+        print("Checking %s" % schema)
+        if  not hdfs.path.isfile(schema):
+            print("ERROR: %s does not exists" % name)
+            sys.exit(1)
     else:
         print("WARNING: hdfs module is not present on this system, will use input as is without checking")
     for name in [mrpy, arch_pydoop, arch_avro]:
+        print("Checking %s" % name)
         if  not os.path.isfile(name):
             print("ERROR: %s does not exists" % name)
             sys.exit(1)
     module = mrpy.split('/')[-1].split('.')[0]
+    code = create_mrpy(mrpy)
+    user = os.getenv('USER')
+    tstamp = int(time.time())
 
     cmd = """#!/bin/bash
-input=%s
-output=%s
+input={input}
+output={output}
+ifile=/tmp/mr_{user}_{tstamp}.py
 hadoop fs -rm -r $output
-ifile=%s
-module=%s
-arch_pydoop=%s
-arch_avro=%s
+cat << EOF > $ifile
+{code}
+EOF
+ifile={ifile}
+module={module}
+arch_pydoop={pydoop}
+arch_avro={avro}
 echo "Input URI : $input"
 echo "Output URI: $output"
 echo "MR script : $file"
@@ -106,7 +133,8 @@ pydoop submit \
     --num-reducers 1 \
     --upload-file-to-cache $ifile \
     --mrv2 $module $input $output
-    """ % (hdfs_dir(hdir), hdfs_dir(odir), hdfs_dir(schema), mrpy, module, arch_pydoop, arch_avro)
+    """.format(input=hdfs_dir(hdir), output=hdfs_dir(odir), user=user, tstamp=tstamp,
+            code=code, ifile=mrpy, module=module, pydoop=arch_pydoop, avro=arch_avro)
     fobj = NamedTemporaryFile(delete=False)
     fobj.write(cmd)
     fobj.close()
