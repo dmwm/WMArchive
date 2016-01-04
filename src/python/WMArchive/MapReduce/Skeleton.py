@@ -2,9 +2,9 @@
 #-*- coding: utf-8 -*-
 #pylint: disable=
 """
-File       : mr.py
+File       : Skeleton.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: Example of MR python script. It defines how to read the data
+Description: Skeleton MR python. It defines how to read the data
              from HDFS via read function as well as provides examples
              of simple Map and Reduce classes.
 """
@@ -31,7 +31,10 @@ import pydoop.hdfs as hdfs
 def read(fname):
     "Internal API to read data from HDFS files"
     # we need data file schema, later we need some proper default
-    uri = os.getenv('WMA_SCHEMA', '/user/valya/test/fwjr_proc.avsc')
+    uri = os.getenv('WMA_SCHEMA', '')
+    if  not uri:
+        print('ERROR: unable to read WMA_SCHEMA, please setup this environment variable')
+        sys.exit(1)
     schemaData = hdfs.load(uri)
     schema = avro.schema.parse(schemaData)
 
@@ -87,16 +90,13 @@ class Mapper(api.Mapper):
     """Example of Mapper class"""
     def map(self, ctx):
         "Read given context and yield key (job-id) and values (task)"
-        rec = ctx.value
-        jid = rec['jobid']
-        if jid is not None:
-            ctx.emit(jid, rec['fwjr']['task'])
+        mapper(ctx) # user defined mapper function for given context
 
 class Reducer(api.Reducer):
     """Example of Reducer class"""
     def reduce(self, ctx):
         "Emit empty key and some data structure via given context"
-        ctx.emit('', {'jobid': ctx.key, 'task': ctx.values})
+        reducer(ctx) # user defined reducer function for given context
 
 def __main__():
     """Main function to be executed by pydoop framework"""
