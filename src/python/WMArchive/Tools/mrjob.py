@@ -29,7 +29,7 @@ except:
 # WMArchive modules
 from WMArchive.MapReduce.Skeleton import Reader
 
-def skeleton_file(verbose):
+def skeleton_file(verbose=None):
     "Return location of skeleton file"
     sname = inspect.getfile(Reader)
     if  sname.endswith('pyc'):
@@ -43,13 +43,13 @@ def usage():
     sfile = skeleton_file()
     efile = sfile.replace('Skeleton', 'mruser')
     msg = """
-This tools either generates or executes MR script.
-The code is generated from MR skeleton provided by WMArchive
-and user based MR file. The later must contain two functions:
-    def mapper(ctx)
-    def reducer(ctx)
-which defines mapper and reducer for given context. For examples
-please see %s""" % efile
+Tool to generate and/or execute MapReduce (MR) script. The code is generated
+from MR skeleton provided by WMArchive and user based MR file. The later must
+contain two functions: mapper(ctx) and reducer(ctx) for given context. Their
+simplest implementation can be found here
+%s
+Based on this code please create your own mapper/reducer functions and use
+this tool to generate final MR script.""" % efile
     return msg
 
 class OptionParser():
