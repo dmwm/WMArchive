@@ -14,6 +14,10 @@ import os
 import sys
 import argparse
 
+# WMARchive modules
+from WMArchive.Storage.MongoIO import MongoStorage
+from WMArchive.Utils.Utils import dateformat
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
@@ -21,11 +25,16 @@ class OptionParser():
         self.parser.add_argument("--mongo", action="store",
             dest="muri", default="", help="MongoDB URI")
         self.parser.add_argument("--tstamp", action="store",
-            dest="tstamp", default="", help="Lifetime timestamp")
+            dest="tstamp", default="",
+            help="timestamp below which records will be removed, YYYYMMDD")
 
-def cleanup(muri, tstamp):
-    "Cleanup data in MongoDB (muri)"
-    pass
+def cleanup(muri, tst):
+    "Cleanup data in MongoDB (muri) for given timestamp (tst)"
+    mstg = MongoStorage(muri)
+    # remove records whose type is hdfsio, i.e. already migrated to HDFS,
+    # and whose time stamp is less than provided one
+    query = {'stype': 'hdfsio', 'time_stamp':{'$lt': dateformat(tst)}}
+    mstg.remove(query)
 
 def main():
     "Main function"
