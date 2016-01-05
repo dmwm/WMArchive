@@ -14,6 +14,11 @@ from __future__ import print_function, division
 import time
 import json
 import hashlib
+import calendar
+import datetime
+
+# WMArchive modules
+from WMArchive.Utils.Regexp import PAT_YYYYMMDD
 
 def tstamp(msg='WMA'):
     """
@@ -41,3 +46,20 @@ def today():
     month = time.strftime('%02m', tst)
     date = time.strftime('%02d', tst)
     return year, month, date
+
+def dateformat(value):
+    """Check if provided value in expected WMA date format."""
+    msg  = 'Unacceptable date format, value=%s, type=%s,' \
+            % (value, type(value))
+    msg += " supported format is YYYYMMDD"
+    value = str(value)
+    if  PAT_YYYYMMDD.match(value): # we accept YYYYMMDD
+        if  len(value) == 8: # YYYYMMDD
+            ddd = datetime.date(int(value[0:4]), # YYYY
+                                int(value[4:6]), # MM
+                                int(value[6:8])) # DD
+        else:
+            raise Exception(msg)
+        return calendar.timegm((ddd.timetuple()))
+    else:
+        raise Exception(msg)

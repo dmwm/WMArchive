@@ -14,7 +14,7 @@ import os
 import unittest
 
 # WMArchive modules
-from WMArchive.Utils.Utils import wmaHash
+from WMArchive.Utils.Utils import wmaHash, dateformat
 
 class WMBaseTest(unittest.TestCase):
     def test_wmaHash(self):
@@ -28,6 +28,16 @@ class WMBaseTest(unittest.TestCase):
         self.assertEqual(hsr1, hsr2)
         self.assertEqual(hsr1, hsr3)
         self.assertEqual(hsr2, hsr3)
+
+    def test_dateformat(self):
+        "Test dateformat function"
+        date1 = '20150101'
+        res = dateformat(date1)
+        self.assertEqual(len(str(res)), 10) # it should be 10 digits
+        wrong = 'Some weird format'
+        self.assertRaises(Exception, dateformat, wrong)
+        wrong = '2012'
+        self.assertRaises(Exception, dateformat, wrong)
 #
 # main
 #

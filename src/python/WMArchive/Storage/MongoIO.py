@@ -66,3 +66,7 @@ class MongoStorage(Storage):
         "Update documents with given set of document ids and update spec"
         doc_query = {'wmaid' : {'$in': ids}}
         self.coll.update(doc_query, spec, multi=True)
+
+    def remove(self, spec):
+        "Remove documents from MongoDB for given spec"
+        self.coll.remove(spec)
