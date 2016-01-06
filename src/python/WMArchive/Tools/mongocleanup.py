@@ -27,20 +27,26 @@ class OptionParser():
         self.parser.add_argument("--tstamp", action="store",
             dest="tstamp", default="",
             help="timestamp below which records will be removed, YYYYMMDD")
+        self.parser.add_argument("--verbose", action="store_true",
+            dest="verbose", default=False, help="verbose mode")
 
-def cleanup(muri, tst):
+def cleanup(muri, tst, verbose):
     "Cleanup data in MongoDB (muri) for given timestamp (tst)"
     mstg = MongoStorage(muri)
     # remove records whose type is hdfsio, i.e. already migrated to HDFS,
     # and whose time stamp is less than provided one
     query = {'stype': 'hdfsio', 'time_stamp':{'$lt': dateformat(tst)}}
-    mstg.remove(query)
+    response = mstg.remove(query)
+    if  verbose:
+        print("uri :", muri)
+        print("spec:", query)
+        print("response:", response)
 
 def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    cleanup(opts.muri, opts.tstamp)
+    cleanup(opts.muri, opts.tstamp, opts.verbose)
 
 if __name__ == '__main__':
     main()
