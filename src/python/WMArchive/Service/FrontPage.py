@@ -44,7 +44,19 @@ class FrontPage(RESTFrontPage):
           mainroot:
           {
             "root": wpath,
-            "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:css|js|png|gif|html)$")
+            "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:html)$")
+          },
+          "js":
+          {   "root": wpath+"js/",
+              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:js)$")
+          },
+          "css":
+          {   "root": wpath+"css/",
+              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\..*(?:css)$")
+          },
+          "images":
+          {   "root": wpath+"images/",
+              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:png|gif|jpg)$")
           }
         }
         # location of frontpage in the root, e.g. wmarchive
