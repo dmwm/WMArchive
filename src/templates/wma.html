@@ -4,26 +4,13 @@
     <title>WMArchive data-service</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-    <script src="/wmarchive/web/js/utils.js"></script>
-    <link rel="stylesheet" href="/wmarchive/web/static/css/kube.min.css" />
-    <link rel="stylesheet" href="/wmarchive/web/static/css/main.css" />
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="/wmarchive/web/static/js/utils.js"></script>
+    <link rel="stylesheet" type="text/css" href="/wmarchive/web/static/css/kube.min.css" />
+    <link rel="stylesheet" type="text/css" href="/wmarchive/web/static/css/main.css" />
 </head>
-<body class="kubepage">
-
-    <header class="group header">
-        <nav class="navbar navbar-left">
-            <ul>
-            <li><img src="/wmarchive/web/static/images/cms_logo.png" alt="" style="width:30px" ></li>
-            <li><a href="/wmarchive/web" class="main-menu-item">WMArchive</a></li>
-            </ul>
-        </nav>
-        <nav class="navbar navbar-right" id="user">
-            <strong>User</strong>
-        </nav>
-    </header>
-    <br/>
+<body class="kubepage" onload="loadContent()">
 
 <div class="main-font" id="content"></div>
 

@@ -5,12 +5,15 @@
     font-size: 16px;
     color: #7C81B2;
 }
+.fixed-font {
+    font: "Courier New", Courier, monospace;
+}
 .header {
     background-color: #CCCCCC;
-    padding-left: 20px;
-    padding-right: 20px;
+/*    padding-left: 20px;*/
+/*    padding-right: 20px;*/
     padding-top: 10px;
-    border-bottom: 1px solid #000000;
+/*    border-bottom: 1px solid #000000;*/
     font: "Lucida Grande","Lucida Sans Unicode","Lucida Sans",Helvetica,Arial,sans-serif;
     font-weight: bold;
     color: #808080;

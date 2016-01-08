@@ -1,0 +1,87 @@
+<h5>WMArchive Tools</h5>
+
+Here we outline useful tools used by WMArchive. All tools are written in python
+and associative bash wrapper script is provided for each of them (this is
+mostly for convenience, e.g. setup proper PYTHONPATH).
+
+<hr />
+
+<span class="label label-black">dump2hdfs</span>
+tool dumps file into HDFS as is, i.e. it will neither modify file content or
+convert it into Avro format. This is useful to store some files into HDFS, e.g.
+avro schema files.
+
+<pre class="alert-success alert">
+dump2hdfs --help
+usage: dump2hdfs [-h] [--fin FIN]
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --fin FIN   Input avro schema file
+</pre>
+
+<span class="label label-black">json2avsc</span>
+tool is designed to convert given JSON data file into Avro schema file.
+
+<pre class="alert-success alert">
+json2avsc --help
+usage: json2avsc [-h] [--fin FIN] [--fout FOUT]
+
+optional arguments:
+  -h, --help   show this help message and exit
+  --fin FIN    Input JSON file
+  --fout FOUT  Output Avro schema file
+</pre>
+
+<span class="label label-black">mongo2hdfs</span>
+tool migrate data from MongoDB into HDFS based on mongodb storage record type, i.e. it reads records with mongodb storage type from MongoDB and dumps them into HDFS. After successful dump it updates MongoDB storage types to hdfsio.
+
+<pre class="alert-success alert">
+mongo2hdfs --help
+usage: mongo2hdfs [-h] [--mongo MURI] [--hdfs HURI]
+
+optional arguments:
+  -h, --help    show this help message and exit
+  --mongo MURI  MongoDB URI
+  --hdfs HURI   HDFS URI
+</pre>
+
+<span class="label label-black">mongocleanup</span>
+performs clean-up of data records in MongoDB. It is based on two factors, first, only records with hdfsio storage type are read and, second, only those which exceeds their lifetime are wiped out from MongoDB.
+
+<pre class="alert-success alert">
+mongocleanup --help
+usage: mongocleanup [-h] [--mongo MURI] [--tstamp TSTAMP]
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --mongo MURI     MongoDB URI
+  --tstamp TSTAMP  Lifetime timestamp
+</pre>
+
+<span class="label label-black">mrjob</span>
+generates (and optionally executes) MR bash script for end-user.
+
+<pre class="alert-success alert">
+mrjob --help
+usage: mrjob [-h] [--hdir HDIR] [--odir ODIR] [--schema SCHEMA] [--mrpy MRPY]
+             [--pydoop PYDOOP] [--avro AVRO] [--execute] [--verbose]
+
+Tool to generate and/or execute MapReduce (MR) script. The code is generated
+from MR skeleton provided by WMArchive and user based MR file. The later must
+contain two functions: mapper(ctx) and reducer(ctx) for given context. Their
+simplest implementation can be found here WMArchive/MapReduce/mruser.py
+Based on this code please create your own mapper/reducer functions and use this
+tool to generate final MR script.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --hdir HDIR      HDFS input data directory
+  --odir ODIR      HDFS output directory for MR jobs
+  --schema SCHEMA  Data schema file on HDFS
+  --mrpy MRPY      MapReduce python script
+  --pydoop PYDOOP  pydoop archive file, e.g. /path/pydoop.tgz
+  --avro AVRO      avro archive file, e.g. /path/avro.tgz
+  --execute        Execute generate mr job script
+  --verbose        Verbose output
+</pre>

@@ -8,7 +8,7 @@ from WMCore.Configuration import Configuration
 
 HOST = socket.gethostname().lower()
 # ROOTDIR = __file__.rsplit('/', 3)[0]
-ROOTDIR = '%s/data' % os.getenv('WMA_STATIC_ROOT', os.getcwd())
+ROOTDIR = os.getenv('WMA_STATIC_ROOT', os.getcwd())
 config = Configuration()
 
 main = config.section_("main")
@@ -39,7 +39,7 @@ ui.static = ROOTDIR
 # REST interface
 data = views.section_('data')
 data.object = 'WMArchive.Service.RestApi.RestInterface'
-data.short_storage_uri = 'fileio:%s/storage' % ROOTDIR
+# data.short_storage_uri = 'fileio:%s/storage' % ROOTDIR
 #data.short_storage_uri = 'avroio:%s/storage/schema.avsc' % ROOTDIR
-#data.short_storage_uri = 'mongodb://localhost:8230'
+data.short_storage_uri = 'mongodb://localhost:8230'
 data.long_storage_uri = 'hadoop'
