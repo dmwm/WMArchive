@@ -1,0 +1,28 @@
+Map-reduce jobs are supported by WMArchive service.
+<div class="alert alert-warning">Please note there is no yet web UI interface for MR jobs</div>
+Users require to write two functions: mapper and reducer for their task, see example below.
+To run MR jobs someone will need to get account on
+<span class="label label-primary">analytix.cern.ch</span> node, login over there, setup
+WMArchive environment and run
+<span class="label label-black">mrjob</span> script.
+
+<div><pre class="alert-success alert">
+mrjob --hdir=hdfs://host:port/path/data
+      --odir=hdfs://host:port/path/out
+      --schema=hdfs://host:port/path/schema.avsc
+      --mrpy=mr.py --pydoop=/path/pydoop.tgz --avro=/path/avro.tgz
+</pre></div>
+
+<div><h5>Example of mapper/reducer functions</h5>
+<pre class="alert-success alert">
+def mapper(ctx):
+    "Read given context and yield key (job-id) and values (task)"
+    rec = ctx.value
+    jid = rec["jobid"]
+    if jid is not None:
+        ctx.emit(jid, rec["fwjr"]["task"])
+def reducer(ctx):
+    "Emit empty key and some data structure via given context"
+    ctx.emit("", {"jobid": ctx.key, "task": ctx.values})
+</pre></div>
+

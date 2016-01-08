@@ -46,6 +46,10 @@ class FrontPage(RESTFrontPage):
             "root": wpath,
             "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:html)$")
           },
+          "templates":
+          {   "root": wpath+"templates/",
+              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:html|tmpl)$")
+          },
           "js":
           {   "root": wpath+"js/",
               "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:js)$")
