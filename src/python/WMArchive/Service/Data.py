@@ -5,8 +5,8 @@
 File       : Methods.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: This module consists of all REST APIs required by WMArchive service
-             Every API is designed as a class with appropriate get/post/put/delete
-             methods, see RESTEntity class for more details.
+Every API is designed as a class with appropriate get/post/put/delete
+methods, see RESTEntity class for more details.
 """
 # futures
 from __future__ import print_function, division
