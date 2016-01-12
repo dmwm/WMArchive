@@ -1,0 +1,1486 @@
+{
+    "namespace": "ns59", 
+    "type": "record", 
+    "name": "name59", 
+    "fields": [
+        {
+            "type": "string", 
+            "name": "_rev"
+        }, 
+        {
+            "type": "long", 
+            "name": "jobid"
+        }, 
+        {
+            "type": "long", 
+            "name": "retrycount"
+        }, 
+        {
+            "type": "long", 
+            "name": "time_stamp"
+        }, 
+        {
+            "type": {
+                "namespace": "ns58", 
+                "type": "record", 
+                "name": "name58", 
+                "fields": [
+                    {
+                        "type": "string", 
+                        "name": "task"
+                    }, 
+                    {
+                        "type": {
+                            "namespace": "ns57", 
+                            "type": "record", 
+                            "name": "name57", 
+                            "fields": [
+                                {
+                                    "type": {
+                                        "namespace": "ns11", 
+                                        "type": "record", 
+                                        "name": "name11", 
+                                        "fields": [
+                                            {
+                                                "type": "long", 
+                                                "name": "status"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "items": "null", 
+                                                    "type": "array"
+                                                }, 
+                                                "name": "errors"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns0", 
+                                                    "type": "record", 
+                                                    "name": "name0", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "logs"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns1", 
+                                                    "type": "record", 
+                                                    "name": "name1", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "parameters"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns6", 
+                                                    "type": "record", 
+                                                    "name": "name6", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns2", 
+                                                                "type": "record", 
+                                                                "name": "name2", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "multicore"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns3", 
+                                                                "type": "record", 
+                                                                "name": "name3", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "storage"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns4", 
+                                                                "type": "record", 
+                                                                "name": "name4", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "cpu"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns5", 
+                                                                "type": "record", 
+                                                                "name": "name5", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "memory"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "performance"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "stop"
+                                            }, 
+                                            {
+                                                "type": "string", 
+                                                "name": "site"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns7", 
+                                                    "type": "record", 
+                                                    "name": "name7", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "analysis"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "start"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns8", 
+                                                    "type": "record", 
+                                                    "name": "name8", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "cleanup"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns9", 
+                                                    "type": "record", 
+                                                    "name": "name9", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "items": "null", 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "analysis"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "output"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns10", 
+                                                    "type": "record", 
+                                                    "name": "name10", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "input"
+                                            }
+                                        ]
+                                    }, 
+                                    "name": "stageOut1"
+                                }, 
+                                {
+                                    "type": {
+                                        "namespace": "ns26", 
+                                        "type": "record", 
+                                        "name": "name26", 
+                                        "fields": [
+                                            {
+                                                "type": "long", 
+                                                "name": "status"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "items": "null", 
+                                                    "type": "array"
+                                                }, 
+                                                "name": "errors"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns12", 
+                                                    "type": "record", 
+                                                    "name": "name12", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "logs"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns13", 
+                                                    "type": "record", 
+                                                    "name": "name13", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "parameters"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns18", 
+                                                    "type": "record", 
+                                                    "name": "name18", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns14", 
+                                                                "type": "record", 
+                                                                "name": "name14", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "multicore"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns15", 
+                                                                "type": "record", 
+                                                                "name": "name15", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "storage"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns16", 
+                                                                "type": "record", 
+                                                                "name": "name16", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "cpu"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns17", 
+                                                                "type": "record", 
+                                                                "name": "name17", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "memory"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "performance"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "stop"
+                                            }, 
+                                            {
+                                                "type": "string", 
+                                                "name": "site"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns19", 
+                                                    "type": "record", 
+                                                    "name": "name19", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "analysis"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "start"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns20", 
+                                                    "type": "record", 
+                                                    "name": "name20", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "cleanup"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns24", 
+                                                    "type": "record", 
+                                                    "name": "name24", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns23", 
+                                                                    "type": "record", 
+                                                                    "name": "name23", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns21", 
+                                                                                "type": "record", 
+                                                                                "name": "name21", 
+                                                                                "fields": []
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "pfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "module_label"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "location"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns22", 
+                                                                                "type": "record", 
+                                                                                "name": "name22", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "adler32"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "cksum"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "checksums"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "events"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "merged"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "size"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "logArchive"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": "null", 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "analysis"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "output"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns25", 
+                                                    "type": "record", 
+                                                    "name": "name25", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "input"
+                                            }
+                                        ]
+                                    }, 
+                                    "name": "logArch1"
+                                }, 
+                                {
+                                    "type": {
+                                        "namespace": "ns56", 
+                                        "type": "record", 
+                                        "name": "name56", 
+                                        "fields": [
+                                            {
+                                                "type": "long", 
+                                                "name": "status"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "items": "null", 
+                                                    "type": "array"
+                                                }, 
+                                                "name": "errors"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns27", 
+                                                    "type": "record", 
+                                                    "name": "name27", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "logs"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns28", 
+                                                    "type": "record", 
+                                                    "name": "name28", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "parameters"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns33", 
+                                                    "type": "record", 
+                                                    "name": "name33", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns29", 
+                                                                "type": "record", 
+                                                                "name": "name29", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "multicore"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns30", 
+                                                                "type": "record", 
+                                                                "name": "name30", 
+                                                                "fields": [
+                                                                    {
+                                                                        "type": "double", 
+                                                                        "name": "writeTotalMB"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "double", 
+                                                                        "name": "readPercentageOps"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "double", 
+                                                                        "name": "readAveragekB"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "double", 
+                                                                        "name": "readTotalMB"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "long", 
+                                                                        "name": "readNumOps"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "long", 
+                                                                        "name": "readCachePercentageOps"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "double", 
+                                                                        "name": "readMBSec"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "double", 
+                                                                        "name": "readMaxMSec"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "long", 
+                                                                        "name": "readTotalSecs"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "long", 
+                                                                        "name": "writeTotalSecs"
+                                                                    }
+                                                                ]
+                                                            }, 
+                                                            "name": "storage"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns31", 
+                                                                "type": "record", 
+                                                                "name": "name31", 
+                                                                "fields": [
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "TotalJobCPU"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "EventThroughput"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "AvgEventTime"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "MaxEventTime"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "TotalJobTime"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "TotalLoopCPU"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "MinEventTime"
+                                                                    }
+                                                                ]
+                                                            }, 
+                                                            "name": "cpu"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns32", 
+                                                                "type": "record", 
+                                                                "name": "name32", 
+                                                                "fields": [
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "PeakValueRss"
+                                                                    }, 
+                                                                    {
+                                                                        "type": "string", 
+                                                                        "name": "PeakValueVsize"
+                                                                    }
+                                                                ]
+                                                            }, 
+                                                            "name": "memory"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "performance"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "stop"
+                                            }, 
+                                            {
+                                                "type": "string", 
+                                                "name": "site"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns34", 
+                                                    "type": "record", 
+                                                    "name": "name34", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "analysis"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "start"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns35", 
+                                                    "type": "record", 
+                                                    "name": "name35", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "cleanup"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns52", 
+                                                    "type": "record", 
+                                                    "name": "name52", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns39", 
+                                                                    "type": "record", 
+                                                                    "name": "name39", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "branch_hash"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_dn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns36", 
+                                                                                "type": "record", 
+                                                                                "name": "name36", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationName"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "processedDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "primaryDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationVersion"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "dataTier"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "dataset"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "InputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns37", 
+                                                                                "type": "record", 
+                                                                                "name": "name37", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "adler32"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "cksum"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "checksums"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "acquisitionEra"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "size"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "guid"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "configURL"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "location"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "input"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "events"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "merged"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "validStatus"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "ouput_module_class"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "globalTag"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "inputpfns"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "pfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "catalog"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "module_label"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "async_dest"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "inputPath"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "StageOutCommand"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns38", 
+                                                                                "type": "record", 
+                                                                                "name": "name38", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": {
+                                                                                            "items": "long", 
+                                                                                            "type": "array"
+                                                                                        }, 
+                                                                                        "name": "mlist"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "OutputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vogroup"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vorole"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "processingVer"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "processingStr"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "prep_id"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "RECOoutput"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns43", 
+                                                                    "type": "record", 
+                                                                    "name": "name43", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "branch_hash"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_dn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns40", 
+                                                                                "type": "record", 
+                                                                                "name": "name40", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationName"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "processedDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "primaryDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationVersion"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "dataTier"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "dataset"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "InputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns41", 
+                                                                                "type": "record", 
+                                                                                "name": "name41", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "adler32"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "cksum"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "checksums"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "acquisitionEra"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "size"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "guid"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "configURL"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "location"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "input"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "events"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "merged"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "validStatus"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "ouput_module_class"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "globalTag"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "inputpfns"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "pfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "catalog"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "module_label"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "async_dest"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "inputPath"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "StageOutCommand"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns42", 
+                                                                                "type": "record", 
+                                                                                "name": "name42", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": {
+                                                                                            "items": "long", 
+                                                                                            "type": "array"
+                                                                                        }, 
+                                                                                        "name": "mlist"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "OutputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vogroup"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vorole"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "processingVer"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "processingStr"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "prep_id"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "AODoutput"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns47", 
+                                                                    "type": "record", 
+                                                                    "name": "name47", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "branch_hash"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_dn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns44", 
+                                                                                "type": "record", 
+                                                                                "name": "name44", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationName"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "processedDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "primaryDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationVersion"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "dataTier"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "dataset"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "InputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns45", 
+                                                                                "type": "record", 
+                                                                                "name": "name45", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "adler32"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "cksum"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "checksums"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "acquisitionEra"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "size"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "guid"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "configURL"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "location"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "input"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "events"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "merged"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "validStatus"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "ouput_module_class"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "globalTag"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "inputpfns"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "pfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "catalog"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "module_label"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "async_dest"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "inputPath"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "StageOutCommand"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns46", 
+                                                                                "type": "record", 
+                                                                                "name": "name46", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": {
+                                                                                            "items": "long", 
+                                                                                            "type": "array"
+                                                                                        }, 
+                                                                                        "name": "mlist"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "OutputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vogroup"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vorole"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "processingVer"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "processingStr"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "prep_id"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "DQMoutput"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns51", 
+                                                                    "type": "record", 
+                                                                    "name": "name51", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "branch_hash"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_dn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns48", 
+                                                                                "type": "record", 
+                                                                                "name": "name48", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationName"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "processedDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "primaryDataset"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "applicationVersion"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "dataTier"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "dataset"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "InputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns49", 
+                                                                                "type": "record", 
+                                                                                "name": "name49", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "adler32"
+                                                                                    }, 
+                                                                                    {
+                                                                                        "type": "string", 
+                                                                                        "name": "cksum"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "checksums"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "acquisitionEra"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "size"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "guid"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "configURL"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "location"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "input"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "events"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "merged"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "validStatus"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "ouput_module_class"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "globalTag"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "items": "string", 
+                                                                                "type": "array"
+                                                                            }, 
+                                                                            "name": "inputpfns"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "pfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "catalog"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "module_label"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "async_dest"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "inputPath"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "StageOutCommand"
+                                                                        }, 
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns50", 
+                                                                                "type": "record", 
+                                                                                "name": "name50", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": {
+                                                                                            "items": "long", 
+                                                                                            "type": "array"
+                                                                                        }, 
+                                                                                        "name": "mlist"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "OutputPFN"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vogroup"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "user_vorole"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "processingVer"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "processingStr"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "prep_id"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "MINIAODoutput"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": "null", 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "analysis"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "output"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns55", 
+                                                    "type": "record", 
+                                                    "name": "name55", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns54", 
+                                                                    "type": "record", 
+                                                                    "name": "name54", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns53", 
+                                                                                "type": "record", 
+                                                                                "name": "name53", 
+                                                                                "fields": [
+                                                                                    {
+                                                                                        "type": {
+                                                                                            "items": "long", 
+                                                                                            "type": "array"
+                                                                                        }, 
+                                                                                        "name": "mlist"
+                                                                                    }
+                                                                                ]
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "input_source_class"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "input_type"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "pfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "catalog"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "module_label"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "guid"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "long", 
+                                                                            "name": "events"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "source"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "input"
+                                            }
+                                        ]
+                                    }, 
+                                    "name": "cmsRun1"
+                                }
+                            ]
+                        }, 
+                        "name": "steps"
+                    }, 
+                    {
+                        "type": {
+                            "items": "null", 
+                            "type": "array"
+                        }, 
+                        "name": "skippedFiles"
+                    }, 
+                    {
+                        "type": {
+                            "items": "null", 
+                            "type": "array"
+                        }, 
+                        "name": "fallbackFiles"
+                    }
+                ]
+            }, 
+            "name": "fwjr"
+        }, 
+        {
+            "type": "string", 
+            "name": "type"
+        }, 
+        {
+            "type": "string", 
+            "name": "id"
+        }
+    ]
+}
