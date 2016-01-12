@@ -5,7 +5,7 @@
 File       : FrontPage.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: WMArchive front page module which defines its web UI.
-             Code design follows SiteDB interface.
+Code design follows SiteDB interface.
 """
 
 # futures

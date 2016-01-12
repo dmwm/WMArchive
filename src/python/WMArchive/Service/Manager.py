@@ -4,8 +4,7 @@
 """
 File       : Manager.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: WMArchiveManager class provides full functionality of
-             the WMArchive service.
+Description: WMArchiveManager class provides full functionality of the WMArchive service.
 
 TODO: This class will be expanded/modified according to requirements
 of WMArchive project, see

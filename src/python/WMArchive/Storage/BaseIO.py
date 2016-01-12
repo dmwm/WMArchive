@@ -4,11 +4,10 @@
 """
 File       : BaseIO.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: Base class to define storage APIs. It contains
-             individual _read/_write methods for single record
-             or bulk read/write methods for list of records.
-             The subclasses can either implement _read/_write
-             or read/write methods.
+Description: Base class to define storage APIs. It contains individual
+_read/_write methods for single record or bulk read/write methods for list of
+records.  The subclasses can either implement _read/_write or read/write
+methods.
 """
 
 # futures
