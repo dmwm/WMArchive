@@ -1,0 +1,279 @@
+{
+    "namespace": "ns18", 
+    "type": "record", 
+    "name": "name18", 
+    "fields": [
+        {
+            "type": "string", 
+            "name": "uid"
+        }, 
+        {
+            "type": "long", 
+            "name": "time_stamp"
+        }, 
+        {
+            "type": "string", 
+            "name": "_rev"
+        }, 
+        {
+            "type": "long", 
+            "name": "jobid"
+        }, 
+        {
+            "type": "long", 
+            "name": "retrycount"
+        }, 
+        {
+            "type": {
+                "namespace": "ns17", 
+                "type": "record", 
+                "name": "name17", 
+                "fields": [
+                    {
+                        "type": "string", 
+                        "name": "task"
+                    }, 
+                    {
+                        "type": {
+                            "namespace": "ns16", 
+                            "type": "record", 
+                            "name": "name16", 
+                            "fields": [
+                                {
+                                    "type": {
+                                        "namespace": "ns15", 
+                                        "type": "record", 
+                                        "name": "name15", 
+                                        "fields": [
+                                            {
+                                                "type": "long", 
+                                                "name": "status"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "items": "null", 
+                                                    "type": "array"
+                                                }, 
+                                                "name": "errors"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns0", 
+                                                    "type": "record", 
+                                                    "name": "name0", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "logs"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns1", 
+                                                    "type": "record", 
+                                                    "name": "name1", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "parameters"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "stop"
+                                            }, 
+                                            {
+                                                "type": "string", 
+                                                "name": "site"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns2", 
+                                                    "type": "record", 
+                                                    "name": "name2", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "analysis"
+                                            }, 
+                                            {
+                                                "type": "long", 
+                                                "name": "start"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns3", 
+                                                    "type": "record", 
+                                                    "name": "name3", 
+                                                    "fields": []
+                                                }, 
+                                                "name": "cleanup"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns6", 
+                                                    "type": "record", 
+                                                    "name": "name6", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns5", 
+                                                                    "type": "record", 
+                                                                    "name": "name5", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns4", 
+                                                                                "type": "record", 
+                                                                                "name": "name4", 
+                                                                                "fields": []
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "SEName"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "null", 
+                                                                            "name": "location"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "null", 
+                                                                            "name": "GUID"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "StageOutCommand"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "LogCollect"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": "null", 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "analysis"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "output"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns11", 
+                                                    "type": "record", 
+                                                    "name": "name11", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns7", 
+                                                                "type": "record", 
+                                                                "name": "name7", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "multicore"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns8", 
+                                                                "type": "record", 
+                                                                "name": "name8", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "storage"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns9", 
+                                                                "type": "record", 
+                                                                "name": "name9", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "cpu"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "namespace": "ns10", 
+                                                                "type": "record", 
+                                                                "name": "name10", 
+                                                                "fields": []
+                                                            }, 
+                                                            "name": "memory"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "performance"
+                                            }, 
+                                            {
+                                                "type": {
+                                                    "namespace": "ns14", 
+                                                    "type": "record", 
+                                                    "name": "name14", 
+                                                    "fields": [
+                                                        {
+                                                            "type": {
+                                                                "items": {
+                                                                    "namespace": "ns13", 
+                                                                    "type": "record", 
+                                                                    "name": "name13", 
+                                                                    "fields": [
+                                                                        {
+                                                                            "type": {
+                                                                                "namespace": "ns12", 
+                                                                                "type": "record", 
+                                                                                "name": "name12", 
+                                                                                "fields": []
+                                                                            }, 
+                                                                            "name": "runs"
+                                                                        }, 
+                                                                        {
+                                                                            "type": "string", 
+                                                                            "name": "lfn"
+                                                                        }
+                                                                    ]
+                                                                }, 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "logArchives"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "name": "input"
+                                            }
+                                        ]
+                                    }, 
+                                    "name": "logCollect1"
+                                }
+                            ]
+                        }, 
+                        "name": "steps"
+                    }, 
+                    {
+                        "type": {
+                            "items": "null", 
+                            "type": "array"
+                        }, 
+                        "name": "skippedFiles"
+                    }, 
+                    {
+                        "type": {
+                            "items": "null", 
+                            "type": "array"
+                        }, 
+                        "name": "fallbackFiles"
+                    }
+                ]
+            }, 
+            "name": "fwjr"
+        }, 
+        {
+            "type": "string", 
+            "name": "type"
+        }
+    ]
+}
