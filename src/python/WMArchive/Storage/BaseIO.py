@@ -33,12 +33,33 @@ class Storage(object):
         "Write given message to log stream"
         print(tstamp(self.__class__.__name__), msg)
 
-    def _write(self, data):
+    def wmaid(self, data):
+        "Return wmaid for given data record or list of records"
+        if  isinstance(data, list) or isinstance(data, GeneratorType):
+            wmaids = self.getids(data)
+            wmaid = wmaHash('_'.join(wmaids))
+        else:
+            wmaid = data['wmaid']
+        return wmaid
+
+    def _write(self, data, bulk=False):
         "Internal write API, should be implemented in subclasses"
         pass
 
+    def write_bulk(self, data):
+        "Bulk write API, return ids of stored documents"
+        if  not (isinstance(data, list) or isinstance(data, GeneratorType)):
+            return self.write(data)
+        wmaid = self.wmaid(data) # generate one id for all data bulk
+        self._write(data, bulk=True)
+        return [wmaid] # must return list to be consistent with write API
+
     def write(self, data, safe=False):
-        "Write API, return ids of stored documents"
+        """
+        Write API, return ids of stored documents. All documents are writen
+        via self._write API one by one. For bulk write user should use write_bulk
+        API.
+        """
         wmaids = self.getids(data)
         if  isinstance(data, list) or isinstance(data, GeneratorType):
             for rec in data:
@@ -76,7 +97,10 @@ class Storage(object):
                 if  res and len(res) == 1:
                     out.append(res[0])
             return out
-        return self._read(spec)
+        data = self._read(spec)
+        if  isinstance(data, dict) and 'bulk' in data:
+            return data['bulk']
+        return data
 
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"
@@ -86,7 +110,7 @@ class Storage(object):
         "Return list of wmaids for given data"
         if  isinstance(data, list) or isinstance(data, GeneratorType):
             return [r['wmaid'] for r in data]
-        return data['wmaid']
+        return [data['wmaid']]
 
     def check(self, data):
         "Cross-check the data based on its wmaid"

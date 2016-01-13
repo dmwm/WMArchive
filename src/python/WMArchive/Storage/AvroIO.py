@@ -27,6 +27,7 @@ from avro.io import DatumReader, DatumWriter
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
+from WMArchive.Utils.Utils import bulk_avsc, bulk_data
 
 def fileName(uri, wmaid):
     "Construct common file name"
@@ -40,28 +41,42 @@ class AvroStorage(Storage):
         schema = self.uri
         if  not os.path.exists(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        if  not os.path.exists(self.uri):
-            os.makedirs(self.uri)
-        self.schema = avro.schema.parse(open(schema).read())
+        self.hdir = self.uri.rsplit('/', 1)[0]
+        if  not os.path.exists(self.hdir):
+            os.makedirs(self.hdir)
+        schema_doc = open(schema).read()
+        self.schema = avro.schema.parse(schema_doc)
+        self.schema_bulk = avro.schema.parse(json.dumps(bulk_avsc(schema_doc)))
 
-    def _write(self, data):
+    def _write(self, data, bulk=False):
         "Internal write API"
-        wmaid = data['wmaid']
-        fname = fileName(self.uri, wmaid)
+        wmaid = self.wmaid(data)
+        schema = self.schema
+        if  bulk:
+            schema = self.schema_bulk
+            data = bulk_data(data)
+        fname = fileName(self.hdir, wmaid)
         with open(fname, 'w') as ostream:
-            with DataFileWriter(ostream, DatumWriter(), self.schema) as writer:
+            with DataFileWriter(ostream, DatumWriter(), schema) as writer:
                 writer.append(data)
 
     def _read(self, query=None):
         "Internal read API"
         if  PAT_UID.match(str(query)): # requested to read concrete file
             out = []
-            fname = fileName(self.uri, query)
+            fname = fileName(self.hdir, query)
             with open(fname) as istream:
                 reader = DataFileReader(istream, DatumReader())
-                for rec in reader:
-                    print("rec", rec)
-                    self.check(rec)
-                    out.append(rec)
+                for data in reader:
+                    if  isinstance(data, list):
+                        for rec in data:
+                            self.check(rec)
+                        return data
+                    elif isinstance(data, dict) and 'bulk' in data:
+                        for rec in data['bulk']:
+                            self.check(rec)
+                        return data
+                    self.check(data)
+                    out.append(data)
             return out
         return self.empty_data
