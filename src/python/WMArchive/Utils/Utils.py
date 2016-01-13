@@ -31,8 +31,8 @@ def tstamp(msg='WMA'):
 
 def wmaHash(data):
     "Return md5 hash of given data"
-    if  not isinstance(data, basestring):
-        data = str(data)
+    if  isinstance(data, dict) or isinstance(data, list):
+        data = json.dumps(data)
     data = ''.join(sorted(data)) # to insure that all keys are in order
     rec = json.JSONEncoder(sort_keys=True).encode(data)
     keyhash = hashlib.md5()
@@ -63,3 +63,23 @@ def dateformat(value):
         return calendar.timegm((ddd.timetuple()))
     else:
         raise Exception(msg)
+
+def bulk_avsc(schema):
+    """
+    Convert given avro schema into bulk one. The avro schema
+    covers concrete JSON structure, e.g. {'data':1}.
+    The bulk avro schema wraps it into the following sctructure:
+    {'bulk':[{'data':1}]}.
+    """
+    if  isinstance(schema, basestring): # we read it from file
+        schema = json.loads(schema)
+    wrap = {"namespace": "wma", "type": "record", "name": "records",
+            "fields": [{"type": {"items": schema, "type": "array"},
+                        "name": "bulk"}]}
+    return wrap
+
+def bulk_data(data):
+    "Convert given data into bulk data structure"
+    if  isinstance(data, list):
+        return {'bulk':data}
+    return {'bulk':[data]}

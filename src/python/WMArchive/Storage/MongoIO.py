@@ -30,6 +30,10 @@ class MongoStorage(Storage):
         self.coll = self.client['fwjr']['db']
         self.chunk_size = 100
 
+    def write_in_bluk(self, data):
+        "Bulk write API, return ids of stored documents"
+        return self.write(data)
+
     def write(self, data):
         "Write API, return ids of stored documents"
         wmaids = self.getids(data)

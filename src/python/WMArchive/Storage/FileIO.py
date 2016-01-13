@@ -20,6 +20,7 @@ from types import GeneratorType
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
+from WMArchive.Utils.Utils import wmaHash
 
 class FileStorage(Storage):
     "Storage based on FileDB back-end"
@@ -29,9 +30,9 @@ class FileStorage(Storage):
         if  not os.path.exists(self.uri):
             os.makedirs(self.uri)
 
-    def _write(self, data):
+    def _write(self, data, bulk=False):
         "Internal write API"
-        wmaid = data['wmaid']
+        wmaid = self.wmaid(data)
         fname = '%s/%s.gz' % (self.uri, wmaid)
         with gzip.open(fname, 'w') as ostream:
             ostream.write(json.dumps(data))
@@ -41,6 +42,10 @@ class FileStorage(Storage):
         if  PAT_UID.match(str(query)): # requested to read concrete file
             fname = '%s/%s.gz' % (self.uri, query)
             data = json.load(gzip.open(fname))
+            if  isinstance(data, list):
+                for rec in data:
+                    self.check(rec)
+                return data
             self.check(data)
             return [data]
         return self.empty_data

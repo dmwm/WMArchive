@@ -36,7 +36,7 @@ import pydoop.hdfs as hdfs
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Utils import tstamp, wmaHash, today
+from WMArchive.Utils.Utils import tstamp, wmaHash, today, bulk_avsc, bulk_data
 from WMArchive.Utils.Regexp import PAT_UID
 
 def fileName(uri, wmaid, compress):
@@ -56,17 +56,22 @@ class HdfsStorage(Storage):
         self.hdir = self.uri.rsplit('/', 1)[0]
         if  not hdfs.path.isdir(self.hdir):
             raise Exception('HDFS path %s does not exists' % self.hdir)
-        schemaData = hdfs.load(schema)
-        self.schema = avro.schema.parse(schemaData)
+        schema_doc = hdfs.load(schema)
+        self.schema = avro.schema.parse(schema_doc)
+        self.schema_bulk = avro.schema.parse(json.dumps(bulk_avsc(schema_doc)))
         self.compress = compress
 
     def dump(self, data, fname):
         "Dump given data directly to HDFS"
         hdfs.dump(data, fname)
 
-    def _write(self, rec):
+    def _write(self, data, bulk=False):
         "Internal Write API"
-        wmaid = rec['wmaid']
+        schema = self.schema
+        if  bulk:
+            schema = self.schema_bulk
+            data = bulk_data(data)
+        wmaid = self.wmaid(data)
         year, month, _ = today()
         hdir = '%s/%s/%s' % (self.hdir, year, month)
         if  not hdfs.path.isdir(hdir):
@@ -74,7 +79,7 @@ class HdfsStorage(Storage):
         fname = fileName(hdir, wmaid, self.compress)
 
         # create Avro writer and binary encoder
-        writer = avro.io.DatumWriter(self.schema)
+        writer = avro.io.DatumWriter(schema)
         bytes_writer = io.BytesIO()
 
         if  self.compress:
@@ -86,7 +91,7 @@ class HdfsStorage(Storage):
             encoder = avro.io.BinaryEncoder(bytes_writer)
 
         # write records from given data stream to binary writer
-        writer.write(rec, encoder)
+        writer.write(data, encoder)
 
         # close gzip stream if necessary
         if  self.compress:
