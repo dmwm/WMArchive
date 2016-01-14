@@ -48,6 +48,37 @@ class AvroStorage(Storage):
         self.schema = avro.schema.parse(schema_doc)
         self.schema_bulk = avro.schema.parse(json.dumps(bulk_avsc(schema_doc)))
 
+    def file_write(self, fname, data):
+        "Write documents in append mode to given file name"
+        schema = self.schema
+        if  not hasattr(data, '__iter__'):
+            data = [data]
+        with open(fname, 'a') as ostream:
+            with DataFileWriter(ostream, DatumWriter(), schema) as writer:
+                for rec in data:
+                    wmaid = rec['wmaid']
+                    writer.append(rec)
+                    writer.flush()
+                    yield wmaid
+
+    def file_read(self, fname):
+        "Read documents from given file name"
+        schema = self.schema
+        if  fname.endswith('.gz'):
+            istream = gzip.open(fname)
+        else:
+            istream = open(fname)
+        out = []
+        with istream:
+            reader = DataFileReader(istream, DatumReader())
+            try:
+                for data in reader:
+                    out.append(data)
+            except UnicodeDecodeError:
+                pass
+        return out
+
+
     def _write(self, data, bulk=False):
         "Internal write API"
         wmaid = self.wmaid(data)
