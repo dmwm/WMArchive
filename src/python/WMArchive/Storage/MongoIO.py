@@ -83,14 +83,19 @@ class MongoStorage(Storage):
 
     def read(self, query=None):
         "Read API"
+        gen = self.find(query)
+        docs = [r for r in gen]
+        return docs
+
+    def find(self, query=None):
+        "Read API"
         if  not query:
             query = {}
         if  isinstance(query, list):
             query = {'wmaid': {'$in': query}}
         elif  PAT_UID.match(str(query)):
             query = {'wmaid': query}
-        docs = [r for r in self.coll.find(query)]
-        return docs
+        return self.coll.find(query)
 
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"

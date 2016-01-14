@@ -83,3 +83,24 @@ def bulk_data(data):
     if  isinstance(data, list):
         return {'bulk':data}
     return {'bulk':[data]}
+
+def size_format(uinput, base=10):
+    """
+    Format file size utility, it converts file size into KB, MB, GB, TB, PB units
+    """
+    try:
+        num = float(uinput)
+    except Exception as exc:
+        print("Fail to read %s, type=%s" % (uinput, type(uinput)))
+        print(str(exc))
+        return "N/A"
+    if  base == 10: # power of 10
+        xlist = ['', 'KB', 'MB', 'GB', 'TB', 'PB']
+	fbase = 1000.
+    elif base == 2: # power of 2
+        xlist = ['', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB']
+	fbase = 1024.
+    for xxx in xlist:
+        if  num < fbase:
+            return "%3.1f%s" % (num, xxx)
+        num /= fbase
