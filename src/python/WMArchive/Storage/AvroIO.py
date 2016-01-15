@@ -14,6 +14,7 @@ from __future__ import print_function, division
 # system modules
 import io
 import os
+import bz2
 import json
 import gzip
 import itertools
@@ -27,6 +28,7 @@ from avro.io import DatumReader, DatumWriter
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
+from WMArchive.Utils.Utils import wmaHash
 from WMArchive.Utils.Utils import bulk_avsc, bulk_data
 
 def fileName(uri, wmaid):
@@ -51,12 +53,12 @@ class AvroStorage(Storage):
     def file_write(self, fname, data):
         "Write documents in append mode to given file name"
         schema = self.schema
-        if  not hasattr(data, '__iter__'):
+        if  not hasattr(data, '__iter__') or isinstance(data, dict):
             data = [data]
         with open(fname, 'a') as ostream:
             with DataFileWriter(ostream, DatumWriter(), schema) as writer:
                 for rec in data:
-                    wmaid = rec['wmaid']
+                    wmaid = rec.get('wmaid', wmaHash(rec))
                     writer.append(rec)
                     writer.flush()
                     yield wmaid
@@ -66,6 +68,8 @@ class AvroStorage(Storage):
         schema = self.schema
         if  fname.endswith('.gz'):
             istream = gzip.open(fname)
+        elif fname.endswith('.bz2'):
+            istream = bz2.BZ2File(fname)
         else:
             istream = open(fname)
         out = []
@@ -77,7 +81,6 @@ class AvroStorage(Storage):
             except UnicodeDecodeError:
                 pass
         return out
-
 
     def _write(self, data, bulk=False):
         "Internal write API"
