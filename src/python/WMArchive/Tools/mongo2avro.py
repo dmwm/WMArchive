@@ -8,8 +8,8 @@ Description: Mongo -> Avro migration script.
 We read data from MongoDB storage and writes avro files in given
 output directory. The size of avro files can be controlled by --thr
 parameter and it should be tuned wrt Hadoop settings for optimal file
-size. By default we use 200MB for avro.gz file. From our benchmarks
-we found that avro->avro.gz scale factor is 7 and we use 7*200MB
+size. By default we use 200MB for avro.bz2 file. From our benchmarks
+we found that avro->avro.bz2 scale factor is 7 and we use 7*200MB
 for plain avro file threashold.
 """
 # futures
@@ -18,8 +18,8 @@ from __future__ import print_function, division
 # system modules
 import os
 import sys
+import bz2
 import time
-import gzip
 import argparse
 import itertools
 
@@ -46,7 +46,7 @@ class OptionParser():
             dest="schema", default="", help="Avro schema file")
         self.parser.add_argument("--odir", action="store",
             dest="odir", default="", help="Avro output area")
-        thr = 7*200*1024*1024 # 200MB gzip'ed Avro, 7 is a gzip factor
+        thr = 7*200*1024*1024 # 200MB bz2'ed Avro, 7 is a gzip factor
         self.parser.add_argument("--thr", action="store", type=int,
             dest="thr", default=thr,
             help="Avro file size threashold, default %sB" % thr)
@@ -76,8 +76,8 @@ def file_name(odir, thr):
     size = os.path.getsize(fname)
     if  size < thr:
         return fname
-    # gzip last file and return new file name
-    with gzip.open('%s.gz' % fname, 'wb') as ostream:
+    # bz2 last file and return new file name
+    with bz2.BZ2File('%s.bz2' % fname, 'wb') as ostream:
         with open(fname, 'rb') as istream:
             ostream.write(istream.read())
     os.remove(fname)
