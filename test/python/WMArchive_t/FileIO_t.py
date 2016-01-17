@@ -43,14 +43,6 @@ class FileStorageTest(unittest.TestCase):
         data = self.mgr.read(wmaids[0])
         self.assertEqual(data[0], self.bare_data)
 
-    def test_write_bulk(self):
-        "Test write functionality"
-        bdata = [self.data, self.data]
-        bare_data = [self.bare_data, self.bare_data]
-        wmaids = self.mgr.write_bulk(bdata)
-        self.assertEqual(len(wmaids), 1)
-        data = self.mgr.read(wmaids[0])
-        self.assertEqual(data, bare_data)
 #
 # main
 #

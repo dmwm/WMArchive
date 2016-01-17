@@ -52,31 +52,6 @@ class MongoStorageTest(unittest.TestCase):
                 del record[key]
             self.assertEqual(record, self.bare_data)
 
-    def test_write_bulk(self):
-        "Test write functionality"
-        data1 = dict(self.bare_data)
-        data1['idx'] = 1
-        data2 = dict(self.bare_data)
-        data2['idx'] = 2
-        bare_data = [data1, data2]
-
-        bdata1 = dict(data1)
-        bdata1['wmaid'] = wmaHash(data1)
-        bdata1['stype'] = 'mongodb'
-        bdata2 = dict(data2)
-        bdata2['wmaid'] = wmaHash(data2)
-        bdata2['stype'] = 'mongodb'
-        bdata = [bdata1, bdata2]
-
-        wmaids = self.mgr.write_bulk(bdata)
-        self.assertEqual(len(wmaids), 2) # in Mongo bulk still writes separate docs
-        data = self.mgr.read()
-        out = []
-        for rec in data:
-            for key in ['wmaid', 'stype']:
-                del rec[key]
-            out.append(rec)
-        self.assertEqual(out, bare_data)
 #
 # main
 #

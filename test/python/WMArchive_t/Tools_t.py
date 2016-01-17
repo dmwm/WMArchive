@@ -22,21 +22,16 @@ from avro.io import DatumReader, DatumWriter
 
 # WMArchive modules
 from WMArchive.Tools.json2avsc import genSchema
-from WMArchive.Utils.Utils import bulk_data, bulk_avsc
 
-def json2avro2json(data, bulk=False):
+def json2avro2json(data):
     """
     Function which reads json file, generates avro screma, convert json to
     avro and convert it back using the schema. All operations are done in
     memory (via io.BytesIO)
     """
     # parse schema into schema object
-    if  bulk:
-        arec = genSchema(data['bulk'][0])
-        schema = avro.schema.parse(json.dumps(bulk_avsc(arec)))
-    else:
-        arec = genSchema(data)
-        schema = avro.schema.parse(json.dumps(arec))
+    arec = genSchema(data)
+    schema = avro.schema.parse(json.dumps(arec))
 
     # setup avro writer with given schema
     writer = avro.io.DatumWriter(schema)
@@ -75,14 +70,6 @@ class WMBaseTest(unittest.TestCase):
                 json_data = json2avro2json(data)
                 self.assertEqual(json_data, data)
 
-    def test_genSchema_bulk(self):
-        "Test genSchema function with bulk data"
-        data = {"int":1, "float":1.2, "list":[1,2,3],
-                "dict":{"dname": "foo", "dval":1},
-                "listdict":[{"lname":"foo"}], "str":"string"}
-        bdata = bulk_data(data)
-        json_data = json2avro2json(bdata, bulk=True)
-        self.assertEqual(json_data, bdata)
 #
 # main
 #

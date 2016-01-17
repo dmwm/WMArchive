@@ -11,14 +11,36 @@ Description: WMArchive utilities
 from __future__ import print_function, division
 
 # system modules
+import bz2
+import gzip
 import time
 import json
 import hashlib
 import calendar
 import datetime
 
+# https://github.com/nvawda/bz2file
+from bz2file import BZ2File
+
 # WMArchive modules
 from WMArchive.Utils.Regexp import PAT_YYYYMMDD
+
+def open_file(fname, mode='r'):
+    """
+    Helper function to open file, plain, gz, bz2 formats. Returns file descriptor.
+    Client is responsible for closing the file. For bz2 we use bz2file helper
+    https://github.com/nvawda/bz2file which provides extended set of file
+    manipulation features not available in python 2.X up to python 3.4.
+    Starting python 3.5 it will no longer required.
+    """
+    if  fname.endswith('.gz'):
+        istream = gzip.open(fname, mode)
+    elif fname.endswith('.bz2'):
+        # replace with standard bz2 library when we switch to python 3.5
+        istream = BZ2File(fname, mode)
+    else:
+        istream = open(fname, mode)
+    return istream
 
 def tstamp(msg='WMA'):
     """
@@ -64,26 +86,6 @@ def dateformat(value):
     else:
         raise Exception(msg)
 
-def bulk_avsc(schema):
-    """
-    Convert given avro schema into bulk one. The avro schema
-    covers concrete JSON structure, e.g. {'data':1}.
-    The bulk avro schema wraps it into the following sctructure:
-    {'bulk':[{'data':1}]}.
-    """
-    if  isinstance(schema, basestring): # we read it from file
-        schema = json.loads(schema)
-    wrap = {"namespace": "wma", "type": "record", "name": "records",
-            "fields": [{"type": {"items": schema, "type": "array"},
-                        "name": "bulk"}]}
-    return wrap
-
-def bulk_data(data):
-    "Convert given data into bulk data structure"
-    if  isinstance(data, list):
-        return {'bulk':data}
-    return {'bulk':[data]}
-
 def size_format(uinput, base=10):
     """
     Format file size utility, it converts file size into KB, MB, GB, TB, PB units
@@ -104,3 +106,12 @@ def size_format(uinput, base=10):
         if  num < fbase:
             return "%3.1f%s" % (num, xxx)
         num /= fbase
+
+def file_name(uri, wmaid, compress=None):
+    "Construct common file name for given uri and wmaid"
+    if  compress and compress not in ['gz', 'bz2']:
+        raise Exception("Unsupported compress method %s" % compress)
+    fname = '%s/%s.avro' % (uri, wmaid)
+    if  compress:
+        return '%s.%s' % (fname, compress)
+    return fname

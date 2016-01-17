@@ -14,7 +14,7 @@ import os
 import unittest
 
 # WMArchive modules
-from WMArchive.Utils.Utils import wmaHash, dateformat
+from WMArchive.Utils.Utils import wmaHash, dateformat, file_name
 
 class WMBaseTest(unittest.TestCase):
     def test_wmaHash(self):
@@ -38,6 +38,19 @@ class WMBaseTest(unittest.TestCase):
         self.assertRaises(Exception, dateformat, wrong)
         wrong = '2012'
         self.assertRaises(Exception, dateformat, wrong)
+
+    def test_file_name(self):
+        "Test file_name function"
+        uri = 'test'
+        wmaid = 123
+        for compress in ['', 'bz2', 'gz']:
+            fname = file_name(uri, wmaid, compress)
+            if  compress:
+                tname = '%s/%s.avro.%s' % (uri, wmaid, compress)
+            else:
+                tname = '%s/%s.avro' % (uri, wmaid)
+            self.assertEqual(fname, tname)
+        self.assertRaises(Exception, file_name, (uri, wmaid, 'gzip'))
 #
 # main
 #

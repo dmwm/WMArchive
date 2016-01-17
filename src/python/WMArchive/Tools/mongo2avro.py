@@ -8,9 +8,7 @@ Description: Mongo -> Avro migration script.
 We read data from MongoDB storage and writes avro files in given
 output directory. The size of avro files can be controlled by --thr
 parameter and it should be tuned wrt Hadoop settings for optimal file
-size. By default we use 200MB for avro.bz2 file. From our benchmarks
-we found that avro->avro.bz2 scale factor is 7 and we use 7*200MB
-for plain avro file threashold.
+size. By default we use 256MB for avro.bz2 file.
 """
 # futures
 from __future__ import print_function, division
@@ -18,8 +16,8 @@ from __future__ import print_function, division
 # system modules
 import os
 import sys
-import bz2
 import time
+import shutil
 import argparse
 import itertools
 
@@ -34,7 +32,7 @@ except ImportError:
 # WMARchive modules
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.AvroIO import AvroStorage
-from WMArchive.Utils.Utils import size_format
+from WMArchive.Utils.Utils import size_format, tstamp
 
 class OptionParser():
     def __init__(self):
@@ -46,10 +44,10 @@ class OptionParser():
             dest="schema", default="", help="Avro schema file")
         self.parser.add_argument("--odir", action="store",
             dest="odir", default="", help="Avro output area")
-        thr = 7*200*1024*1024 # 200MB bz2'ed Avro, 7 is a gzip factor
+        thr = 256*1024*1024 # 256MB
         self.parser.add_argument("--thr", action="store", type=int,
             dest="thr", default=thr,
-            help="Avro file size threashold, default %sB" % thr)
+            help="Avro file size threshold, default %sMB" % thr)
         chunk = 1000
         self.parser.add_argument("--chunk", action="store", type=int,
             dest="chunk", default=chunk,
@@ -59,28 +57,33 @@ class OptionParser():
 
 def gen_file_name(odir):
     "Generate new file name in given odir"
-    name = time.strftime("%Y%m%d_%H%M%S.avro", time.gmtime())
+    name = time.strftime("%Y%m%d_%H%M%S.avro.bz2", time.gmtime())
     return os.path.join(odir, name)
 
 def file_name(odir, thr):
     """
     Read content of given dir and either re-use existing file or create a new one
-    based on given file size threashold
+    based on given file size threshold. When file exceed given threshold it is
+    moved into migrate area within the same given directory.
     """
-    files = [f for f in os.listdir(odir) if f.endswith('.avro')]
+    files = [f for f in os.listdir(odir) if os.path.isfile(os.path.join(odir,f))]
     if  not files:
         return gen_file_name(odir)
+
     files.sort()
     last_file = files[-1]
     fname = os.path.join(odir, last_file)
     size = os.path.getsize(fname)
     if  size < thr:
         return fname
-    # bz2 last file and return new file name
-    with bz2.BZ2File('%s.bz2' % fname, 'wb') as ostream:
-        with open(fname, 'rb') as istream:
-            ostream.write(istream.read())
-    os.remove(fname)
+
+    # file is ready for migration
+    mdir = os.path.join(odir, 'migrate')
+    try:
+        os.mkdir(mdir)
+    except OSError:
+        pass
+    shutil.move(fname, mdir)
     return gen_file_name(odir)
 
 def migrate(muri, odir, avsc, thr, chunk=1000, verbose=False):
@@ -89,7 +92,7 @@ def migrate(muri, odir, avsc, thr, chunk=1000, verbose=False):
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
     astg = AvroStorage(auri)
 
-    # read data from MongoDB
+    # read data from MongoDB, returned mdocs is generator type
     query = {'stype': mstg.stype}
     mdocs = mstg.find(query)
 
@@ -99,8 +102,7 @@ def migrate(muri, odir, avsc, thr, chunk=1000, verbose=False):
     fsize = 0
     while True:
         fname = file_name(odir, thr)
-        res = astg.file_write(fname, itertools.islice(mdocs, chunk))
-        ids = [i for i in res]
+        ids = astg.file_write(fname, itertools.islice(mdocs, chunk))
         fsize = os.path.getsize(fname)
         if  osize == fsize or not len(ids):
             break
@@ -114,9 +116,9 @@ def migrate(muri, odir, avsc, thr, chunk=1000, verbose=False):
                 rss = 'RSS:%s' % size_format(mem.rss)
             else:
                 rss = ''
-            print("%s docs %s %s (%s bytes) %s" \
+            print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
                     % (len(wmaids), fname, size_format(fsize), fsize, rss))
-    print("Wrote %s docs %s %s (%s bytes)" \
+    print(tstamp('mongo2avro'), "wrote %s docs %s %s (%s bytes)" \
             % (len(wmaids), fname, size_format(fsize), fsize))
 
     # update status attributes of docs in MongoDB
