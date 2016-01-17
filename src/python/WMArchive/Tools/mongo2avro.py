@@ -44,10 +44,10 @@ class OptionParser():
             dest="schema", default="", help="Avro schema file")
         self.parser.add_argument("--odir", action="store",
             dest="odir", default="", help="Avro output area")
-        thr = 256*1024*1024 # 256MB
+        thr = 256 # 256MB
         self.parser.add_argument("--thr", action="store", type=int,
             dest="thr", default=thr,
-            help="Avro file size threshold, default %sMB" % thr)
+            help="Avro file size threshold in MB, default %sMB" % thr)
         chunk = 1000
         self.parser.add_argument("--chunk", action="store", type=int,
             dest="chunk", default=chunk,
@@ -129,6 +129,7 @@ def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
+    thr = opts.thr*1024*1024 # convert input in MB into bytes
     migrate(opts.muri, opts.odir, opts.schema, opts.thr, opts.chunk, opts.verbose)
 
 if __name__ == '__main__':
