@@ -14,6 +14,7 @@ import os
 import json
 import tempfile
 import unittest
+from tempfile import mkdtemp
 
 # avro modules
 import avro.schema
@@ -22,7 +23,7 @@ from avro.io import DatumReader, DatumWriter
 
 # WMArchive modules
 from WMArchive.Tools.json2avsc import genSchema
-from WMArchive.Storage.AvroIO import AvroStorage
+from WMArchive.Storage.AvroIO import AvroStorage, AvroSerializer
 from WMArchive.Utils.Utils import wmaHash
 
 class FileStorageTest(unittest.TestCase):
@@ -54,14 +55,14 @@ class FileStorageTest(unittest.TestCase):
         data = self.mgr.read(wmaids[0])
         self.assertEqual(data[0], self.bare_data)
 
-    def test_write_bulk(self):
-        "Test write functionality"
-        bdata = [self.data, self.data]
-        bare_data = [self.bare_data, self.bare_data]
-        wmaids = self.mgr.write_bulk(bdata)
-        self.assertEqual(len(wmaids), 1)
-        data = self.mgr.read(wmaids[0])
-        self.assertEqual(data, bare_data)
+    def test_file_write(self):
+        "Test file_write functionality"
+        for ext in ['', '.bz2', '.gz']:
+            fname = os.path.join(self.tdir, 'file.avro'+ext)
+            wmaids = self.mgr.file_write(fname, self.data)
+            self.assertEqual(len(wmaids), 1)
+            data = self.mgr.file_read(fname)
+            self.assertEqual(data[0], self.data)
 #
 # main
 #

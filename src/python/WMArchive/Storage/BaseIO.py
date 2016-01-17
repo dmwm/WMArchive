@@ -46,19 +46,10 @@ class Storage(object):
         "Internal write API, should be implemented in subclasses"
         pass
 
-    def write_bulk(self, data):
-        "Bulk write API, return ids of stored documents"
-        if  not (isinstance(data, list) or isinstance(data, GeneratorType)):
-            return self.write(data)
-        wmaid = self.wmaid(data) # generate one id for all data bulk
-        self._write(data, bulk=True)
-        return [wmaid] # must return list to be consistent with write API
-
     def write(self, data, safe=False):
         """
         Write API, return ids of stored documents. All documents are writen
-        via self._write API one by one. For bulk write user should use write_bulk
-        API.
+        via self._write API one by one.
         """
         wmaids = self.getids(data)
         if  isinstance(data, list) or isinstance(data, GeneratorType):

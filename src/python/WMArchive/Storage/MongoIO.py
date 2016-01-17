@@ -56,10 +56,6 @@ class MongoStorage(Storage):
         print(tstamp('WMA INFO'), self.coll)
         self.chunk_size = chunk_size
 
-    def write_bulk(self, data):
-        "Bulk write API, return ids of stored documents"
-        return self.write(data)
-
     def write(self, data):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
@@ -82,13 +78,16 @@ class MongoStorage(Storage):
         return wmaids
 
     def read(self, query=None):
-        "Read API"
+        "Read API, it reads data from MongoDB storage for provided query."
         gen = self.find(query)
         docs = [r for r in gen]
         return docs
 
     def find(self, query=None):
-        "Read API"
+        """
+        Find records in MongoDB storage for provided query, returns generator
+        over MongoDB collection
+        """
         if  not query:
             query = {}
         if  isinstance(query, list):
