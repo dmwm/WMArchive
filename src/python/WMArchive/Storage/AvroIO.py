@@ -28,14 +28,21 @@ from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Utils import wmaHash, open_file, file_name
 
-class AvroSerializer(object):
-    """
-    AvroSerializer provides two APIs to encode and decode
-    given data into Avro binary format based on given schema.
-    """
-    def __init__(self, schema):
-        self.writer = avro.io.DatumWriter(schema)
-        self.reader = avro.io.DatumReader(schema)
+class AvroStorage(Storage):
+    "Storage based on Avro file based back-end"
+    def __init__(self, uri):
+        "ctor with avro uri: avroio:/path/schema.avsc"
+        Storage.__init__(self, uri)
+        schema = self.uri
+        if  not os.path.exists(schema):
+            raise Exception("No avro schema file found in provided uri: %s" % uri)
+        self.hdir = self.uri.rsplit('/', 1)[0]
+        if  not os.path.exists(self.hdir):
+            os.makedirs(self.hdir)
+        schema_doc = open(schema).read()
+        self.schema = avro.schema.parse(schema_doc)
+        self.writer = avro.io.DatumWriter(self.schema)
+        self.reader = avro.io.DatumReader(self.schema)
 
     def encode(self, data):
         "Encode given data into binary stream"
@@ -56,22 +63,6 @@ class AvroSerializer(object):
                 break
         return out
 
-class AvroStorage(Storage):
-    "Storage based on Avro file based back-end"
-    def __init__(self, uri, compress=True):
-        "ctor with avro uri: avroio:/path/schema.avsc"
-        Storage.__init__(self, uri)
-        schema = self.uri
-        if  not os.path.exists(schema):
-            raise Exception("No avro schema file found in provided uri: %s" % uri)
-        self.hdir = self.uri.rsplit('/', 1)[0]
-        if  not os.path.exists(self.hdir):
-            os.makedirs(self.hdir)
-        schema_doc = open(schema).read()
-        self.schema = avro.schema.parse(schema_doc)
-        self.mgr = AvroSerializer(self.schema)
-        self.compress = compress
-
     def file_write(self, fname, data):
         "Write documents in append mode to given file name"
         schema = self.schema
@@ -80,7 +71,7 @@ class AvroStorage(Storage):
         wmaids = []
         with open_file(fname, 'a') as ostream:
             for rec in data:
-                data_bytes = self.mgr.encode(rec)
+                data_bytes = self.encode(rec)
                 ostream.write(data_bytes)
                 ostream.flush()
                 wmaid = rec.get('wmaid', wmaHash(rec))
@@ -93,7 +84,7 @@ class AvroStorage(Storage):
         out = []
         with open_file(fname) as istream:
             data_bytes = istream.read()
-            out = self.mgr.decode(data_bytes)
+            out = self.decode(data_bytes)
         return out
 
     def _write(self, data):

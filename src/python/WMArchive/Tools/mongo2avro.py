@@ -44,6 +44,8 @@ class OptionParser():
             dest="schema", default="", help="Avro schema file")
         self.parser.add_argument("--odir", action="store",
             dest="odir", default="", help="Avro output area")
+        self.parser.add_argument("--compress", action="store",
+            dest="compress", default="", help="Use compression, gz or bz2 are supported")
         thr = 256 # 256MB
         self.parser.add_argument("--thr", action="store", type=int,
             dest="thr", default=thr,
@@ -55,12 +57,16 @@ class OptionParser():
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="Verbose output")
 
-def gen_file_name(odir):
+def gen_file_name(odir, compress=''):
     "Generate new file name in given odir"
-    name = time.strftime("%Y%m%d_%H%M%S.avro.bz2", time.gmtime())
+    name = time.strftime("%Y%m%d_%H%M%S.avro", time.gmtime())
+    if  compress:
+        if  compress not in ['gz', 'bz2']:
+            raise Exception('Unsupported compression: %s' % compress)
+        name += '.%s' % compress
     return os.path.join(odir, name)
 
-def file_name(odir, thr):
+def file_name(odir, thr, compress):
     """
     Read content of given dir and either re-use existing file or create a new one
     based on given file size threshold. When file exceed given threshold it is
@@ -68,7 +74,7 @@ def file_name(odir, thr):
     """
     files = [f for f in os.listdir(odir) if os.path.isfile(os.path.join(odir,f))]
     if  not files:
-        return gen_file_name(odir)
+        return gen_file_name(odir, compress)
 
     files.sort()
     last_file = files[-1]
@@ -84,9 +90,9 @@ def file_name(odir, thr):
     except OSError:
         pass
     shutil.move(fname, mdir)
-    return gen_file_name(odir)
+    return gen_file_name(odir, compress)
 
-def migrate(muri, odir, avsc, thr, chunk=1000, verbose=False):
+def migrate(muri, odir, avsc, thr, compress, chunk, verbose):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
     mstg = MongoStorage(muri)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
@@ -98,16 +104,13 @@ def migrate(muri, odir, avsc, thr, chunk=1000, verbose=False):
 
     # loop over provided docs and write them into avro file on local file system
     wmaids = []
-    osize = 0
-    fsize = 0
     while True:
-        fname = file_name(odir, thr)
+        fname = file_name(odir, thr, compress)
         ids = astg.file_write(fname, itertools.islice(mdocs, chunk))
         fsize = os.path.getsize(fname)
-        if  osize == fsize or not len(ids):
+        if  not len(ids):
             break
         wmaids += ids
-        osize = fsize
         if  verbose:
             if  PSUTIL:
 		pid = os.getpid()
@@ -130,7 +133,8 @@ def main():
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     thr = opts.thr*1024*1024 # convert input in MB into bytes
-    migrate(opts.muri, opts.odir, opts.schema, opts.thr, opts.chunk, opts.verbose)
+    migrate(opts.muri, opts.odir, opts.schema, thr, opts.compress,
+            opts.chunk, opts.verbose)
 
 if __name__ == '__main__':
     main()
