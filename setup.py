@@ -228,7 +228,7 @@ def main():
         data_files           = data_files,
         scripts              = datafiles('bin'),
         requires             = ['python (>=2.7)', 'pymongo (>=3.0)', 'pydoop (>=1.1.0)',
-                                'sphinx (>=1.0.4)'],
+                                'bz2file (>=v0.95)', 'sphinx (>=1.0.4)'],
         ext_modules          = [],
         classifiers          = classifiers,
         cmdclass             = {'test': TestCommand,
