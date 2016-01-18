@@ -17,6 +17,7 @@ import stat
 import time
 import inspect
 import argparse
+import subprocess
 from tempfile import NamedTemporaryFile
 
 # pydoop modules
@@ -55,13 +56,24 @@ this tool to generate final MR script.""" % efile
 class OptionParser():
     def __init__(self):
         "User based option parser"
+        try:
+            remdir = os.path.join('/user',os.getenv('USER'))
+        except Exception,e:
+            print("Failed to find username", e)
+            remdir = '/'
         self.parser = argparse.ArgumentParser(prog='mrjob', description=usage())
         self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default="/test", help="HDFS input data directory")
+            dest="hdir", default=os.path.join(remdir,'test/'),
+            help="HDFS input data directory")
+        self.parser.add_argument("--idir", action="store",
+            dest="idir", default='data/',
+            help="HDFS input directory for MR jobs, inside hdir")
         self.parser.add_argument("--odir", action="store",
-            dest="odir", default="/mrout", help="HDFS output directory for MR jobs")
+            dest="odir", default='mrout/',
+            help="HDFS output directory for MR jobs, inside hdir")
         self.parser.add_argument("--schema", action="store",
-            dest="schema", default="/schema.avsc", help="Data schema file on HDFS")
+            dest="schema", default='schema.avsc',
+            help="Name of data schema file on HDFS, inside hdir")
         self.parser.add_argument("--mrpy", action="store",
             dest="mrpy", default="mr.py", help="MapReduce python script")
         self.parser.add_argument("--pydoop", action="store",
@@ -73,19 +85,14 @@ class OptionParser():
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="Verbose output")
 
-def run(cmd):
+def run(cmd, verbose=False):
     "Run given command in subprocess"
-    print(cmd)
-    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if verbose: print('Executing', cmd)
+
+    # proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
     proc.wait()
-    out = proc.stdout.read()
-    err = proc.stderr.read()
-    proc.stdout.close()
-    proc.stderr.close()
-    if  out:
-        print("ERROR:", out)
-        sys.exit(1)
-    return parse(err)
+    return proc.returncode
 
 def hdfs_dir(hdir):
     "Return HDFS URI for given directory"
@@ -102,53 +109,75 @@ def create_mrpy(usermr, verbose=None):
     code = open(sname).read() + '\n' + open(usermr).read()
     return code
 
-def mrjob(hdir, odir, schema, mrpy, execute, arch_pydoop, arch_avro, verbose):
+def mrjob(options):
     "Generates and executes MR job script"
-    hdir = hdfs_dir(hdir)
-    odir = hdfs_dir(odir)
-    schema = hdfs_dir(schema)
 
-    if  PYDOOP:
-        for name in [hdir, odir,]:
-            if  verbose:
-                print("Checking %s" % name)
-            if  not hdfs.path.isdir(name):
-                print("ERROR: %s does not exists" % name)
-                sys.exit(1)
-        if  verbose:
-            print("Checking %s" % schema)
-        if  not hdfs.path.isfile(schema):
-            print("ERROR: %s does not exists" % name)
-            sys.exit(1)
-    else:
-        if  verbose:
-            print("WARNING: hdfs module is not present on this system, will use input as is without checking")
-    for name in [mrpy, arch_pydoop, arch_avro]:
-        if  verbose:
-            print("Checking %s" % name)
-        if  not os.path.isfile(name):
-            print("ERROR: %s does not exists" % name)
-            sys.exit(1)
-    module = mrpy.split('/')[-1].split('.')[0]
-    code = create_mrpy(mrpy, verbose)
     user = os.getenv('USER')
     tstamp = int(time.time())
+    hdir = hdfs_dir(options.hdir)
+
+    if  PYDOOP:
+        odir   = hdfs.path.join(hdir, options.odir)
+        idir   = hdfs.path.join(hdir, options.idir)
+        schema = hdfs.path.join(hdir, options.schema)
+        for name in [hdir, odir, idir,]:
+            if  options.verbose:
+                print("Checking %s" % name)
+            if  not hdfs.path.isdir(name):
+                if name in [hdir, idir]:
+                    print("ERROR: %s does not exist" % name)
+                    sys.exit(1)
+                # else:
+                #     print(" Creating output directory: %s" % name)
+                #     hdfs.mkdir(name)
+            elif name == odir:
+                # in case odir exists and is not empty, move it somewhere and re-create
+                if(hdfs.ls(odir)):
+                    ocache = hdfs.path.normpath(odir)+'_%d'%tstamp
+                    if options.verbose:
+                        print(" Non-empty output directory exists, saving it in %s"%ocache)
+                    hdfs.move(odir, ocache)
+                    # hdfs.mkdir(odir)
+                # if it's empty, remove it
+                else:
+                    hdfs.rmr(odir)
+
+        if  options.verbose:
+            print("Checking %s" % schema)
+        if  not hdfs.path.isfile(schema):
+            print("ERROR: %s does not exist" % schema)
+            sys.exit(1)
+    else:
+        idir = '%s%s' % (hdir, 'data')
+        odir = '%s%s' % (hdir, 'mrout')
+        schema = '%s%s' % (hdir, options.schema)
+        if  options.verbose:
+            print("WARNING: pydoop module is not present on this system, will use input as is without checking")
+    for name in [options.mrpy, options.pydoop, options.avro]:
+        if  options.verbose:
+            print("Checking %s" % name)
+        if  not os.path.isfile(name):
+            print("ERROR: %s does not exist" % name)
+            sys.exit(1)
+
+    module = os.path.basename(os.path.splitext(options.mrpy)[0])
+    code = create_mrpy(options.mrpy, options.verbose)
 
     cmd = """#!/bin/bash
 input={input}
 output={output}
+export WMA_SCHEMA={schema}
 ifile=/tmp/mr_{user}_{tstamp}.py
-hadoop fs -rm -r $output
 cat << EOF > $ifile
 {code}
 EOF
-ifile={ifile}
+
 module={module}
 arch_pydoop={pydoop}
 arch_avro={avro}
 echo "Input URI : $input"
 echo "Output URI: $output"
-echo "MR script : $file"
+echo "MR script : $ifile"
 echo "Pydoop archive: $arch_pydoop"
 echo "Avro archive  : $arch_avro"
 pydoop submit \
@@ -159,29 +188,35 @@ pydoop submit \
     --num-reducers 1 \
     --upload-file-to-cache $ifile \
     --mrv2 $module $input $output
-    """.format(input=hdfs_dir(hdir), output=hdfs_dir(odir), user=user, tstamp=tstamp,
-            code=code, ifile=mrpy, module=module, pydoop=arch_pydoop, avro=arch_avro)
+    """.format(input=idir, output=odir, user=user, tstamp=tstamp,
+               code=code, module=module, schema=schema,
+               pydoop=os.path.abspath(options.pydoop),
+               avro=os.path.abspath(options.avro))
+
     fobj = NamedTemporaryFile(delete=False)
     fobj.write(cmd)
     fobj.close()
+
     fstat = os.stat(fobj.name)
     os.chmod(fobj.name, fstat.st_mode | stat.S_IEXEC)
-    if  execute:
-	run(fobj.name)
+
+    if  options.execute:
+    	run(fobj.name, options.verbose)
     else:
-        if  verbose:
+        if  options.verbose:
             print("------- Generated script --------")
         print(open(fobj.name, 'r').read())
-        if  verbose:
+        if  options.verbose:
             print("---------------------------------")
+
+    # clean up temporary file
     os.unlink(fobj.name)
 
 def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    mrjob(opts.hdir, opts.odir, opts.schema, opts.mrpy,
-            opts.execute, opts.pydoop, opts.avro, opts.verbose)
+    mrjob(opts)
 
 if __name__ == '__main__':
     main()
