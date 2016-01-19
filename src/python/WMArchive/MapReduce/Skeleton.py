@@ -31,11 +31,13 @@ import pydoop.hdfs as hdfs
 def read(fname):
     "Internal API to read data from HDFS files"
     # we need data file schema, later we need some proper default
-    uri = os.getenv('WMA_SCHEMA', '')
-    if  not uri:
-        print('ERROR: unable to read WMA_SCHEMA, please setup this environment variable')
+    try:
+        schemaData = hdfs.load(os.getenv('WMA_SCHEMA'))
+    except IOError:
+        print('ERROR: unable to read WMA_SCHEMA, '
+              'please set the environment variable')
         sys.exit(1)
-    schemaData = hdfs.load(uri)
+
     schema = avro.schema.parse(schemaData)
 
     out = []
