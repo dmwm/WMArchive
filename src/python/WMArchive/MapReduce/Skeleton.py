@@ -28,14 +28,13 @@ import pydoop.hdfs as hdfs
 
 # WMArchive modules
 
-def read(fname):
+def read(fname, schemafile):
     "Internal API to read data from HDFS files"
-    # we need data file schema, later we need some proper default
+
     try:
-        schemaData = hdfs.load(os.getenv('WMA_SCHEMA'))
-    except IOError:
-        print('ERROR: unable to read WMA_SCHEMA, '
-              'please set the environment variable')
+        schemaData = hdfs.load(schemafile)
+    except ValueError:
+        print('ERROR: unable to read schema from ', schemafile)
         sys.exit(1)
 
     schema = avro.schema.parse(schemaData)
@@ -72,7 +71,10 @@ class Reader(api.RecordReader):
     def __init__(self, context):
         super(Reader, self).__init__(context)
         fid = context.input_split.filename
-        self.data = read(fid)
+
+        schemafile = context.get_job_conf().get('avro.schema', None)
+        self.data = read(fid, schemafile)
+
         self.idx = 0 # first element
 
     def next(self):

@@ -166,30 +166,36 @@ def mrjob(options):
     cmd = """#!/bin/bash
 input={input}
 output={output}
-export WMA_SCHEMA={schema}
+schema={schema}
 ifile=/tmp/mr_{user}_{tstamp}.py
 cat << EOF > $ifile
 {code}
 EOF
 
-module={module}
+module=mr_{user}_{tstamp}
 arch_pydoop={pydoop}
 arch_avro={avro}
 echo "Input URI : $input"
 echo "Output URI: $output"
+echo "Schema: $schema"
 echo "MR script : $ifile"
+echo "Module name : $module"
 echo "Pydoop archive: $arch_pydoop"
 echo "Avro archive  : $arch_avro"
+echo "-----------------"
+echo "Submitting MR job"
 pydoop submit \
     --upload-archive-to-cache $arch_pydoop \
     --upload-archive-to-cache $arch_avro \
+    -D avro.schema=$schema \
     --do-not-use-java-record-reader \
     --log-level DEBUG \
+    --job-name WMArchive \
     --num-reducers 1 \
     --upload-file-to-cache $ifile \
     --mrv2 $module $input $output
     """.format(input=idir, output=odir, user=user, tstamp=tstamp,
-               code=code, module=module, schema=schema,
+               code=code, schema=schema,
                pydoop=os.path.abspath(options.pydoop),
                avro=os.path.abspath(options.avro))
 
