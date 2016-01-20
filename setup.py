@@ -26,9 +26,6 @@ from distutils.errors import DistutilsPlatformError, DistutilsExecError
 from distutils.core import Extension
 from distutils.command.install import INSTALL_SCHEMES
 
-# WMArchive imports
-from WMArchive import version as wma_version
-
 # general settings
 sys.path.append(os.path.join(os.getcwd(), 'src/python'))
 required_python_version = '2.7'
@@ -169,7 +166,7 @@ def datafiles(dir, pattern=None):
             files.append(os.path.join(dirname, filename))
     return files
     
-version      = wma_version
+version      = "development"
 name         = "WMArchive"
 description  = "CMS WMArchive Service"
 readme       ="WMArchive <https://github.com/dmwm/WMArchive/wiki>"
@@ -189,7 +186,7 @@ data_files   = [
                ]
 license      = "CMS experiment software"
 classifiers  = [
-    "Development Status :: 3 - Production/Beta",
+    "Status :: Production/Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: CMS/CERN Software License",
     "Operating System :: MacOS :: MacOS X",
@@ -210,11 +207,6 @@ def main():
         print(s % (name, version, required_python_version))
         sys.exit(1)
 
-    # set default location for "data_files" to
-    # platform specific "site-packages" location
-#     for scheme in INSTALL_SCHEMES.values():
-#         scheme['data'] = scheme['purelib']
-
     setupEnv()
 
     dist = setup(
@@ -227,8 +219,8 @@ def main():
         package_dir          = package_dir,
         data_files           = data_files,
         scripts              = datafiles('bin'),
-        requires             = ['python (>=2.7)', 'pymongo (>=3.0)', 'pydoop (>=1.1.0)',
-                                'bz2file (>=v0.95)', 'sphinx (>=1.0.4)'],
+        requires             = ['python (>=2.7)', 'pymongo (>=3.0)', 'pydoop (>=1.1.0)', \
+                                'bz2file (>=0.95)', 'sphinx (>=1.0.4)'],
         ext_modules          = [],
         classifiers          = classifiers,
         cmdclass             = {'test': TestCommand,
