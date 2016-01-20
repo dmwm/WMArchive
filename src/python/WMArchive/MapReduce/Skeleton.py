@@ -26,19 +26,8 @@ import avro.io
 # hdfs pydoop modules
 import pydoop.hdfs as hdfs
 
-# WMArchive modules
-
-def read(fname, schemafile):
+def read_avro(fname, schema):
     "Internal API to read data from HDFS files"
-
-    try:
-        schemaData = hdfs.load(schemafile)
-    except ValueError:
-        print('ERROR: unable to read schema from ', schemafile)
-        sys.exit(1)
-
-    schema = avro.schema.parse(schemaData)
-
     out = []
     data = hdfs.load(fname)
     bytes_reader = io.BytesIO(data)
@@ -70,12 +59,26 @@ class Reader(api.RecordReader):
     """Custom Reader class. It reads data from HDFS and extract records for MR job"""
     def __init__(self, context):
         super(Reader, self).__init__(context)
+
         fid = context.input_split.filename
 
-        schemafile = context.get_job_conf().get('avro.schema', None)
-        self.data = read(fid, schemafile)
-
+        self.read_schema(context)
+        self.data = self.read(fid)
         self.idx = 0 # first element
+
+    def read_schema(self, context):
+        sfile = context.get_job_conf().get('avro.schema', None)
+        try:
+            schemaData = hdfs.load(sfile)
+        except ValueError:
+            # if not sfile:
+            # else:
+            sys.exit(1)
+
+        self.schema = avro.schema.parse(schemaData)
+
+    def read(self, fname):
+        return read_avro(fname, self.schema)
 
     def next(self):
         "Read next record from data stream and return key, value pairs for Mapper"
@@ -92,15 +95,21 @@ class Reader(api.RecordReader):
 
 class Mapper(api.Mapper):
     """Example of Mapper class"""
-    def map(self, ctx):
+    def __init__(self, context):
+        super(Mapper, self).__init__(context)
+
+    def map(self, context):
         "Read given context and yield key (job-id) and values (task)"
-        mapper(ctx) # user defined mapper function for given context
+        mapper(context) # user defined mapper function for given context
 
 class Reducer(api.Reducer):
     """Example of Reducer class"""
-    def reduce(self, ctx):
+    def __init__(self, context):
+        super(Reducer, self).__init__(context)
+
+    def reduce(self, context):
         "Emit empty key and some data structure via given context"
-        reducer(ctx) # user defined reducer function for given context
+        reducer(context) # user defined reducer function for given context
 
 def __main__():
     """Main function to be executed by pydoop framework"""

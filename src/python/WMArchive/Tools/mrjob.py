@@ -80,6 +80,9 @@ class OptionParser():
             dest="pydoop", default="pydoop.tgz", help="pydoop archive file, e.g. /path/pydoop.tgz")
         self.parser.add_argument("--avro", action="store",
             dest="avro", default="avro.tgz", help="avro archive file, e.g. /path/avro.tgz")
+        self.parser.add_argument("--loglevel", action="store",
+            dest="loglevel", default='INFO',
+            help="pydoop log level, default=%default")
         self.parser.add_argument("--execute", action="store_true",
             dest="execute", default=False, help="Execute generate mr job script")
         self.parser.add_argument("--verbose", action="store_true",
@@ -189,13 +192,13 @@ pydoop submit \
     --upload-archive-to-cache $arch_avro \
     -D avro.schema=$schema \
     --do-not-use-java-record-reader \
-    --log-level DEBUG \
+    --log-level {loglevel} \
     --job-name WMArchive \
     --num-reducers 1 \
     --upload-file-to-cache $ifile \
     --mrv2 $module $input $output
     """.format(input=idir, output=odir, user=user, tstamp=tstamp,
-               code=code, schema=schema,
+               code=code, schema=schema, loglevel=options.loglevel,
                pydoop=os.path.abspath(options.pydoop),
                avro=os.path.abspath(options.avro))
 
