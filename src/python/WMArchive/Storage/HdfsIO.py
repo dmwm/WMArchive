@@ -21,11 +21,8 @@ Description: WMArchive HDFS storage module based on pydoop python module
 from __future__ import print_function, division
 
 # system modules
-import os
 import io
 import gzip
-import itertools
-from types import GeneratorType
 
 # avro modules
 import avro.schema
@@ -36,7 +33,7 @@ import pydoop.hdfs as hdfs
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Utils import tstamp, today, wmaHash, file_name
+from WMArchive.Utils.Utils import today, file_name
 from WMArchive.Utils.Regexp import PAT_UID
 
 class HdfsStorage(Storage):

@@ -12,7 +12,6 @@ from __future__ import print_function, division
 
 # system modules
 import itertools
-import traceback
 
 # Mongo modules
 from pymongo import MongoClient
@@ -23,7 +22,7 @@ from bson.son import SON
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
-from WMArchive.Utils.Utils import tstamp
+from WMArchive.Utils.Exceptions import WriteError, ReadError
 
 class WMASONManipulator(SONManipulator):
     """WMArchive MongoDB SON manipulator"""
@@ -53,10 +52,10 @@ class MongoStorage(Storage):
         self.mdb = self.client[dbname]
         self.mdb.add_son_manipulator(WMASONManipulator())
         self.coll = self.mdb[collname]
-        print(tstamp('WMA INFO'), self.coll)
+        self.log(self.coll)
         self.chunk_size = chunk_size
 
-    def write(self, data):
+    def write(self, data, safe=None):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
             data = [data]
@@ -73,15 +72,17 @@ class MongoStorage(Storage):
         except DuplicateKeyError as exp:
             pass
         except Exception as exp:
-            print(traceback.print_exc())
-            print(tstamp('WMA WARNING'), 'Uncaught exception', str(exp))
+            raise WriteError(str(exp))
         return wmaids
 
     def read(self, query=None):
         "Read API, it reads data from MongoDB storage for provided query."
-        gen = self.find(query)
-        docs = [r for r in gen]
-        return docs
+        try:
+            gen = self.find(query)
+            docs = [r for r in gen]
+            return docs
+        except Exception as exp:
+            raise ReadError(str(exp))
 
     def find(self, query=None):
         """

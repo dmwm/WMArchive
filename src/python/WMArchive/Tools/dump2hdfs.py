@@ -10,18 +10,16 @@ Description: Write given Avro schema file into HDFS
 from __future__ import print_function, division
 
 # system modules
-import os
-import sys
 import argparse
 
 # WMArchive modules
 from WMArchive.Storage.HdfsIO import HdfsStorage
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         self.parser = argparse.ArgumentParser(prog='dump2hdfs')
-        self.parser.add_argument("--fin", action="store",
+        self.parser.add_argument("--fin", action="store", \
             dest="fin", default="", help="Input avro schema file")
 
 def write(fin, huri):
@@ -33,7 +31,7 @@ def write(fin, huri):
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     write(opts.fin, opts.huri)
 

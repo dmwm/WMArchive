@@ -14,11 +14,12 @@ methods.
 from __future__ import print_function, division
 
 # system modules
+import traceback
 from types import GeneratorType
 
 # WMArchive modules
-from WMArchive.Utils.Utils import wmaHash
-from WMArchive.Utils.Utils import tstamp
+from WMArchive.Utils.Utils import wmaHash, tstamp
+from WMArchive.Utils.Exceptions import ReadError, WriteError
 
 class Storage(object):
     "Base class which defines storage APIs"
@@ -42,7 +43,7 @@ class Storage(object):
             wmaid = data['wmaid']
         return wmaid
 
-    def _write(self, data, bulk=False):
+    def _write(self, data):
         "Internal write API, should be implemented in subclasses"
         pass
 
@@ -51,14 +52,19 @@ class Storage(object):
         Write API, return ids of stored documents. All documents are writen
         via self._write API one by one.
         """
-        wmaids = self.getids(data)
-        if  isinstance(data, list) or isinstance(data, GeneratorType):
-            for rec in data:
-                self.log('write %s' % rec['wmaid'])
-                self._write(rec)
-        elif isinstance(data, dict):
-            self.log('write %s' % data['wmaid'])
-            self._write(data)
+        try:
+            wmaids = self.getids(data)
+            if  isinstance(data, list) or isinstance(data, GeneratorType):
+                for rec in data:
+                    self.log('write %s' % rec['wmaid'])
+                    self._write(rec)
+            elif isinstance(data, dict):
+                self.log('write %s' % data['wmaid'])
+                self._write(data)
+        except Exception as exc:
+            err = traceback.format_exc(limit=1).splitlines()[-1]
+            msg = 'Failure in %s storage, error=%s' % (self.stype, err)
+            raise WriteError(msg)
 
         # if safe argument is provided we'll read data again and check it
         if  safe:
@@ -81,17 +87,20 @@ class Storage(object):
 
     def read(self, spec=None):
         "Read data from local storage for given spec"
-        if  isinstance(spec, list):
-            out = []
-            for item in spec:
-                res = self._read(item)
-                if  res and len(res) == 1:
-                    out.append(res[0])
-            return out
-        data = self._read(spec)
-        if  isinstance(data, dict) and 'bulk' in data:
-            return data['bulk']
-        return data
+        try:
+            if  isinstance(spec, list):
+                out = []
+                for item in spec:
+                    res = self._read(item)
+                    if  res and len(res) == 1:
+                        out.append(res[0])
+                return out
+            data = self._read(spec)
+            return data
+        except Exception as exc:
+            err = traceback.format_exc(limit=1).splitlines()[-1]
+            msg = 'Failure in %s storage, error=%s' % (self.stype, err)
+            raise ReadError(msg)
 
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"

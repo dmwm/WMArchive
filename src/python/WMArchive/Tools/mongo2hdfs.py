@@ -10,7 +10,6 @@ Description: Mongo -> HDFS migration script. It puts data from MongoDB into HDFS
 from __future__ import print_function, division
 
 # system modules
-import os
 import sys
 import argparse
 
@@ -18,13 +17,13 @@ import argparse
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.HdfsIO import HdfsStorage
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
-        self.parser.add_argument("--mongo", action="store",
+        self.parser.add_argument("--mongo", action="store",\
             dest="muri", default="", help="MongoDB URI")
-        self.parser.add_argument("--hdfs", action="store",
+        self.parser.add_argument("--hdfs", action="store",\
             dest="huri", default="", help="HDFS URI")
 
 def migrate(muri, huri):
@@ -65,7 +64,7 @@ def migrate(muri, huri):
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     migrate(opts.muri, opts.huri)
 

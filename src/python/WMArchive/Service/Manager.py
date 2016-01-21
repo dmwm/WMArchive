@@ -16,8 +16,6 @@ from __future__ import print_function, division
 
 # system modules
 import os
-import sys
-import time
 
 # WMArchive modules
 from WMArchive.Storage.MongoIO import MongoStorage
@@ -27,11 +25,11 @@ from WMArchive.Utils.Utils import wmaHash, tstamp
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 
 class WMArchiveManager(object):
+    """
+    Initialize WMArchive proxy server configuration. The given configuration
+    file will provide details of proxy server, agent information, etc.
+    """
     def __init__(self, config=None):
-        """
-        Initialize WMArchive proxy server configuration. The given configuration
-        file will provide details of proxy server, agent information, etc.
-        """
         self.config = config
         if  config.short_storage_uri.startswith('mongo'):
             self.mgr = MongoStorage(config.short_storage_uri)
@@ -44,6 +42,7 @@ class WMArchiveManager(object):
         self._version = "1.0.0"
 
     def info(self):
+        "Return info about WMArchive"
         return {'WMArchive' : {'version': self._version}}
 
     def encode(self, docs):
@@ -65,10 +64,9 @@ class WMArchiveManager(object):
         for doc in docs:
             yield doc
 
-    def write(self, data, chunk_size=None):
+    def write(self, data):
         """
         Write given data chunk (list of WM documents) into proxy server.
-        The chunk_size default value will be determined by back-end throughput.
         Return true or false of write operation.
         """
         status = 'ok'
@@ -81,7 +79,7 @@ class WMArchiveManager(object):
             ids = self.mgr.write(docs)
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
-        except WriteError as err:
+        except WriteError:
             data = []
             status = 'write error'
         except Exception as exp:
@@ -100,7 +98,7 @@ class WMArchiveManager(object):
         try:
             # request data from back-end
             data = self.mgr.read(query)
-        except ReadError as err:
+        except ReadError:
             data = []
             status = 'read error'
         except Exception as exp:
