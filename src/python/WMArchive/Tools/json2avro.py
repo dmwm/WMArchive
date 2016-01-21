@@ -40,8 +40,11 @@ def migrate(fin, fout, avsc):
 
     # store data to Avro
     res = astg.file_write(fout, data)
-    wmaid = res.next() # The file_write API is generator and we need to advance
-    print("Wrote %s, wmaid=%s" % (fout, wmaid))
+    try:
+        wmaid = res.next() # This should be fixed in AvroStorage
+        print("Wrote %s, wmaid=%s" % (fout, wmaid))
+    except AttributeError, e:
+        print("Wrote %s, wmaid=%s" % (fout, res[0]))
 
 def main():
     "Main function"
