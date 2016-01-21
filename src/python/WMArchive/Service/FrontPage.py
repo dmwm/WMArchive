@@ -35,9 +35,11 @@ class FrontPage(RESTFrontPage):
         :arg config: reference to the configuration.
         :arg str mount: URL mount point."""
         mainroot = 'wmarchive' # entry point in access URL
-        content = os.path.abspath(__file__).rsplit('/', 5)[0]
-        xlib = (__file__.find("/xlib/") >= 0 and "x") or ""
-        wpath = "%s/%sdata/" % (content, xlib)
+        wpath = os.getenv('WMA_STATIC_ROOT', '')
+        if  not wpath:
+            content = os.path.abspath(__file__).rsplit('/', 5)[0]
+            xlib = (__file__.find("/xlib/") >= 0 and "x") or ""
+            wpath = "%s/%sdata/" % (content, xlib)
         print(tstamp(self.__class__.__name__), "static content: %s" % wpath)
         roots = \
         {
