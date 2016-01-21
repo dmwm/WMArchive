@@ -44,13 +44,14 @@ def usage():
     sfile = skeleton_file()
     efile = sfile.replace('Skeleton', 'mruser')
     msg = """
-Tool to generate and/or execute MapReduce (MR) script. The code is generated
-from MR skeleton provided by WMArchive and user based MR file. The later must
-contain two functions: mapper(ctx) and reducer(ctx) for given context. Their
-simplest implementation can be found here
+Tool to generate MapReduce (MR) scripts and launch jobs. The code is
+generated from a skeleton provided by WMArchive and a user based MR file. The
+latter must contain definitions for two functions: mapper(ctx) and
+reducer(ctx) for given context. A trivial example can be found in:
 %s
 Based on this code please create your own mapper/reducer functions and use
-this tool to generate final MR script.""" % efile
+this tool to generate the final MR script.""" % efile
+
     return msg
 
 class OptionParser():
@@ -61,32 +62,43 @@ class OptionParser():
         except Exception,e:
             print("Failed to find username", e)
             remdir = '/'
-        self.parser = argparse.ArgumentParser(prog='mrjob', description=usage())
+        self.parser = argparse.ArgumentParser(prog='mrjob',
+                                              description=usage())
         self.parser.add_argument("--hdir", action="store",
             dest="hdir", default=os.path.join(remdir,'test/'),
-            help="HDFS input data directory")
+            help="hdfs base directory, default=%(default)s")
         self.parser.add_argument("--idir", action="store",
             dest="idir", default='data/',
-            help="HDFS input directory for MR jobs, inside hdir")
+            help=("hdfs input directory for MR jobs, inside hdir, "
+                  "default=%(default)s"))
         self.parser.add_argument("--odir", action="store",
             dest="odir", default='mrout/',
-            help="HDFS output directory for MR jobs, inside hdir")
+            help=("hdfs output directory for MR jobs, inside hdir, "
+                  "default=%(default)s"))
         self.parser.add_argument("--schema", action="store",
             dest="schema", default='schema.avsc',
-            help="Name of data schema file on HDFS, inside hdir")
+            help=("Name of data schema file on hdfs, inside hdir, "
+                  "default=%(default)s"))
         self.parser.add_argument("--mrpy", action="store",
             dest="mrpy", default="mr.py", help="MapReduce python script")
         self.parser.add_argument("--pydoop", action="store",
-            dest="pydoop", default="pydoop.tgz", help="pydoop archive file, e.g. /path/pydoop.tgz")
+            dest="pydoop", default="pydoop.tgz",
+            help="pydoop archive file, e.g. /path/pydoop.tgz")
         self.parser.add_argument("--avro", action="store",
-            dest="avro", default="avro.tgz", help="avro archive file, e.g. /path/avro.tgz")
-        self.parser.add_argument("--loglevel", action="store",
-            dest="loglevel", default='INFO',
-            help="pydoop log level, default=%default")
+            dest="avro", default="avro.tgz",
+            help="avro archive file, e.g. /path/avro.tgz")
         self.parser.add_argument("--execute", action="store_true",
-            dest="execute", default=False, help="Execute generate mr job script")
+            dest="execute", default=False,
+            help="Execute the generated mr job script (i.e. launch the job)")
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="Verbose output")
+        self.parser.add_argument("--loglevel", action="store",
+            dest="loglevel", default='INFO',
+            help="pydoop log level, default=%(default)s")
+        self.parser.add_argument("--hdfs_prefix", action="store",
+            dest="hdfs_prefix",
+            default='hdfs://p01001532965510.cern.ch:9000',
+            help="hdfs prefix, default=%(default)s")
 
 def run(cmd, verbose=False):
     "Run given command in subprocess"
@@ -97,14 +109,13 @@ def run(cmd, verbose=False):
     proc.wait()
     return proc.returncode
 
-def hdfs_dir(hdir):
+def hdfs_dir(hdir, prefix='hdfs://p01001532965510.cern.ch:9000'):
     "Return HDFS URI for given directory"
-    hdfs_prefix = 'hdfs://p01001532965510.cern.ch:9000'
     if  hdir.startswith('hdfs://'):
         return hdir
     if  hdir.startswith('/'):
-        return '%s%s' % (hdfs_prefix, hdir)
-    return '%s/%s' % (hdfs_prefix, hdir)
+        return '%s%s' % (prefix, hdir)
+    return '%s/%s' % (prefix, hdir)
 
 def create_mrpy(usermr, verbose=None):
     "Create MR python script from skeleton and user provided code"
@@ -117,7 +128,7 @@ def mrjob(options):
 
     user = os.getenv('USER')
     tstamp = int(time.time())
-    hdir = hdfs_dir(options.hdir)
+    hdir = hdfs_dir(options.hdir, options.hdfs_prefix)
 
     if  PYDOOP:
         odir   = hdfs.path.join(hdir, options.odir)
