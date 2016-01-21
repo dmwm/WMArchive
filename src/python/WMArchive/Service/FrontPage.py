@@ -40,6 +40,8 @@ class FrontPage(RESTFrontPage):
             content = os.path.abspath(__file__).rsplit('/', 5)[0]
             xlib = (__file__.find("/xlib/") >= 0 and "x") or ""
             wpath = "%s/%sdata/" % (content, xlib)
+        if  not wpath.endswith('/'):
+            wpath += '/'
         print(tstamp(self.__class__.__name__), "static content: %s" % wpath)
         roots = \
         {
