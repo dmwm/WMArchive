@@ -20,25 +20,22 @@ The conversion logic relies on few constraints:
 from __future__ import print_function, division
 
 # system modules
-import os
-import sys
 import json
-import pprint
 import argparse
 from types import NoneType
 
 COUNTER = 0 # global namespace counter, used to generate proper namespaces
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         self.parser = argparse.ArgumentParser(prog='json2avsc')
-        self.parser.add_argument("--fin", action="store",
+        self.parser.add_argument("--fin", action="store", \
             dest="fin", default="", help="Input JSON file")
-        self.parser.add_argument("--fout", action="store",
+        self.parser.add_argument("--fout", action="store", \
             dest="fout", default="", help="Output Avro schema file")
 
-def genHeaders():
+def gen_headers():
     "Generate headers for avro types"
     global COUNTER
     namespace = 'ns%s' % COUNTER
@@ -79,7 +76,7 @@ def stype(val):
         return 'null'
     return 'null'
 
-def genSchema(data):
+def gen_schema(data):
     "Generate Avro schema from provide JSON data"
     fields = []
     for key, val in data.items():
@@ -87,22 +84,22 @@ def genSchema(data):
             fields.append({'name':key, 'type': stype(val)})
         elif isinstance(val, list):
             if  not len(val):
-                cdict = {'name': key, 'type':{'type':'array','items':stype(None)}}
+                cdict = {'name': key, 'type':{'type':'array', 'items':stype(None)}}
                 fields.append(cdict)
             elif baseTypes(val[0]):
-                cdict = {'name': key, 'type':{'type':'array','items':stype(val[0])}}
+                cdict = {'name': key, 'type':{'type':'array', 'items':stype(val[0])}}
                 fields.append(cdict)
             elif isinstance(val[0], dict):
-                nrec = {'type': 'array', 'items': genSchema(val[0])}
+                nrec = {'type': 'array', 'items': gen_schema(val[0])}
                 fields.append({'name': key, 'type': nrec})
             else:
-                raise NotImplemented
+                raise NotImplementedError
         elif isinstance(val, dict):
-            nrec = genSchema(val)
+            nrec = gen_schema(val)
             fields.append({'name': key, 'type': nrec})
         else:
-            raise NotImplemented
-    rec = genHeaders()
+            raise NotImplementedError
+    rec = gen_headers()
     rec['fields'] = fields
     return rec
 
@@ -111,12 +108,12 @@ def gen(fin, fout):
     with open(fin, 'r') as istream:
         data = json.load(istream)
         with open(fout, 'w') as ostream:
-            rec = genSchema(data)
+            rec = gen_schema(data)
             ostream.write(json.dumps(rec, indent=4))
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     gen(opts.fin, opts.fout)
 

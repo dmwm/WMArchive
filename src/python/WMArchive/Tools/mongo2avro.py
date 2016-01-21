@@ -15,7 +15,6 @@ from __future__ import print_function, division
 
 # system modules
 import os
-import sys
 import time
 import shutil
 import argparse
@@ -34,27 +33,27 @@ from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.AvroIO import AvroStorage
 from WMArchive.Utils.Utils import size_format, tstamp
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
-        self.parser.add_argument("--mongo", action="store",
+        self.parser.add_argument("--mongo", action="store",\
             dest="muri", default="", help="MongoDB URI")
-        self.parser.add_argument("--schema", action="store",
+        self.parser.add_argument("--schema", action="store",\
             dest="schema", default="", help="Avro schema file")
-        self.parser.add_argument("--odir", action="store",
+        self.parser.add_argument("--odir", action="store",\
             dest="odir", default="", help="Avro output area")
-        self.parser.add_argument("--compress", action="store",
+        self.parser.add_argument("--compress", action="store",\
             dest="compress", default="", help="Use compression, gz or bz2 are supported")
         thr = 256 # 256MB
-        self.parser.add_argument("--thr", action="store", type=int,
-            dest="thr", default=thr,
+        self.parser.add_argument("--thr", action="store", type=int,\
+            dest="thr", default=thr,\
             help="Avro file size threshold in MB, default %sMB" % thr)
         chunk = 1000
-        self.parser.add_argument("--chunk", action="store", type=int,
-            dest="chunk", default=chunk,
+        self.parser.add_argument("--chunk", action="store", type=int,\
+            dest="chunk", default=chunk,\
             help="Chunk size for reading Mongo docs, default %s" % chunk)
-        self.parser.add_argument("--verbose", action="store_true",
+        self.parser.add_argument("--verbose", action="store_true",\
             dest="verbose", default=False, help="Verbose output")
 
 def gen_file_name(odir, compress=''):
@@ -72,7 +71,8 @@ def file_name(odir, thr, compress):
     based on given file size threshold. When file exceed given threshold it is
     moved into migrate area within the same given directory.
     """
-    files = [f for f in os.listdir(odir) if os.path.isfile(os.path.join(odir,f))]
+    files = [f for f in os.listdir(odir) \
+            if os.path.isfile(os.path.join(odir, f))]
     if  not files:
         return gen_file_name(odir, compress)
 
@@ -130,7 +130,7 @@ def migrate(muri, odir, avsc, thr, compress, chunk, verbose):
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     thr = opts.thr*1024*1024 # convert input in MB into bytes
     migrate(opts.muri, opts.odir, opts.schema, thr, opts.compress,

@@ -54,55 +54,56 @@ this tool to generate the final MR script.""" % efile
 
     return msg
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         try:
-            remdir = os.path.join('/user',os.getenv('USER'))
-        except Exception,e:
-            print("Failed to find username", e)
+            remdir = os.path.join('/user', os.getenv('USER'))
+        except Exception as exp:
+            print("Failed to find username", exp)
             remdir = '/'
-        self.parser = argparse.ArgumentParser(prog='mrjob',
+        self.parser = argparse.ArgumentParser(prog='mrjob',\
                                               description=usage())
-        self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default=os.path.join(remdir,'test/'),
+        self.parser.add_argument("--hdir", action="store",\
+            dest="hdir", default=os.path.join(remdir, 'test/'),\
             help="hdfs base directory, default=%(default)s")
-        self.parser.add_argument("--idir", action="store",
-            dest="idir", default='data/',
+        self.parser.add_argument("--idir", action="store",\
+            dest="idir", default='data/',\
             help=("hdfs input directory for MR jobs, inside hdir, "
                   "default=%(default)s"))
-        self.parser.add_argument("--odir", action="store",
-            dest="odir", default='mrout/',
+        self.parser.add_argument("--odir", action="store",\
+            dest="odir", default='mrout/',\
             help=("hdfs output directory for MR jobs, inside hdir, "
                   "default=%(default)s"))
-        self.parser.add_argument("--schema", action="store",
-            dest="schema", default='schema.avsc',
+        self.parser.add_argument("--schema", action="store",\
+            dest="schema", default='schema.avsc',\
             help=("Name of data schema file on hdfs, inside hdir, "
                   "default=%(default)s"))
-        self.parser.add_argument("--mrpy", action="store",
+        self.parser.add_argument("--mrpy", action="store",\
             dest="mrpy", default="mr.py", help="MapReduce python script")
-        self.parser.add_argument("--pydoop", action="store",
-            dest="pydoop", default="pydoop.tgz",
+        self.parser.add_argument("--pydoop", action="store",\
+            dest="pydoop", default="pydoop.tgz",\
             help="pydoop archive file, e.g. /path/pydoop.tgz")
-        self.parser.add_argument("--avro", action="store",
-            dest="avro", default="avro.tgz",
+        self.parser.add_argument("--avro", action="store",\
+            dest="avro", default="avro.tgz",\
             help="avro archive file, e.g. /path/avro.tgz")
-        self.parser.add_argument("--execute", action="store_true",
-            dest="execute", default=False,
+        self.parser.add_argument("--execute", action="store_true",\
+            dest="execute", default=False,\
             help="Execute the generated mr job script (i.e. launch the job)")
-        self.parser.add_argument("--verbose", action="store_true",
+        self.parser.add_argument("--verbose", action="store_true",\
             dest="verbose", default=False, help="Verbose output")
-        self.parser.add_argument("--loglevel", action="store",
-            dest="loglevel", default='INFO',
+        self.parser.add_argument("--loglevel", action="store",\
+            dest="loglevel", default='INFO',\
             help="pydoop log level, default=%(default)s")
-        self.parser.add_argument("--hdfs_prefix", action="store",
-            dest="hdfs_prefix",
-            default='hdfs://p01001532965510.cern.ch:9000',
+        self.parser.add_argument("--hdfs_prefix", action="store",\
+            dest="hdfs_prefix",\
+            default='hdfs://p01001532965510.cern.ch:9000',\
             help="hdfs prefix, default=%(default)s")
 
 def run(cmd, verbose=False):
     "Run given command in subprocess"
-    if verbose: print('Executing', cmd)
+    if verbose:
+        print('Executing', cmd)
 
     # proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc = subprocess.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr)
@@ -131,8 +132,8 @@ def mrjob(options):
     hdir = hdfs_dir(options.hdir, options.hdfs_prefix)
 
     if  PYDOOP:
-        odir   = hdfs.path.join(hdir, options.odir)
-        idir   = hdfs.path.join(hdir, options.idir)
+        odir = hdfs.path.join(hdir, options.odir)
+        idir = hdfs.path.join(hdir, options.idir)
         schema = hdfs.path.join(hdir, options.schema)
         for name in [hdir, odir, idir,]:
             if  options.verbose:
@@ -146,7 +147,7 @@ def mrjob(options):
                 #     hdfs.mkdir(name)
             elif name == odir:
                 # in case odir exists and is not empty, move it somewhere and re-create
-                if(hdfs.ls(odir)):
+                if hdfs.ls(odir):
                     ocache = hdfs.path.normpath(odir)+'_%d'%tstamp
                     if options.verbose:
                         print(" Non-empty output directory exists, saving it in %s"%ocache)
@@ -166,7 +167,9 @@ def mrjob(options):
         odir = '%s%s' % (hdir, 'mrout')
         schema = '%s%s' % (hdir, options.schema)
         if  options.verbose:
-            print("WARNING: pydoop module is not present on this system, will use input as is without checking")
+            msg = 'pydoop module is not present on this system'
+            msg += ', will use input as is without checking'
+            print('WARNING:', msg)
     for name in [options.mrpy, options.pydoop, options.avro]:
         if  options.verbose:
             print("Checking %s" % name)
@@ -174,7 +177,7 @@ def mrjob(options):
             print("ERROR: %s does not exist" % name)
             sys.exit(1)
 
-    module = os.path.basename(os.path.splitext(options.mrpy)[0])
+#     module = os.path.basename(os.path.splitext(options.mrpy)[0])
     code = create_mrpy(options.mrpy, options.verbose)
 
     cmd = """#!/bin/bash
@@ -221,7 +224,7 @@ pydoop submit \
     os.chmod(fobj.name, fstat.st_mode | stat.S_IEXEC)
 
     if  options.execute:
-    	run(fobj.name, options.verbose)
+        run(fobj.name, options.verbose)
     else:
         if  options.verbose:
             print("------- Generated script --------")
@@ -234,7 +237,7 @@ pydoop submit \
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     mrjob(opts)
 

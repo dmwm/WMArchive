@@ -23,7 +23,7 @@ from avro.io import DatumReader, DatumWriter
 
 # WMArchive modules
 from WMArchive.Tools.json2avsc import genSchema
-from WMArchive.Storage.AvroIO import AvroStorage, AvroSerializer
+from WMArchive.Storage.AvroIO import AvroStorage
 from WMArchive.Utils.Utils import wmaHash
 
 class FileStorageTest(unittest.TestCase):
@@ -63,6 +63,12 @@ class FileStorageTest(unittest.TestCase):
             self.assertEqual(len(wmaids), 1)
             data = self.mgr.file_read(fname)
             self.assertEqual(data[0], self.data)
+
+    def test_file_write_exception(self):
+        "Test file_write functionality with exception"
+        fname = os.path.join('/etc/file.avro') # we should not have access to /etc
+        self.assertRaises(Exception, self.mgr.file_write, (fname, self.data))
+
 #
 # main
 #

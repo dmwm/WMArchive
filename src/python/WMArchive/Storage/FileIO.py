@@ -13,13 +13,11 @@ from __future__ import print_function, division
 # system modules
 import os
 import json
-import itertools
-from types import GeneratorType
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
-from WMArchive.Utils.Utils import wmaHash, open_file
+from WMArchive.Utils.Utils import open_file
 
 class FileStorage(Storage):
     "Storage based on FileDB back-end"

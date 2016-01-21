@@ -12,15 +12,15 @@ methods, see RESTEntity class for more details.
 from __future__ import print_function, division
 
 # system modules
-import re
 import json
-import cherrypy
 import traceback
 from types import GeneratorType
 
+# 3d party modules
+import cherrypy
+
 # WMCore modules
-import WMCore
-from WMCore.REST.Server import RESTEntity, restcall, rows
+from WMCore.REST.Server import RESTEntity, restcall
 from WMCore.REST.Tools import tools
 from WMCore.REST.Validation import validate_str
 from WMCore.REST.Format import JSONFormat
@@ -30,18 +30,19 @@ from WMArchive.Service.Manager import WMArchiveManager
 from WMArchive.Utils.Regexp import PAT_UID, PAT_QUERY, PAT_INFO
 
 class WMAData(RESTEntity):
+    "REST interface for WMArchvie"
     def __init__(self, app, api, config, mount):
         RESTEntity.__init__(self, app, api, config, mount)
         self.config = config
         self.mgr = WMArchiveManager(config)
-    
+
     def validate(self, apiobj, method, api, param, safe):
         """
         Validate request input data.
         Has to be implemented, otherwise the service fails to start.
         If it's not implemented correctly (e.g. just pass), the arguments
         are not passed in the method at all.
-        
+
         """
         if  method == 'GET':
             if 'query' in param.kwargs.keys():
@@ -58,7 +59,7 @@ class WMAData(RESTEntity):
                 return False # this class does not need any parameters
         return True
 
-    @restcall(formats = [('application/json', JSONFormat())])
+    @restcall(formats=[('application/json', JSONFormat())])
     @tools.expires(secs=-1)
     def get(self, *args, **kwds):
         """
@@ -68,11 +69,11 @@ class WMAData(RESTEntity):
         info = kwds.get('info', '')
         if  info:
             return json.dumps(self.mgr.info())
-        if  args and len(args)==1: # requested uid
+        if  args and len(args) == 1: # requested uid
             return json.dumps(self.mgr.read(args[0]))
         return json.dumps({'request': kwds, 'results': 'Not available'})
 
-    @restcall(formats = [('application/json', JSONFormat())])
+    @restcall(formats=[('application/json', JSONFormat())])
     @tools.expires(secs=-1)
     def post(self):
         """
@@ -87,8 +88,9 @@ class WMAData(RESTEntity):
         The some_query should be either MongoDB or Hive or other supported
         queries.
         """
-        result = {'status':'Not supported, expect "data", "query" attributes in your request', 'data':[]}
-        try :
+        msg = 'expect "data", "query" attributes in your request'
+        result = {'status':'Not supported, %s' % msg, 'data':[]}
+        try:
             request = json.load(cherrypy.request.body)
             if  'query' in request.keys():
                 result = self.mgr.read(request['query'])
@@ -96,13 +98,12 @@ class WMAData(RESTEntity):
                 result = self.mgr.write(request['data'])
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
-#            print("results", result, type(result), isinstance(result, GeneratorType))
             return json.dumps(result)
         except Exception as exp:
             traceback.print_exc()
             raise cherrypy.HTTPError(str(exp))
 
-    @restcall(formats = [('application/json', JSONFormat())])
+    @restcall(formats=[('application/json', JSONFormat())])
     @tools.expires(secs=-1)
     def put(self):
         """
@@ -113,8 +114,9 @@ class WMAData(RESTEntity):
         The input HTTP request should be in a form
         {"ids":[list_of_ids], "spec": update_spec}
         """
-        result = {'status':'Not supported, expect "data", "query" attributes in your request', 'data':[]}
-        try :
+        msg = 'expect "data", "query" attributes in your request'
+        result = {'status':'Not supported, %s' % msg, 'data':[]}
+        try:
             request = json.load(cherrypy.request.body)
             result = self.mgr.update(request['ids'], request['spec'])
             if  isinstance(result, GeneratorType):

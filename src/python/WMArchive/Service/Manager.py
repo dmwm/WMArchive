@@ -16,21 +16,20 @@ from __future__ import print_function, division
 
 # system modules
 import os
-import sys
-import time
 
 # WMArchive modules
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.FileIO import FileStorage
 from WMArchive.Storage.AvroIO import AvroStorage
-from WMArchive.Utils.Utils import wmaHash
+from WMArchive.Utils.Utils import wmaHash, tstamp
+from WMArchive.Utils.Exceptions import WriteError, ReadError
 
 class WMArchiveManager(object):
+    """
+    Initialize WMArchive proxy server configuration. The given configuration
+    file will provide details of proxy server, agent information, etc.
+    """
     def __init__(self, config=None):
-        """
-        Initialize WMArchive proxy server configuration. The given configuration
-        file will provide details of proxy server, agent information, etc.
-        """
         self.config = config
         if  config.short_storage_uri.startswith('mongo'):
             self.mgr = MongoStorage(config.short_storage_uri)
@@ -43,6 +42,7 @@ class WMArchiveManager(object):
         self._version = "1.0.0"
 
     def info(self):
+        "Return info about WMArchive"
         return {'WMArchive' : {'version': self._version}}
 
     def encode(self, docs):
@@ -64,19 +64,29 @@ class WMArchiveManager(object):
         for doc in docs:
             yield doc
 
-    def write(self, data, chunk_size=None):
+    def write(self, data):
         """
         Write given data chunk (list of WM documents) into proxy server.
-        The chunk_size default value will be determined by back-end throughput.
         Return true or false of write operation.
         """
-        if  isinstance(data, dict):
-            data = [data]
-        if  not isinstance(data, list):
-            raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
-        docs = [r for r in self.encode(data)]
-        ids = self.mgr.write(docs)
-        result = {'stype': self.mgr.stype, 'ids': ids}
+        status = 'ok'
+        try:
+            if  isinstance(data, dict):
+                data = [data]
+            if  not isinstance(data, list):
+                raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
+            docs = [r for r in self.encode(data)]
+            ids = self.mgr.write(docs)
+            if  not ids and len(data): # somehow we got empty list for given data
+                status = 'unknown'
+        except WriteError:
+            data = []
+            status = 'write error'
+        except Exception as exp:
+            print(tstamp("WMArchiveManager::write"), "fail with %s" % str(exp))
+            status = 'fail'
+            ids = []
+        result = {'stype': self.mgr.stype, 'ids': ids, 'status': status}
         return result
 
     def read(self, query):
@@ -84,17 +94,16 @@ class WMArchiveManager(object):
         Send request to proxy server to read data for given query.
         Yield list of found documents or None.
         """
-        # request data from back-end
-        data = self.mgr.read(query)
-        result = {'query': query, 'data': data, 'stype': self.mgr.stype}
-        return result
-
-    def ack(self, docIds):
-        """
-        Send acknowledgement request to proxy server for given set of ids.
-        Return true or false if data is present on back-end server.
-        """
-        # request confirmation about the data from ba
-        status = 'Stored'
-        result = {'status': status, 'ids': docIds}
+        status = 'ok'
+        try:
+            # request data from back-end
+            data = self.mgr.read(query)
+        except ReadError:
+            data = []
+            status = 'read error'
+        except Exception as exp:
+            data = []
+            print(tstamp("WMArchiveManager::write"), "fail with %s" % str(exp))
+            status = 'fail'
+        result = {'query': query, 'data': data, 'stype': self.mgr.stype, 'status': status}
         return result

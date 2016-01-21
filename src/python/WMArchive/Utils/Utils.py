@@ -49,7 +49,7 @@ def tstamp(msg='WMA'):
     """
     tst = time.localtime()
     tstamp = time.strftime('[%d/%b/%Y:%H:%M:%S]', tst)
-    return '%s %s %s' % (tstamp, time.mktime(tst), msg.strip())
+    return '%s %s %s ' % (tstamp, time.mktime(tst), msg.strip())
 
 def wmaHash(data):
     "Return md5 hash of given data"

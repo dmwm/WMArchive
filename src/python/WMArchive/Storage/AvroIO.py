@@ -14,9 +14,7 @@ from __future__ import print_function, division
 # system modules
 import io
 import os
-import json
-import itertools
-from types import GeneratorType
+import traceback
 
 # avro modules
 import avro.schema
@@ -27,6 +25,7 @@ from avro.io import DatumReader, DatumWriter
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Utils import wmaHash, open_file, file_name
+from WMArchive.Utils.Exceptions import WriteError, ReadError
 
 class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
@@ -65,27 +64,37 @@ class AvroStorage(Storage):
 
     def file_write(self, fname, data):
         "Write documents in append mode to given file name"
-        schema = self.schema
-        if  not hasattr(data, '__iter__') or isinstance(data, dict):
-            data = [data]
-        wmaids = []
-        with open_file(fname, 'a') as ostream:
-            for rec in data:
-                data_bytes = self.encode(rec)
-                ostream.write(data_bytes)
-                ostream.flush()
-                wmaid = rec.get('wmaid', wmaHash(rec))
-                wmaids.append(wmaid)
-        return wmaids
+        try:
+            schema = self.schema
+            if  not hasattr(data, '__iter__') or isinstance(data, dict):
+                data = [data]
+            wmaids = []
+            with open_file(fname, 'a') as ostream:
+                for rec in data:
+                    data_bytes = self.encode(rec)
+                    ostream.write(data_bytes)
+                    ostream.flush()
+                    wmaid = rec.get('wmaid', wmaHash(rec))
+                    wmaids.append(wmaid)
+            return wmaids
+        except Exception as exc:
+            err = traceback.format_exc(limit=1).splitlines()[-1]
+            msg = 'Failure in %s storage, error=%s' % (self.stype, err)
+            raise WriteError(msg)
 
     def file_read(self, fname):
         "Read documents from given file name"
-        schema = self.schema
-        out = []
-        with open_file(fname) as istream:
-            data_bytes = istream.read()
-            out = self.decode(data_bytes)
-        return out
+        try:
+            schema = self.schema
+            out = []
+            with open_file(fname) as istream:
+                data_bytes = istream.read()
+                out = self.decode(data_bytes)
+            return out
+        except Exception as exc:
+            err = traceback.format_exc(limit=1).splitlines()[-1]
+            msg = 'Failure in %s storage, error=%s' % (self.stype, err)
+            raise ReadError(msg)
 
     def _write(self, data):
         "Internal write API"

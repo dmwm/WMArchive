@@ -43,30 +43,18 @@ class FrontPage(RESTFrontPage):
         if  not wpath.endswith('/'):
             wpath += '/'
         print(tstamp(self.__class__.__name__), "static content: %s" % wpath)
-        roots = \
-        {
-          mainroot:
-          {
-            "root": wpath,
-            "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:html)$")
-          },
-          "templates":
-          {   "root": wpath+"templates/",
-              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:html|tmpl)$")
-          },
-          "js":
-          {   "root": wpath+"js/",
-              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:js)$")
-          },
-          "css":
-          {   "root": wpath+"css/",
-              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\..*(?:css)$")
-          },
-          "images":
-          {   "root": wpath+"images/",
-              "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:png|gif|jpg)$")
-          }
-        }
+        mdict = {"root": wpath, \
+                 "rx": re.compile(r"^[a-z]+/[-a-z0-9]+\.(?:html)$")}
+        tdict = {"root": wpath+"templates/", \
+                "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:html|tmpl)$")}
+        jdict = {"root": wpath+"js/", \
+                 "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:js)$")}
+        cdict = {"root": wpath+"css/", \
+                 "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\..*(?:css)$")}
+        idict = {"root": wpath+"images/", \
+                 "rx": re.compile(r"^([a-zA-Z]+/)*[-a-z0-9_]+\.(?:png|gif|jpg)$")}
+        roots = {mainroot: mdict, "templates": tdict, \
+                "js": jdict, "css": cdict, "images": idict}
         # location of frontpage in the root, e.g. wmarchive
         frontpage = "%s/templates/wma.html" % mainroot
         RESTFrontPage.__init__(self, app, config, mount, frontpage, roots)

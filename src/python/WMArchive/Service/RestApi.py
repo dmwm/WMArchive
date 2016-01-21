@@ -16,7 +16,6 @@ import cherrypy
 # WMCore modules
 from WMCore.Configuration import Configuration
 from WMCore.REST.Server import RESTApi
-from WMCore.REST.Format import RawFormat
 from WMArchive.Service.Data import WMAData
 
 class RestInterface(RESTApi):
@@ -29,10 +28,10 @@ class RestInterface(RESTApi):
         :arg app: reference to application object; passed to all entities.
         :arg config: reference to configuration; passed to all entities.
         :arg str mount: API URL mount point; passed to all entities."""
-        
+
         RESTApi.__init__(self, app, config, mount)
-        
-        cherrypy.log("WMArchive entire configuration:\n%s" % Configuration.getInstance())    
+
+        cherrypy.log("WMArchive entire configuration:\n%s" % Configuration.getInstance())
         cherrypy.log("WMArchive REST configuration subset:\n%s" % config)
-        
+
         self._add({"data": WMAData(app, self, config, mount)})

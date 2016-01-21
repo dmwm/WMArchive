@@ -10,24 +10,22 @@ Description: Mongo clean up script
 from __future__ import print_function, division
 
 # system modules
-import os
-import sys
 import argparse
 
 # WMARchive modules
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Utils.Utils import dateformat
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         self.parser = argparse.ArgumentParser(prog='mongocleanup')
-        self.parser.add_argument("--mongo", action="store",
+        self.parser.add_argument("--mongo", action="store",\
             dest="muri", default="", help="MongoDB URI")
-        self.parser.add_argument("--tstamp", action="store",
-            dest="tstamp", default="",
+        self.parser.add_argument("--tstamp", action="store",\
+            dest="tstamp", default="",\
             help="timestamp below which records will be removed, YYYYMMDD")
-        self.parser.add_argument("--verbose", action="store_true",
+        self.parser.add_argument("--verbose", action="store_true",\
             dest="verbose", default=False, help="verbose mode")
 
 def cleanup(muri, tst, verbose):
@@ -44,7 +42,7 @@ def cleanup(muri, tst, verbose):
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     cleanup(opts.muri, opts.tstamp, opts.verbose)
 

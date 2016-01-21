@@ -10,24 +10,21 @@ Description: Script to convert json to avro file
 from __future__ import print_function, division
 
 # system modules
-import os
-import sys
 import json
 import argparse
 
 # WMARchive modules
-from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.AvroIO import AvroStorage
 
-class OptionParser():
+class OptionParser(object):
+    "User based option parser"
     def __init__(self):
-        "User based option parser"
         self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
-        self.parser.add_argument("--fin", action="store",
+        self.parser.add_argument("--fin", action="store", \
             dest="fin", default="", help="Input JSON file")
-        self.parser.add_argument("--schema", action="store",
+        self.parser.add_argument("--schema", action="store", \
             dest="schema", default="", help="Input Avro schema")
-        self.parser.add_argument("--fout", action="store",
+        self.parser.add_argument("--fout", action="store", \
             dest="fout", default="", help="Output Avro file")
 
 def migrate(fin, fout, avsc):
@@ -39,13 +36,12 @@ def migrate(fin, fout, avsc):
     data = json.load(open(fin))
 
     # store data to Avro
-    res = astg.file_write(fout, data)
-    wmaid = res.next() # The file_write API is generator and we need to advance
+    wmaid = astg.file_write(fout, data)
     print("Wrote %s, wmaid=%s" % (fout, wmaid))
 
 def main():
     "Main function"
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     migrate(opts.fin, opts.fout, opts.schema)
 
