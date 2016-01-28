@@ -43,6 +43,8 @@ class OptionParser(object):
             dest="schema", default="", help="Avro schema file")
         self.parser.add_argument("--odir", action="store",\
             dest="odir", default="", help="Avro output area")
+        self.parser.add_argument("--mdir", action="store",\
+            dest="mdir", default="", help="Avro migration area")
         self.parser.add_argument("--compress", action="store",\
             dest="compress", default="", help="Use compression, gz or bz2 are supported")
         thr = 256 # 256MB
@@ -65,7 +67,7 @@ def gen_file_name(odir, compress=''):
         name += '.%s' % compress
     return os.path.join(odir, name)
 
-def file_name(odir, thr, compress):
+def file_name(odir, mdir, thr, compress):
     """
     Read content of given dir and either re-use existing file or create a new one
     based on given file size threshold. When file exceed given threshold it is
@@ -74,7 +76,7 @@ def file_name(odir, thr, compress):
     files = [f for f in os.listdir(odir) \
             if os.path.isfile(os.path.join(odir, f))]
     if  not files:
-        return gen_file_name(odir, compress)
+        return gen_file_name(odir, mdir, compress)
 
     files.sort()
     last_file = files[-1]
@@ -83,16 +85,14 @@ def file_name(odir, thr, compress):
     if  size < thr:
         return fname
 
-    # file is ready for migration
-    mdir = os.path.join(odir, 'migrate')
     try:
         os.mkdir(mdir)
     except OSError:
         pass
     shutil.move(fname, mdir)
-    return gen_file_name(odir, compress)
+    return gen_file_name(odir, mdir, compress)
 
-def migrate(muri, odir, avsc, thr, compress, chunk, verbose):
+def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
     mstg = MongoStorage(muri)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
@@ -105,7 +105,7 @@ def migrate(muri, odir, avsc, thr, compress, chunk, verbose):
     # loop over provided docs and write them into avro file on local file system
     wmaids = []
     while True:
-        fname = file_name(odir, thr, compress)
+        fname = file_name(odir, mdir, thr, compress)
         ids = astg.file_write(fname, itertools.islice(mdocs, chunk))
         fsize = os.path.getsize(fname)
         if  not len(ids):
@@ -133,7 +133,8 @@ def main():
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
     thr = opts.thr*1024*1024 # convert input in MB into bytes
-    migrate(opts.muri, opts.odir, opts.schema, thr, opts.compress,
+    migrate(opts.muri, opts.odir, opts.mdir, \
+            opts.schema, thr, opts.compress, \
             opts.chunk, opts.verbose)
 
 if __name__ == '__main__':
