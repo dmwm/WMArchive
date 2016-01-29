@@ -70,6 +70,7 @@ class WMArchiveManager(object):
         Return true or false of write operation.
         """
         status = 'ok'
+        ids = []
         try:
             if  isinstance(data, dict):
                 data = [data]
@@ -79,7 +80,8 @@ class WMArchiveManager(object):
             ids = self.mgr.write(docs)
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
-        except WriteError:
+        except WriteError as exp:
+            print(exp)
             data = []
             status = 'write error'
         except Exception as exp:
@@ -98,7 +100,8 @@ class WMArchiveManager(object):
         try:
             # request data from back-end
             data = self.mgr.read(query)
-        except ReadError:
+        except ReadError as exp:
+            print(exp)
             data = []
             status = 'read error'
         except Exception as exp:
