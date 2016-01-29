@@ -58,13 +58,18 @@ class MongoStorage(Storage):
     def write(self, data, safe=None):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
-            data = [data]
+            data = [data] # ensure that we got list of data
         wmaids = self.getids(data)
+        total = 0
         try:
+            # we use generator and itertools to slice specific chunk of data
+            # for MongoDB bulk insertion
+            gen = (r for r in data)
             while True:
-                nres = self.coll.insert(itertools.islice(data, self.chunk_size))
+                nres = self.coll.insert(itertools.islice(gen, self.chunk_size))
                 if  not nres:
                     break
+                total += len(nres)
         except InvalidDocument as exp:
             self.log('WARNING InvalidDocument: %s' % str(exp))
         except InvalidOperation as exp:
@@ -73,6 +78,10 @@ class MongoStorage(Storage):
             pass
         except Exception as exp:
             raise WriteError(str(exp))
+        if  total != len(wmaids):
+            err = 'Unable to insert all records, given (%s) != inserted (%s)' \
+                    % (len(wmaids), total)
+            raise WriteError(msg)
         return wmaids
 
     def read(self, query=None):
