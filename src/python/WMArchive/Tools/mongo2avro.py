@@ -76,7 +76,7 @@ def file_name(odir, mdir, thr, compress):
     files = [f for f in os.listdir(odir) \
             if os.path.isfile(os.path.join(odir, f))]
     if  not files:
-        return gen_file_name(odir, mdir, compress)
+        return gen_file_name(odir, compress)
 
     files.sort()
     last_file = files[-1]
@@ -90,7 +90,7 @@ def file_name(odir, mdir, thr, compress):
     except OSError:
         pass
     shutil.move(fname, mdir)
-    return gen_file_name(odir, mdir, compress)
+    return gen_file_name(odir, compress)
 
 def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
