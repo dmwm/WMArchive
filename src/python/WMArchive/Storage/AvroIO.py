@@ -40,40 +40,18 @@ class AvroStorage(Storage):
             os.makedirs(self.hdir)
         schema_doc = open(schema).read()
         self.schema = avro.schema.parse(schema_doc)
-        self.writer = avro.io.DatumWriter(self.schema)
-        self.reader = avro.io.DatumReader(self.schema)
-
-    def encode(self, data):
-        "Encode given data into binary stream"
-        bytes_writer = io.BytesIO()
-        encoder = avro.io.BinaryEncoder(bytes_writer)
-        self.writer.write(data, encoder)
-        return bytes_writer.getvalue()
-
-    def decode(self, data):
-        "Decode given binary data into list of records"
-        out = []
-        decoder = avro.io.BinaryDecoder(io.BytesIO(data))
-        while True:
-            try:
-                rec = self.reader.read(decoder)
-                out.append(rec)
-            except:
-                break
-        return out
 
     def file_write(self, fname, data):
         "Write documents in append mode to given file name"
         try:
             schema = self.schema
+            wmaids = []
             if  not hasattr(data, '__iter__') or isinstance(data, dict):
                 data = [data]
-            wmaids = []
-            with open_file(fname, 'a') as ostream:
-                for rec in data:
-                    data_bytes = self.encode(rec)
-                    ostream.write(data_bytes)
-                    ostream.flush()
+
+	    with DataFileWriter(open_file(fname, 'a'), DatumWriter(), schema) as writer:
+		for rec in data:
+		    writer.append(rec)
                     wmaid = rec.get('wmaid', wmaHash(rec))
                     wmaids.append(wmaid)
             return wmaids
@@ -87,9 +65,9 @@ class AvroStorage(Storage):
         try:
             schema = self.schema
             out = []
-            with open_file(fname) as istream:
-                data_bytes = istream.read()
-                out = self.decode(data_bytes)
+            with DataFileReader(open_file(fname), DatumReader()) as reader:
+                for rec in reader:
+                    out.append(rec)
             return out
         except Exception as exc:
             err = traceback.format_exc(limit=1).splitlines()[-1]
