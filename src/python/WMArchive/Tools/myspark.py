@@ -16,6 +16,7 @@ https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
 # system modules
 import os
 import sys
+import imp
 import argparse
 
 class OptionParser():
@@ -45,16 +46,52 @@ def extract(records):
             out.append(rec['jobid'])
     return out
 
+class SparkLogger(object):
+    "Control Spark Logger"
+    def __init__(self, ctx):
+        self.logger = ctx._jvm.org.apache.log4j
+        self.rlogger = self.logger.LogManager.getRootLogger()
+
+    def set_level(self, level):
+        "Set Spark Logger level"
+        self.rlogger.setLevel(getattr(self.logger.Level, level))
+
+    def lprint(self, stream, msg):
+        "Print message via Spark Logger to given stream"
+        getattr(self.rlogger, stream)(msg)
+
+    def info(self, msg):
+        "Print message via Spark Logger to info stream"
+        self.lprint('info', msg)
+
+    def error(self, msg):
+        "Print message via Spark Logger to error stream"
+        self.lprint('error', msg)
+
+    def warning(self, msg):
+        "Print message via Spark Logger to warning stream"
+        self.lprint('warning', msg)
+
+def import_(filename):
+    "Import given filename"
+    path, name = os.path.split(filename)
+    name, ext = os.path.splitext(name)
+    ifile, filename, data = imp.find_module(name, [path])
+    return imp.load_module(name, ifile, filename, data)
+
 def run(schema_file, data_path, mapper=None, verbose=None):
     # pyspark modules
     from pyspark import SparkContext
 
     # define spark context, it's main object which allow
     # to communicate with spark
-    sc = SparkContext(appName="AvroKeyInputFormat")
+    ctx = SparkContext(appName="AvroKeyInputFormat")
+    logger = SparkLogger(ctx)
+    if  not verbose:
+        logger.set_level('ERROR')
 
     # load FWJR schema
-    rdd = sc.textFile(schema_file, 1).collect()
+    rdd = ctx.textFile(schema_file, 1).collect()
 
     # define input avro schema, the rdd is a list of lines (sc.textFile similar to readlines)
     avsc = reduce(lambda x, y: x + y, rdd) # merge all entries from rdd list
@@ -68,7 +105,7 @@ def run(schema_file, data_path, mapper=None, verbose=None):
     aconv="org.apache.spark.examples.pythonconverters.AvroWrapperToJavaConverter"
 
     # load data from HDFS
-    avro_rdd = sc.newAPIHadoopFile(data_path, aformat, akey, awrite, aconv, conf=conf)
+    avro_rdd = ctx.newAPIHadoopFile(data_path, aformat, akey, awrite, aconv, conf=conf)
 
     # process data, here the map will read record from avro file
     # if we need a whole record we'll use lambda x: x[0], e.g.
@@ -81,20 +118,31 @@ def run(schema_file, data_path, mapper=None, verbose=None):
     # in more general way we write extract function which will be
     # executed by Spark via collect call
     if  mapper:
-        from mapper import extract as user_extract
-        records = avro_rdd.map(user_extract).collect()
+        obj = import_(mapper)
+        logger.info("Use user-based mapper %s" % obj)
+        if  not hasattr(obj, 'extract'):
+            logger.error('Unable to find extract function in %s, %s' % (mapper, obj))
+            ctx.stop()
+            return
+        records = avro_rdd.map(obj.extract).collect()
     else:
         records = avro_rdd.map(extract).collect()
-    sc.stop()
-    return records
+    out = []
+    for rec in records:
+        if  isinstance(rec, list):
+            for row in rec:
+                out.append(row)
+        else:
+            out.append(rec)
+    ctx.stop()
+    return out
 
 def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     results = run(opts.schema, opts.hdir, opts.mapper, opts.verbose)
-    if  opts.verbose:
-        print("RESULTS", results)
+    print("RESULTS", results)
 
 if __name__ == '__main__':
     main()
