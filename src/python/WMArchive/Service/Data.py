@@ -32,7 +32,7 @@ from WMArchive.Utils.Regexp import PAT_UID, PAT_QUERY, PAT_INFO
 def results(result):
     "Return results as a list data type. Set proper status in case of failures"
     if 'status' in result and 'Not supported' in result['status']:
-        cherrypy.response.status = "406 Not Acceptable"
+        cherrypy.response.status = 406 # Not Acceptable
     if  not isinstance(result, list):
         return [result]
     return result
