@@ -12,6 +12,7 @@ from __future__ import print_function, division
 # system modules
 import os
 import json
+import random
 import httplib
 import argparse
 
@@ -40,6 +41,38 @@ def getData(conn):
     except:
         print("response", res, type(res))
         raise
+
+def modjson(rec):
+    "Change json record"
+    if 'steps' not in rec:
+        rec['steps'] = {}
+    if 'cmsRun1' not in rec['steps']:
+        rec['steps']['cmsRun1'] = {}
+    if 'performance' not in rec['steps']['cmsRun1']:
+        rec['steps']['cmsRun1']['performance'] = {}
+    cpu = dict(AvgEventCPU=random.random(),
+            AvgEventTime=random.random(),
+            MaxEventCPU=random.randint(1,10)*random.random(),
+            MaxEventTime=random.randint(1,10)*random.random(),
+            MinEventTime=random.random(),
+            TotalEventCPU=random.randint(10,1000)*random.random(),
+            TotalJobCPU=random.randint(10,1000)*random.random())
+    memory = dict(PeakValueRss=random.randint(1,100)*random.random(),
+            PeakValueVsize=random.randint(1,100)*random.random())
+    storage = {}
+    storage = {'readAveragekB': random.randint(10,1000)*random.random(),
+      'readCachePercentageOps': random.random(),
+      'readMBSec': random.random(),
+      'readMaxMSec': random.randint(1,1000)*random.random(),
+      'readNumOps': random.randint(1,100)*random.random(),
+      'readPercentageOps': random.randint(1,10)*random.random(),
+      'readTotalMB': random.randint(1,1000)*random.random(),
+      'readTotalSecs': random.random(),
+      'writeTotalMB': random.randint(1,1000)*random.random(),
+      'writeTotalSecs': random.randint(1000,100000)*random.random()}
+    rec['steps']['cmsRun1']['performance'] = \
+            dict(cpu=cpu, memory=memory, multicore={}, storage=storage)
+    return rec
 
 def client(host, port, jsonFile, ntimes=10):
     "Client program"
@@ -79,7 +112,7 @@ def client(host, port, jsonFile, ntimes=10):
         rec = dict(record)
         rec['copyid'] = str(idx)
         docs.append(rec)
-    print("Created %s copies", len(docs))
+    print("Created %s copies" % len(docs))
     data = dict(data=docs)
     conn.request('POST', path, json.dumps(data), headers)
     data = getData(conn)
