@@ -72,6 +72,7 @@ def modjson(rec):
       'writeTotalSecs': random.randint(1000,100000)*random.random()}
     rec['steps']['cmsRun1']['performance'] = \
             dict(cpu=cpu, memory=memory, multicore={}, storage=storage)
+    rec['task'] = '/AbcCde_Task_Data_test_%s/RECO' % random.randint(1000,10000000)
     return rec
 
 def client(host, port, jsonFile, ntimes=10):
@@ -109,8 +110,7 @@ def client(host, port, jsonFile, ntimes=10):
     path = '/wmarchive/data'
     docs = []
     for idx in range(ntimes):
-        rec = dict(record)
-        rec['copyid'] = str(idx)
+        rec = modjson(dict(record))
         docs.append(rec)
     print("Created %s copies" % len(docs))
     data = dict(data=docs)
