@@ -49,9 +49,12 @@ class AvroStorage(Storage):
             if  not hasattr(data, '__iter__') or isinstance(data, dict):
                 data = [data]
 
-            with DataFileWriter(open_file(fname, 'a'), DatumWriter(), schema) as writer:
+            if  os.path.exists(fname):
+                schema = None # we'll append to existing file
+            with DataFileWriter(open_file(fname, "a+"), DatumWriter(), schema) as writer:
                 for rec in data:
                     writer.append(rec)
+                    writer.flush()
                     wmaid = rec.get('wmaid', wmaHash(rec))
                     wmaids.append(wmaid)
             return wmaids
