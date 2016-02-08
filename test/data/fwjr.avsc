@@ -4,6 +4,28 @@
     "name": "name46", 
     "fields": [
         {
+            "type": "string", 
+            "name": "task"
+        }, 
+        {
+            "type": {
+                "items": "null", 
+                "type": "array"
+            }, 
+            "name": "skippedFiles"
+        }, 
+        {
+            "type": "string", 
+            "name": "wmaid"
+        }, 
+        {
+            "type": {
+                "items": "null", 
+                "type": "array"
+            }, 
+            "name": "fallbackFiles"
+        }, 
+        {
             "type": {
                 "namespace": "ns0", 
                 "type": "record", 
@@ -500,7 +522,7 @@
                                                             "name": "readMaxMSec"
                                                         }, 
                                                         {
-                                                            "type": "long", 
+                                                            "type": "double", 
                                                             "name": "readTotalSecs"
                                                         }, 
                                                         {
@@ -518,39 +540,39 @@
                                                     "name": "name32", 
                                                     "fields": [
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "TotalJobCPU"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "TotalEventCPU"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "AvgEventCPU"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "AvgEventTime"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "MinEventCPU"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "MaxEventTime"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "TotalJobTime"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "MinEventTime"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "MaxEventCPU"
                                                         }
                                                     ]
@@ -564,11 +586,11 @@
                                                     "name": "name33", 
                                                     "fields": [
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "PeakValueRss"
                                                         }, 
                                                         {
-                                                            "type": "string", 
+                                                            "type": "double", 
                                                             "name": "PeakValueVsize"
                                                         }
                                                     ]
@@ -756,7 +778,7 @@
                                                                             "name": "name38", 
                                                                             "fields": [
                                                                                 {
-                                                                                    "type": "string", 
+                                                                                    "type": "long", 
                                                                                     "name": "runNumber"
                                                                                 }, 
                                                                                 {
@@ -829,7 +851,7 @@
                                                                         "name": "name41", 
                                                                         "fields": [
                                                                             {
-                                                                                "type": "string", 
+                                                                                "type": "long", 
                                                                                 "name": "runNumber"
                                                                             }, 
                                                                             {
@@ -894,24 +916,6 @@
                 ]
             }, 
             "name": "steps"
-        }, 
-        {
-            "type": {
-                "items": "null", 
-                "type": "array"
-            }, 
-            "name": "skippedFiles"
-        }, 
-        {
-            "type": {
-                "items": "null", 
-                "type": "array"
-            }, 
-            "name": "fallbackFiles"
-        }, 
-        {
-            "type": "string", 
-            "name": "task"
         }
     ]
 }
