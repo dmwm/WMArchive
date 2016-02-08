@@ -49,15 +49,17 @@ class AvroStorage(Storage):
             if  not hasattr(data, '__iter__') or isinstance(data, dict):
                 data = [data]
 
-	    with DataFileWriter(open_file(fname, 'a'), DatumWriter(), schema) as writer:
-		for rec in data:
-		    writer.append(rec)
+            with DataFileWriter(open_file(fname, 'a'), DatumWriter(), schema) as writer:
+                for rec in data:
+                    writer.append(rec)
                     wmaid = rec.get('wmaid', wmaHash(rec))
                     wmaids.append(wmaid)
             return wmaids
         except Exception as exc:
             err = traceback.format_exc(limit=1).splitlines()[-1]
-            msg = 'Failure in %s storage, error=%s' % (self.stype, err)
+            line = ' '.join(str(exc).replace('\n', '').split())
+            msg = 'Failure in %s storage, error=%s, exception=%s' \
+                    % (self.stype, err, line)
             raise WriteError(msg)
 
     def file_read(self, fname):
