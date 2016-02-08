@@ -29,6 +29,14 @@ from WMCore.REST.Format import JSONFormat
 from WMArchive.Service.Manager import WMArchiveManager
 from WMArchive.Utils.Regexp import PAT_UID, PAT_QUERY, PAT_INFO
 
+def results(result):
+    "Return results as a list data type. Set proper status in case of failures"
+    if 'status' in result and 'Not supported' in result['status']:
+        cherrypy.response.status = "406 Not Acceptable"
+    if  not isinstance(result, list):
+        return [result]
+    return result
+
 class WMAData(RESTEntity):
     "REST interface for WMArchvie"
     def __init__(self, app, api, config, mount):
@@ -68,10 +76,10 @@ class WMAData(RESTEntity):
         """
         info = kwds.get('info', '')
         if  info:
-            return json.dumps(self.mgr.info())
+            return self.mgr.info()
         if  args and len(args) == 1: # requested uid
-            return json.dumps(self.mgr.read(args[0]))
-        return json.dumps({'request': kwds, 'results': 'Not available'})
+            return results(self.mgr.read(args[0]))
+        return results({'request': kwds, 'results': 'Not available'})
 
     @restcall(formats=[('application/json', JSONFormat())])
     @tools.expires(secs=-1)
@@ -98,7 +106,7 @@ class WMAData(RESTEntity):
                 result = self.mgr.write(request['data'])
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
-            return json.dumps(result)
+            return results(result)
         except Exception as exp:
             traceback.print_exc()
             raise cherrypy.HTTPError(str(exp))
@@ -121,7 +129,7 @@ class WMAData(RESTEntity):
             result = self.mgr.update(request['ids'], request['spec'])
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
-            return json.dumps(result)
+            return results(result)
         except Exception as exp:
             traceback.print_exc()
             raise cherrypy.HTTPError(str(exp))
