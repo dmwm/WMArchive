@@ -54,9 +54,11 @@ def modjson(rec):
             AvgEventTime=random.random(),
             MaxEventCPU=random.randint(1,10)*random.random(),
             MaxEventTime=random.randint(1,10)*random.random(),
+            MinEventCPU=random.randint(1,10)*random.random(),
             MinEventTime=random.random(),
             TotalEventCPU=random.randint(10,1000)*random.random(),
-            TotalJobCPU=random.randint(10,1000)*random.random())
+            TotalJobCPU=random.randint(10,1000)*random.random(),
+            TotalJobTime=random.randint(1,10)*random.random() )
     memory = dict(PeakValueRss=random.randint(1,100)*random.random(),
             PeakValueVsize=random.randint(1,100)*random.random())
     storage = {}
