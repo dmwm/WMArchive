@@ -1,4 +1,7 @@
 #!/bin/sh
+# Author: Valentin Kuznetsov <vkuznet AT gmail [DOT] com>
+# A wrapper script to submit spark job with myspark.py script
+# from WMArchive project.
 
 # test arguments
 if [ "$#" -eq 0 ]; then
@@ -18,6 +21,13 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "-help" ]; then
 	# run help
     python $wmaroot/Tools/myspark.py --help
 else
-	# submit spark job with our file
-    spark-submit --driver-class-path $avrojar:$sparkexjar $wmaroot/Tools/myspark.py ${1+"$@"}
+	# submit spark job with our file, please note
+    # that user may increase memory options if necessary
+    # the executor and driver memory options can be given in human readable form
+    # while spark yarn option should use memoryOverhead as KB value
+    spark-submit --driver-class-path $avrojar:$sparkexjar \
+        --executor-memory 4G \
+        --driver-memory 4G \
+        --conf spark.yarn.executor.memoryOverhead=4096 \
+        $wmaroot/Tools/myspark.py ${1+"$@"}
 fi
