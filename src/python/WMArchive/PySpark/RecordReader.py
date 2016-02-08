@@ -38,6 +38,4 @@ def reducer(records):
         wsize += rec['wsize']
         count += rec['docs']
     summary = {'cpu':tot_cpu, 'time':tot_time, 'rsize':rsize, 'wsize':wsize, 'docs':count}
-    out.append(summary)
-
-
+    return summary
