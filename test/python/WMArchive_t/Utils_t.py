@@ -38,6 +38,9 @@ class WMBaseTest(unittest.TestCase):
         self.assertRaises(Exception, dateformat, wrong)
         wrong = '2012'
         self.assertRaises(Exception, dateformat, wrong)
+        date2 = '2d'
+        res = dateformat(date1)
+        self.assertEqual(len(str(res)), 10) # it should be 10 digits
 
     def test_file_name(self):
         "Test file_name function"
