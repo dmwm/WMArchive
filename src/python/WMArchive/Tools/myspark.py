@@ -17,6 +17,7 @@ https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
 import os
 import sys
 import imp
+import time
 import argparse
 
 class OptionParser():
@@ -98,7 +99,33 @@ def import_(filename):
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
 
+def htime(seconds):
+    "Convert given seconds into human readable form of HH:MM:SS"
+    minutes, secs = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    def htimeformat(msg, key, val):
+        if  val:
+            if  msg:
+                msg += ', '
+            msg += '%d %s' % (val, key)
+            if  val > 1:
+                msg += 's'
+        return msg
+
+    out = ''
+    out = htimeformat(out, 'day', days)
+    out = htimeformat(out, 'hour', hours)
+    out = htimeformat(out, 'minute', minutes)
+    out = htimeformat(out, 'second', secs)
+    return out
+
 def run(schema_file, data_path, script=None, verbose=None):
+    """
+    Main function to run pyspark job. It requires a schema file, an HDFS directory
+    with data and optional script with mapper/reducer functions.
+    """
+    time0 = time.time()
     # pyspark modules
     from pyspark import SparkContext
 
@@ -151,6 +178,8 @@ def run(schema_file, data_path, script=None, verbose=None):
         records = avro_rdd.map(basic_mapper).collect()
         out = basic_reducer(records)
     ctx.stop()
+    if  verbose:
+        logger.info("Elapsed time %s" % htime(time.time()-time0))
     return out
 
 def main():
@@ -158,7 +187,7 @@ def main():
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     results = run(opts.schema, opts.hdir, opts.script, opts.verbose)
-    print("RESULTS:\n", results)
+    print(results)
 
 if __name__ == '__main__':
     main()
