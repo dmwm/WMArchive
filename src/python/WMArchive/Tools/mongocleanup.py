@@ -24,7 +24,8 @@ class OptionParser(object):
             dest="muri", default="", help="MongoDB URI")
         self.parser.add_argument("--tstamp", action="store",\
             dest="tstamp", default="",\
-            help="timestamp below which records will be removed, YYYYMMDD")
+            help="timestamp below which records will be removed, YYYYMMDD \
+            or number with suffix 'd' for days")
         self.parser.add_argument("--verbose", action="store_true",\
             dest="verbose", default=False, help="verbose mode")
 
