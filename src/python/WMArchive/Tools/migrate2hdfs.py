@@ -11,11 +11,15 @@ from __future__ import print_function, division
 
 # system modules
 import os
+import re
 import sys
 import argparse
 
 # pydoop modules
 import pydoop.hdfs as hdfs
+
+# WMArchive modules
+from WMArchive.Utils.Regex import PAT_YYYYMMDD, PAT_YYYY, PAT_MM, PAT_DD
 
 class OptionParser(object):
     "User based option parser"
@@ -31,6 +35,31 @@ class OptionParser(object):
             dest="remove", default=False, help="Remove written file from local file system")
         self.parser.add_argument("--verbose", action="store_true", \
             dest="verbose", default=False, help="Be verbose")
+
+def hdfs_file(odir, name):
+    """
+    Given HDFS dir and file name create appropriate dir structure on HDFS
+    and return full path of the file. We rely on odir/YYYY/MM/DD dir structure.
+    """
+    tstamp = name.split('/').split('_') # each file is in form YYYYMMDD_HHMM.ext
+    if  not PAT_YYYYMMDD.match(tstamp):
+        raise Exception("Given file name '%s' does not contain YYYYMMDD stamp" % name)
+    year = tstamp[:4]
+    if  not PAT_YYYY.match(year):
+        raise Exception("Given file name '%s' does not contain YYYY stamp" % name)
+    month = tstamp[4:6]
+    if  not PAT_MM.match(month):
+        raise Exception("Given file name '%s' does not contain MM stamp" % name)
+    day = tstamp[6:8]
+    if  not PAT_DD.match(day):
+        raise Exception("Given file name '%s' does not contain DD stamp" % name)
+    if  not hdfs.isdir(odir):
+        hdfs.mkdir(odir)
+    for subdir in [year, month, day]:
+        odir = os.path.join(odir, subdir)
+        if  not hdfs.path.isdir(odir):
+            hdfs.mkdir(odir)
+    return os.path.join(odir, name)
 
 def write(idir, odir, remove, check, verbose):
     "Write files from given input area into HDFS"
@@ -50,7 +79,7 @@ def write(idir, odir, remove, check, verbose):
             if  verbose:
                 print("Skip %s" % fname)
             continue
-        oname = os.path.join(odir, name)
+        oname = hdfs_file(odir, name)
         if  not hdfs.path.isfile(oname):
             if  verbose:
                 print("Migrate %s to %s" % (fname, oname))
