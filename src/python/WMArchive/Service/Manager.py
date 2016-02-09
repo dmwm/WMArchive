@@ -16,6 +16,7 @@ from __future__ import print_function, division
 
 # system modules
 import os
+import time
 
 # WMArchive modules
 from WMArchive.Storage.MongoIO import MongoStorage
@@ -53,6 +54,7 @@ class WMArchiveManager(object):
         """
         for doc in docs:
             doc['wmaid'] = wmaHash(doc)
+            doc['wmats'] = time.time()
             doc['stype'] = self.mgr.stype
             yield doc
 

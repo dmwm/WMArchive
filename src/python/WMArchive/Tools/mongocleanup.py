@@ -27,18 +27,18 @@ class OptionParser(object):
             dest="tstamp", default="",\
             help="timestamp below which records will be removed, YYYYMMDD \
             or number with suffix 'd' for days")
-        self.parser.add_argument("--rtype", action="store",\
-            dest="rtype", default="avroio", help="Record type to clean-up, default avroio")
+        self.parser.add_argument("--stype", action="store",\
+            dest="stype", default="avroio", help="Record storage type to clean-up, default avroio")
         self.parser.add_argument("--verbose", action="store_true",\
             dest="verbose", default=False, help="verbose mode")
 
-def cleanup(muri, tst, rtype, verbose):
+def cleanup(muri, tst, stype, verbose):
     "Cleanup data in MongoDB (muri) for given timestamp (tst)"
     time0 = time.time()
     mstg = MongoStorage(muri)
     # remove records whose type is hdfsio, i.e. already migrated to HDFS,
     # and whose time stamp is less than provided one
-    query = {'stype': rtype, 'time_stamp':{'$lt': dateformat(tst)}}
+    query = {'stype': stype, 'wmats':{'$lt': dateformat(tst)}}
     if  verbose:
         print("Clean-up records in MongoDB: %s" % muri)
         print("MongoDB cleanup spec:", query)
@@ -51,7 +51,7 @@ def main():
     "Main function"
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
-    cleanup(opts.muri, opts.tstamp, opts.rtype, opts.verbose)
+    cleanup(opts.muri, opts.tstamp, opts.stype, opts.verbose)
 
 if __name__ == '__main__':
     main()

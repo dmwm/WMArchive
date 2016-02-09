@@ -19,6 +19,10 @@
             "name": "wmaid"
         }, 
         {
+            "type": "double", 
+            "name": "wmats"
+        }, 
+        {
             "type": {
                 "items": "null", 
                 "type": "array"
@@ -916,6 +920,10 @@
                 ]
             }, 
             "name": "steps"
+        }, 
+        {
+            "type": "string", 
+            "name": "stype"
         }
     ]
 }
