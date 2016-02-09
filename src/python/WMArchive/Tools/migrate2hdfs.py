@@ -19,7 +19,7 @@ import argparse
 import pydoop.hdfs as hdfs
 
 # WMArchive modules
-from WMArchive.Utils.Regex import PAT_YYYYMMDD, PAT_YYYY, PAT_MM, PAT_DD
+from WMArchive.Utils.Regexp import PAT_YYYYMMDD, PAT_YYYY, PAT_MM, PAT_DD
 
 class OptionParser(object):
     "User based option parser"
