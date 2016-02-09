@@ -23,7 +23,7 @@ import datetime
 from bz2file import BZ2File
 
 # WMArchive modules
-from WMArchive.Utils.Regexp import PAT_YYYYMMDD
+from WMArchive.Utils.Regexp import PAT_YYYYMMDD, PAT_YYYY
 
 def open_file(fname, mode='r'):
     """
@@ -70,19 +70,28 @@ def today():
     return year, month, date
 
 def dateformat(value):
-    """Check if provided value in expected WMA date format."""
+    """Return seconds since epoch for provided YYYYMMDD or number with suffix 'd' for days"""
     msg  = 'Unacceptable date format, value=%s, type=%s,' \
             % (value, type(value))
-    msg += " supported format is YYYYMMDD"
-    value = str(value)
+    msg += " supported format is YYYYMMDD or number with suffix 'd' for days"
+    value = str(value).lower()
     if  PAT_YYYYMMDD.match(value): # we accept YYYYMMDD
         if  len(value) == 8: # YYYYMMDD
-            ddd = datetime.date(int(value[0:4]), # YYYY
-                                int(value[4:6]), # MM
-                                int(value[6:8])) # DD
+            year = value[0:4]
+            if  not PAT_YYYY.match(year):
+                raise Exception(msg + ', fail to parse the year part, %s' % year)
+            month = value[4:6]
+            date = value[6:8]
+            ddd = datetime.date(int(year), int(month), int(date))
         else:
             raise Exception(msg)
         return calendar.timegm((ddd.timetuple()))
+    elif value.endswith('d'):
+        try:
+            days = int(value[:-1])
+        except ValueError:
+            raise Exception(msg)
+        return time.time()-days*24*60*60
     else:
         raise Exception(msg)
 
