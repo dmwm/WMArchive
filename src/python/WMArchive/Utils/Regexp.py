@@ -20,3 +20,5 @@ PAT_UID = re.compile(r"^[a-z0-9]{32,32}$")
 # time patterns
 PAT_YYYYMMDD = re.compile(r'20[0-9][0-9][0-1][0-9][0-3][0-9]')
 PAT_YYYY = re.compile(r'20[0-9][0-9]')
+PAT_MM = re.compile(r'[0-1][0-9]')
+PAT_DD = re.compile(r'[0-3][0-9]')
