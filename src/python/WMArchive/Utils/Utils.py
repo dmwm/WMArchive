@@ -124,3 +124,28 @@ def file_name(uri, wmaid, compress=None):
     if  compress:
         return '%s.%s' % (fname, compress)
     return fname
+
+def htime(seconds):
+    "Convert given seconds into human readable form of HH:MM:SS"
+    minutes, secs = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+    def htimeformat(msg, key, val):
+        if  val:
+            if  msg:
+                msg += ', '
+            msg += '%d %s' % (val, key)
+            if  val > 1:
+                msg += 's'
+        return msg
+
+    out = ''
+    out = htimeformat(out, 'day', days)
+    out = htimeformat(out, 'hour', hours)
+    out = htimeformat(out, 'minute', minutes)
+    out = htimeformat(out, 'second', secs)
+    return out
+
+def elapsed_time(time0):
+    "Return elapsed time from given time stamp"
+    return htime(time.time()-time0)
