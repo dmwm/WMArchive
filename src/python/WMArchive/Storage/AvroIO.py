@@ -51,7 +51,11 @@ class AvroStorage(Storage):
 
             if  os.path.exists(fname):
                 schema = None # we'll append to existing file
-            with DataFileWriter(open_file(fname, "a+"), DatumWriter(), schema) as writer:
+            mode = 'a+' if fname.endswith('.avro') else 'a'
+            if  mode == 'a':
+                print("We're unable yet to implement read-write mode with compressed avro files")
+                raise NotImplementedError
+            with DataFileWriter(open_file(fname, mode), DatumWriter(), schema) as writer:
                 for rec in data:
                     writer.append(rec)
                     writer.flush()

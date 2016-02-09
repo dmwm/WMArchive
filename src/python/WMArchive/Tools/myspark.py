@@ -20,6 +20,9 @@ import imp
 import time
 import argparse
 
+# WMArchive modules
+from WMArchive.Utils.Utils import htime
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
@@ -98,27 +101,6 @@ def import_(filename):
     name, ext = os.path.splitext(name)
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
-
-def htime(seconds):
-    "Convert given seconds into human readable form of HH:MM:SS"
-    minutes, secs = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 24)
-    def htimeformat(msg, key, val):
-        if  val:
-            if  msg:
-                msg += ', '
-            msg += '%d %s' % (val, key)
-            if  val > 1:
-                msg += 's'
-        return msg
-
-    out = ''
-    out = htimeformat(out, 'day', days)
-    out = htimeformat(out, 'hour', hours)
-    out = htimeformat(out, 'minute', minutes)
-    out = htimeformat(out, 'second', secs)
-    return out
 
 def run(schema_file, data_path, script=None, verbose=None):
     """

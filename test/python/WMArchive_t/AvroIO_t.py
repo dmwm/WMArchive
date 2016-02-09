@@ -22,7 +22,7 @@ from avro.datafile import DataFileReader, DataFileWriter
 from avro.io import DatumReader, DatumWriter
 
 # WMArchive modules
-from WMArchive.Tools.json2avsc import genSchema
+from WMArchive.Tools.json2avsc import gen_schema
 from WMArchive.Storage.AvroIO import AvroStorage
 from WMArchive.Utils.Utils import wmaHash
 
@@ -36,7 +36,7 @@ class FileStorageTest(unittest.TestCase):
         data['wmaid'] = wmaHash(data)
         data['stype'] = 'avroio'
         self.data = data
-        schema = genSchema(self.data)
+        schema = gen_schema(self.data)
         sname = os.path.join(self.tdir, 'schema.avsc')
         with open(sname, 'w') as ostream:
             ostream.write(json.dumps(schema))
@@ -57,12 +57,11 @@ class FileStorageTest(unittest.TestCase):
 
     def test_file_write(self):
         "Test file_write functionality"
-        for ext in ['', '.bz2', '.gz']:
-            fname = os.path.join(self.tdir, 'file.avro'+ext)
-            wmaids = self.mgr.file_write(fname, self.data)
-            self.assertEqual(len(wmaids), 1)
-            data = self.mgr.file_read(fname)
-            self.assertEqual(data[0], self.data)
+        fname = os.path.join(self.tdir, 'file.avro')
+        wmaids = self.mgr.file_write(fname, self.data)
+        self.assertEqual(len(wmaids), 1)
+        data = self.mgr.file_read(fname)
+        self.assertEqual(data[0], self.data)
 
     def test_file_write_exception(self):
         "Test file_write functionality with exception"

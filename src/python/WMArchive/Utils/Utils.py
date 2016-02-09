@@ -126,11 +126,12 @@ def file_name(uri, wmaid, compress=None):
     return fname
 
 def htime(seconds):
-    "Convert given seconds into human readable form of HH:MM:SS"
+    "Convert given seconds into human readable form of N hour(s), N minute(s), N second(s)"
     minutes, secs = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
     def htimeformat(msg, key, val):
+        "Helper function to proper format given message/key/val"
         if  val:
             if  msg:
                 msg += ', '

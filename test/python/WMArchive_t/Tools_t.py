@@ -21,7 +21,7 @@ from avro.datafile import DataFileReader, DataFileWriter
 from avro.io import DatumReader, DatumWriter
 
 # WMArchive modules
-from WMArchive.Tools.json2avsc import genSchema
+from WMArchive.Tools.json2avsc import gen_schema
 
 def json2avro2json(data):
     """
@@ -30,7 +30,7 @@ def json2avro2json(data):
     memory (via io.BytesIO)
     """
     # parse schema into schema object
-    arec = genSchema(data)
+    arec = gen_schema(data)
     schema = avro.schema.parse(json.dumps(arec))
 
     # setup avro writer with given schema
@@ -50,16 +50,16 @@ def json2avro2json(data):
     return json_data
 
 class WMBaseTest(unittest.TestCase):
-    def test_genSchema(self):
-        "Test genSchema function"
+    def test_genschema(self):
+        "Test genschema function"
 	data = {"int":1, "float":1.2, "list":[1,2,3],
 		"dict":{"dname": "foo", "dval":1},
 		"listdict":[{"lname":"foo"}], "str":"string"}
         json_data = json2avro2json(data)
         self.assertEqual(json_data, data)
 
-    def test_genSchema_data(self):
-        "Test genSchema function with static data"
+    def test_genschema_data(self):
+        "Test genschema function with static data"
         tdir = os.path.join('/'.join(__file__.split('/')[:-3]), 'data')
         for fname in os.listdir(tdir):
             if  not fname.endswith('.json'):
