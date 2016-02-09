@@ -41,7 +41,7 @@ def hdfs_file(odir, name):
     Given HDFS dir and file name create appropriate dir structure on HDFS
     and return full path of the file. We rely on odir/YYYY/MM/DD dir structure.
     """
-    tstamp = name.split('/').split('_') # each file is in form YYYYMMDD_HHMM.ext
+    tstamp = name.split('/')[-1].split('_')[0] # each file is in form YYYYMMDD_HHMM.ext
     if  not PAT_YYYYMMDD.match(tstamp):
         raise Exception("Given file name '%s' does not contain YYYYMMDD stamp" % name)
     year = tstamp[:4]
@@ -53,7 +53,7 @@ def hdfs_file(odir, name):
     day = tstamp[6:8]
     if  not PAT_DD.match(day):
         raise Exception("Given file name '%s' does not contain DD stamp" % name)
-    if  not hdfs.isdir(odir):
+    if  not hdfs.path.isdir(odir):
         hdfs.mkdir(odir)
     for subdir in [year, month, day]:
         odir = os.path.join(odir, subdir)
