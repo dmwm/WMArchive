@@ -11,6 +11,7 @@ from __future__ import print_function, division
 
 # system modules
 import os
+import time
 import json
 import random
 import httplib
@@ -75,6 +76,7 @@ def modjson(rec):
     rec['steps']['cmsRun1']['performance'] = \
             dict(cpu=cpu, memory=memory, multicore={}, storage=storage)
     rec['task'] = '/AbcCde_Task_Data_test_%s/RECO' % random.randint(1000,10000000)
+    rec['wmats'] = time.time()
     return rec
 
 def client(host, port, jsonFile, ntimes=10):
@@ -118,8 +120,7 @@ def client(host, port, jsonFile, ntimes=10):
     data = dict(data=docs)
     conn.request('POST', path, json.dumps(data), headers)
     data = getData(conn)
-    for row in data["result"]:
-        rec = json.loads(row)
+    for rec in data["result"]:
         print("Posted", len(rec["ids"]))
 
 def main():
