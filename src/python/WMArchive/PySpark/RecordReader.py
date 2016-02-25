@@ -28,9 +28,9 @@ def mapper(records):
     summary = {'cpu':tot_cpu, 'time':tot_time, 'rsize':rsize, 'wsize':wsize, 'docs':count}
     return summary
 
-def reducer(records):
+def reducer(records, init=0):
     "Simpler reducer which collects all results from RDD.collect() records"
-    tot_cpu = tot_time = rsize = wsize = count = 0
+    tot_cpu = tot_time = rsize = wsize = count = init
     for rec in records:
         tot_cpu += rec['cpu']
         tot_time += rec['time']
