@@ -154,11 +154,9 @@ def run(schema_file, data_path, script=None, verbose=None):
                         % (func, script, obj))
                 ctx.stop()
                 return
-        records = avro_rdd.map(obj.mapper).collect()
-        out = obj.reducer(records)
+        out = avro_rdd.map(obj.mapper).reducer(obj.reducer).collect()
     else:
-        records = avro_rdd.map(basic_mapper).collect()
-        out = basic_reducer(records)
+        out = avro_rdd.map(basic_mapper).reducer(basic_reducer).collect()
     ctx.stop()
     if  verbose:
         logger.info("Elapsed time %s" % htime(time.time()-time0))
