@@ -7,10 +7,34 @@ reducer will collect results from all mappers and return back aggregated
 information.
 """
 
+import re
+
+def parse_spec(spec):
+    "Simple spec parser, it converts strings to patterns so far"
+    ospec = {}
+    for key, val in spec.items():
+        if  isinstance(val, basestring):
+            ospec[key] = re.compile(val)
+        else:
+            ospec[key] = val
+    return ospec
+
+def match(rec, spec):
+    "Find if record match given spec"
+    for key, val in spec.items():
+        if key in rec:
+            if hasattr(val, 'pattern'): # it is re.compile pattern
+                if val.match(rec[key]):
+                    return True
+            else:
+                if rec[key] == val:
+                    return True
+    return False
+
 class MapReduce(object):
     def __init__(self, spec=None):
         if  spec:
-            self.spec = spec
+            self.spec = parse_spec(spec)
         else:
             self.spec = {}
 
@@ -23,14 +47,8 @@ class MapReduce(object):
         for rec in records:
             if  not rec:
                 continue
-            for key, val in self.spec.items():
-                if key in rec:
-                    if hasattr(val, 'pattern'): # it is re.compile pattern
-                        if val.match(rec[key]):
-                            return rec
-                    else:
-                        if rec[key] == val:
-                            return rec
+            if  match(rec, self.spec):
+                return rec
         return {}
 
     def reducer(self, records, init=0):
