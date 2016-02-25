@@ -21,13 +21,19 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "-help" ]; then
 	# run help
     python $wmaroot/Tools/myspark.py --help
 else
-	# submit spark job with our file, please note
-    # that user may increase memory options if necessary
-    # the executor and driver memory options can be given in human readable form
-    # while spark yarn option should use memoryOverhead as KB value
+    # here we use yarn master to submit our job to a cluster
+    # other options would be to use local master to run on a single node
     spark-submit --driver-class-path $avrojar:$sparkexjar \
-        --executor-memory 4G \
-        --driver-memory 4G \
-        --conf spark.yarn.executor.memoryOverhead=4096 \
+        --master=yarn \
         $wmaroot/Tools/myspark.py ${1+"$@"}
+# Original example
+# submit spark job with our file, please note
+# that user may increase memory options if necessary
+# the executor and driver memory options can be given in human readable form
+# while spark yarn option should use memoryOverhead as KB value
+#    spark-submit --driver-class-path $avrojar:$sparkexjar \
+#        --executor-memory 4G \
+#        --driver-memory 4G \
+#        --conf spark.yarn.executor.memoryOverhead=4096 \
+#        $wmaroot/Tools/myspark.py ${1+"$@"}
 fi
