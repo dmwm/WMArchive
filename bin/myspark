@@ -24,7 +24,8 @@ else
     # here we use yarn master to submit our job to a cluster
     # other options would be to use local master to run on a single node
     spark-submit --driver-class-path $avrojar:$sparkexjar \
-        --master=yarn \
+        --master=local \
+#        --master=yarn \
         $wmaroot/Tools/myspark.py ${1+"$@"}
 # Original example
 # submit spark job with our file, please note
