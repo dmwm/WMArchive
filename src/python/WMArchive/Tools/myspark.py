@@ -155,18 +155,16 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
-        for func in ['mapper', 'reducer']:
-            if  not hasattr(obj, func):
-                logger.error('Unable to find %s function in %s, %s' \
-                        % (func, script, obj))
-                ctx.stop()
-                return
-        if  hasattr(obj, 'SPEC'):
-            obj.SPEC = spec
+        if  not hasattr(obj, 'MapReduce'):
+            logger.error('Unable to find MapReduce class in %s, %s' \
+                    % (script, obj))
+            ctx.stop()
+            return
+        mro = obj.MapReduce(spec)
         # example of collecting records from mapper and
         # passing all of them to reducer function
-        records = avro_add.map(obj.mapper).collect()
-        out = obj.reducer(records)
+        records = avro_add.map(mro.mapper).collect()
+        out = mro.reducer(records)
 
         # the map(f).reduce(f) example but it does not collect
         # intermediate records
