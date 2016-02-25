@@ -18,6 +18,7 @@ import os
 import sys
 import imp
 import time
+import json
 import argparse
 
 # WMArchive modules
@@ -36,6 +37,9 @@ class OptionParser():
         msg = "python script with custom mapper/reducer functions"
         self.parser.add_argument("--script", action="store",
             dest="script", default="", help=msg)
+        msg = "json file with query spec"
+        self.parser.add_argument("--spec", action="store",
+            dest="spec", default="", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
 
@@ -102,7 +106,7 @@ def import_(filename):
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
 
-def run(schema_file, data_path, script=None, verbose=None):
+def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
     """
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
@@ -145,6 +149,9 @@ def run(schema_file, data_path, script=None, verbose=None):
     #
     # in more general way we write mapper/reducer functions which will be
     # executed by Spark via collect call
+    spec = None
+    if  spec_file:
+        spec = json.load(open(spec_file))
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
@@ -154,9 +161,19 @@ def run(schema_file, data_path, script=None, verbose=None):
                         % (func, script, obj))
                 ctx.stop()
                 return
-        out = avro_rdd.map(obj.mapper).reducer(obj.reducer).collect()
+        if  hasattr(obj, 'SPEC'):
+            obj.SPEC = spec
+        # example of collecting records from mapper and
+        # passing all of them to reducer function
+        records = avro_add.map(obj.mapper).collect()
+        out = obj.reducer(records)
+
+        # the map(f).reduce(f) example but it does not collect
+        # intermediate records
+        # out = avro_rdd.map(obj.mapper).reduce(obj.reducer).collect()
     else:
-        out = avro_rdd.map(basic_mapper).reducer(basic_reducer).collect()
+        records = avro_add.map(basic_mapper).collect()
+        out = basic_reducer(records)
     ctx.stop()
     if  verbose:
         logger.info("Elapsed time %s" % htime(time.time()-time0))
@@ -166,7 +183,7 @@ def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    results = run(opts.schema, opts.hdir, opts.script, opts.verbose)
+    results = run(opts.schema, opts.hdir, opts.script, opts.spec, opts.verbose)
     print(results)
 
 if __name__ == '__main__':
