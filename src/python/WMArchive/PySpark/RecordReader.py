@@ -10,7 +10,10 @@ information.
 class MapReduce(object):
     def __init__(self, spec=None):
         # spec here is redundant since our mapper and reducer does not use it
-        self.spec = spec
+        if  spec:
+            self.spec = spec
+        else:
+            self.spec = {}
 
     def mapper(self, records):
         """

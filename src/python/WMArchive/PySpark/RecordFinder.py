@@ -9,7 +9,10 @@ information.
 
 class MapReduce(object):
     def __init__(self, spec=None):
-        self.spec = spec
+        if  spec:
+            self.spec = spec
+        else:
+            self.spec = {}
 
     def mapper(self, records):
         """
@@ -20,7 +23,7 @@ class MapReduce(object):
         for rec in records:
             if  not rec:
                 continue
-            for key, val in SPEC.items():
+            for key, val in self.spec.items():
                 if key in rec:
                     if hasattr(val, 'pattern'): # it is re.compile pattern
                         if val.match(rec[key]):
