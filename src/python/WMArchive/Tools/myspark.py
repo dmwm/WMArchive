@@ -163,14 +163,14 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
         mro = obj.MapReduce(spec)
         # example of collecting records from mapper and
         # passing all of them to reducer function
-        records = avro_add.map(mro.mapper).collect()
+        records = avro_rdd.map(mro.mapper).collect()
         out = mro.reducer(records)
 
         # the map(f).reduce(f) example but it does not collect
         # intermediate records
         # out = avro_rdd.map(obj.mapper).reduce(obj.reducer).collect()
     else:
-        records = avro_add.map(basic_mapper).collect()
+        records = avro_rdd.map(basic_mapper).collect()
         out = basic_reducer(records)
     ctx.stop()
     if  verbose:
