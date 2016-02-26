@@ -33,7 +33,7 @@ class MapReduce(object):
             rsize += storage['readTotalMB']
             wsize += storage['writeTotalMB']
             count += 1
-        summary = {'cpu':tot_cpu, 'time':tot_time, 'rsize':rsize, 'wsize':wsize, 'docs':count}
+        summary = [('cpu',tot_cpu), ('time',tot_time), ('rsize',rsize), ('wsize',wsize), ('docs',count)]
         return summary
 
     def reducer(self, records, init=0):
