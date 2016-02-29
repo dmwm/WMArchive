@@ -1,0 +1,454 @@
+{
+    "namespace": "ns13", 
+    "type": "record", 
+    "name": "name13", 
+    "fields": [
+        {
+            "type": "string", 
+            "name": "task"
+        }, 
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "skippedFiles"
+        }, 
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "fileArrayRef"
+        }, 
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "fallbackFiles"
+        }, 
+        {
+            "type": {
+                "namespace": "ns0", 
+                "type": "record", 
+                "name": "name0", 
+                "fields": [
+                    {
+                        "type": "string", 
+                        "name": "agent_ver"
+                    }, 
+                    {
+                        "type": "string", 
+                        "name": "fwjr_id"
+                    }, 
+                    {
+                        "type": "string", 
+                        "name": "host"
+                    }, 
+                    {
+                        "type": "long", 
+                        "name": "ts"
+                    }
+                ]
+            }, 
+            "name": "meta_data"
+        }, 
+        {
+            "type": {
+                "items": {
+                    "namespace": "ns12", 
+                    "type": "record", 
+                    "name": "name12", 
+                    "fields": [
+                        {
+                            "type": "long", 
+                            "name": "status"
+                        }, 
+                        {
+                            "type": {
+                                "items": {
+                                    "namespace": "ns1", 
+                                    "type": "record", 
+                                    "name": "name1", 
+                                    "fields": [
+                                        {
+                                            "type": "string", 
+                                            "name": "type"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "details"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "exitCode"
+                                        }
+                                    ]
+                                }, 
+                                "type": "array"
+                            }, 
+                            "name": "errors"
+                        }, 
+                        {
+                            "type": {
+                                "namespace": "ns2", 
+                                "type": "record", 
+                                "name": "name2", 
+                                "fields": []
+                            }, 
+                            "name": "logs"
+                        }, 
+                        {
+                            "type": {
+                                "namespace": "ns5", 
+                                "type": "record", 
+                                "name": "name5", 
+                                "fields": [
+                                    {
+                                        "type": {
+                                            "namespace": "ns3", 
+                                            "type": "record", 
+                                            "name": "name3", 
+                                            "fields": [
+                                                {
+                                                    "type": "double", 
+                                                    "name": "TotalJobCPU"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "AvgEventCPU"
+                                                }, 
+                                                {
+                                                    "type": "long", 
+                                                    "name": "MaxEventCPU"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "AvgEventTime"
+                                                }, 
+                                                {
+                                                    "type": "long", 
+                                                    "name": "MinEventCPU"
+                                                }, 
+                                                {
+                                                    "type": "long", 
+                                                    "name": "TotalEventCPU"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "TotalJobTime"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "MinEventTime"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "MaxEventTime"
+                                                }
+                                            ]
+                                        }, 
+                                        "name": "cpu"
+                                    }, 
+                                    {
+                                        "type": {
+                                            "namespace": "ns4", 
+                                            "type": "record", 
+                                            "name": "name4", 
+                                            "fields": [
+                                                {
+                                                    "type": "long", 
+                                                    "name": "PeakValueRss"
+                                                }, 
+                                                {
+                                                    "type": "long", 
+                                                    "name": "PeakValueVsize"
+                                                }
+                                            ]
+                                        }, 
+                                        "name": "memory"
+                                    }
+                                ]
+                            }, 
+                            "name": "performance"
+                        }, 
+                        {
+                            "type": "long", 
+                            "name": "stop"
+                        }, 
+                        {
+                            "type": "string", 
+                            "name": "site"
+                        }, 
+                        {
+                            "type": {
+                                "namespace": "ns6", 
+                                "type": "record", 
+                                "name": "name6", 
+                                "fields": []
+                            }, 
+                            "name": "analysis"
+                        }, 
+                        {
+                            "type": "long", 
+                            "name": "start"
+                        }, 
+                        {
+                            "type": {
+                                "namespace": "ns7", 
+                                "type": "record", 
+                                "name": "name7", 
+                                "fields": []
+                            }, 
+                            "name": "cleanup"
+                        }, 
+                        {
+                            "type": {
+                                "items": {
+                                    "namespace": "ns9", 
+                                    "type": "record", 
+                                    "name": "name9", 
+                                    "fields": [
+                                        {
+                                            "type": {
+                                                "items": {
+                                                    "namespace": "ns8", 
+                                                    "type": "record", 
+                                                    "name": "name8", 
+                                                    "fields": [
+                                                        {
+                                                            "type": "long", 
+                                                            "name": "runNumber"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": "long", 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "lumis"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "type": "array"
+                                            }, 
+                                            "name": "runs"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "input_source_class"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "input_type"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "lfn"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "pfn"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "catalog"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "module_label"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "guid"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "events"
+                                        }
+                                    ]
+                                }, 
+                                "type": "array"
+                            }, 
+                            "name": "input"
+                        }, 
+                        {
+                            "type": {
+                                "items": {
+                                    "namespace": "ns11", 
+                                    "type": "record", 
+                                    "name": "name11", 
+                                    "fields": [
+                                        {
+                                            "type": "string", 
+                                            "name": "branch_hash"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "adler32"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "guid"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "size"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "applicationName"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "acquisitionEra"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "applicationVersion"
+                                        }, 
+                                        {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "inputPFNs"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "configURL"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "outputDataset"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "location"
+                                        }, 
+                                        {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "inputLFNs"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "async_dest"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "events"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "merged"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "validStatus"
+                                        }, 
+                                        {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "outputPFN"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "ouput_module_class"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "globalTag"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "catalog"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "module_label"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "cksum"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "StageOutCommand"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "inputDataset"
+                                        }, 
+                                        {
+                                            "type": {
+                                                "items": {
+                                                    "namespace": "ns10", 
+                                                    "type": "record", 
+                                                    "name": "name10", 
+                                                    "fields": [
+                                                        {
+                                                            "type": "long", 
+                                                            "name": "runNumber"
+                                                        }, 
+                                                        {
+                                                            "type": {
+                                                                "items": "long", 
+                                                                "type": "array"
+                                                            }, 
+                                                            "name": "lumis"
+                                                        }
+                                                    ]
+                                                }, 
+                                                "type": "array"
+                                            }, 
+                                            "name": "runs"
+                                        }, 
+                                        {
+                                            "type": "long", 
+                                            "name": "processingVer"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "processingStr"
+                                        }, 
+                                        {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "outputLFN"
+                                        }, 
+                                        {
+                                            "type": "string", 
+                                            "name": "prep_id"
+                                        }
+                                    ]
+                                }, 
+                                "type": "array"
+                            }, 
+                            "name": "output"
+                        }, 
+                        {
+                            "type": "string", 
+                            "name": "name"
+                        }
+                    ]
+                }, 
+                "type": "array"
+            }, 
+            "name": "steps"
+        }, 
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "fileArray"
+        }
+    ]
+}
