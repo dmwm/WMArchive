@@ -19,16 +19,25 @@ def parse_spec(spec):
             ospec[key] = val
     return ospec
 
+def match_value(keyval, value):
+    "helper function to match value from spec with keyval"
+    if hasattr(value, 'pattern'): # it is re.compile pattern
+        if value.match(keyval):
+            return True
+    else:
+        if keyval == value:
+            return True
+    return False
+
 def match(rec, spec):
     "Find if record match given spec"
     for key, val in spec.items():
-        if key in rec:
-            if hasattr(val, 'pattern'): # it is re.compile pattern
-                if val.match(rec[key]):
+        if key == 'lfn':
+            for lfn in rec['fileArray']:
+                if match_value(lfn, val):
                     return True
-            else:
-                if rec[key] == val:
-                    return True
+        elif key in rec:
+            return match_value(rec[key], val)
     return False
 
 class MapReduce(object):
