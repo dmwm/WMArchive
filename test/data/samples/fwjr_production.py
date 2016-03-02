@@ -8,11 +8,11 @@ fwjr = \
                'root://eoscms.cern.ch//eos/cms/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
                '/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
                'root://eoscms.cern.ch//eos/cms/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
-               ],
+               '/lfn/fallbackfile.root', '/lfn/skipedfile.root'],
  'fileArrayRef': ['lfn', 'pfn', 'inputLFNs', 'inputPFNs', 
-                  'outputLFN', 'outputPFN'], # list of keys whose value is referencing fileArray index
+                  'outputLFNs', 'outputPFNs', 'fallbackFiles', 'skippedFiles'], # list of keys whose value is referencing fileArray index
  'steps': [{'name': 'cmsRun1',
-            #'analysis': {},
+             #'analysis': {},
              #'cleanup': {},
              #'logs': {},
              'errors': [
@@ -56,8 +56,8 @@ fwjr = \
                          'ouput_module_class': 'PoolOutputModule',
                          'outputDataset': '/Cosmics/CMSSW_7_0_0_pre11-DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/ALCARECO',
                          #TODO need to change thsi to list format
-                         'outputLFN': [2],
-                         'outputPFN': [3],
+                         'outputLFNs': [2],
+                         'outputPFNs': [3],
                          #TODO change to empty string from 'None'
                          'prep_id': '',
                          'processingStr': 'RECOCOSD_TaskChain_Data_pile_up_test',
@@ -92,8 +92,8 @@ fwjr = \
               'status': 0,
               'stop': 1454569736}
             ],
-'fallbackFiles': ['blahblah'],
-'skippedFiles': ['blahblah'],
+'fallbackFiles': [4],
+'skippedFiles': [5],
 'task': '/sryu_TaskChain_Data_wq_testt_160204_061048_5587/RECOCOSD'}
 
 with open("fwjr_prod.json", 'w') as outfile:
