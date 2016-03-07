@@ -1,16 +1,23 @@
 import json
+
 fwjr = \
 {'meta_data': {'agent_ver': '1.0.14.pre5',
                'fwjr_id': '1-0',
                'host': 'test.fnal.gov',
                'ts': 1456500229},
- 'fileArray': ['/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
-               'root://eoscms.cern.ch//eos/cms/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
-               '/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
-               'root://eoscms.cern.ch//eos/cms/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
-               '/lfn/fallbackfile.root', '/lfn/skipedfile.root'],
- 'fileArrayRef': ['lfn', 'pfn', 'inputLFNs', 'inputPFNs', 
-                  'outputLFNs', 'outputPFNs', 'fallbackFiles', 'skippedFiles'], # list of keys whose value is referencing fileArray index
+ 'LFNArray': ['/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
+              '/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
+              '/lfn/fallbackfile.root', '/lfn/skipedfile.root'],
+ 'LFNArrayRef': ['fallbackFiles',
+                 'outputLFNs',
+                 'lfn',
+                 'skippedFiles',
+                 'inputLFNs'],
+ 'PFNArray': ['root://eoscms.cern.ch//eos/cms/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
+              'root://eoscms.cern.ch//eos/cms/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
+              ],
+ 'PFNArrayRef': ['inputPFNs', 'outputPFNs', 'pfn'],  # list of keys whose value is referencing fileArray index
+ 
  'steps': [{'name': 'cmsRun1',
              #'analysis': {},
              #'cleanup': {},
@@ -29,7 +36,7 @@ fwjr = \
                         'input_type': 'primaryFiles',
                         'lfn': 0,
                         'module_label': 'source',
-                        'pfn': 1,
+                        'pfn': 0,
                         'runs': [{'lumis': [164, 165],
                                   'runNumber': 160960}]}],
              'output': [{'StageOutCommand': 'rfcp-CERN',
@@ -48,7 +55,7 @@ fwjr = \
                          'guid': 'ECCFE421-08CB-E511-9F4C-02163E017804',
                          'inputDataset': '/Cosmics/Run2011A-v1/RAW',
                          'inputLFNs': [0],
-                         'inputPFNs': [1],
+                         'inputPFNs': [0],
                          #TODO change to empty string from None
                          'location': '',
                          'merged': False,
@@ -56,8 +63,8 @@ fwjr = \
                          'ouput_module_class': 'PoolOutputModule',
                          'outputDataset': '/Cosmics/CMSSW_7_0_0_pre11-DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/ALCARECO',
                          #TODO need to change thsi to list format
-                         'outputLFNs': [2],
-                         'outputPFNs': [3],
+                         'outputLFNs': [1],
+                         'outputPFNs': [1],
                          #TODO change to empty string from 'None'
                          'prep_id': '',
                          'processingStr': 'RECOCOSD_TaskChain_Data_pile_up_test',
@@ -70,18 +77,28 @@ fwjr = \
                          #'user_vogroup': 'DEFAULT',
                          #'user_vorole': 'DEFAULT',
                          'validStatus': 'PRODUCTION'}],
-              'performance': {#"storage": {},
-                   #"multicore": {},
+              'performance': {#"multicore": {},
+                  "storage": {
+                    "readAveragekB": 77.8474891246,
+                    "readCachePercentageOps": 0.0,
+                    'readMBSec': 0.0438598972596,
+                    'readMaxMSec': 4832.84,
+                    'readNumOps': 97620.0,
+                    'readPercentageOps': 1.00032780168,
+                    'readTotalMB': 7423.792,    
+                    'readTotalSecs': 0.0,
+                    'writeTotalMB': 357.624,
+                    'writeTotalSecs': 575158.0},
                    "memory": {
-                       "PeakValueRss": 0,
-                       "PeakValueVsize": 0
+                       "PeakValueRss": 0.0,
+                       "PeakValueVsize": 0.0
                    },
                    "cpu": {
                        "TotalJobCPU": 0.39894,
                        "AvgEventCPU": -2.0, # for ("-nan")
-                       "MaxEventCPU": 0,
+                       "MaxEventCPU": 0.0,
                        "AvgEventTime": -1.0, # for ("inf")
-                       "MinEventCPU": 0,
+                       "MinEventCPU": 0.0,
                        "TotalEventCPU": 0,
                        "TotalJobTime": 26.4577,
                        "MinEventTime": 0.0,
@@ -92,10 +109,9 @@ fwjr = \
               'status': 0,
               'stop': 1454569736}
             ],
-'fallbackFiles': [4],
-'skippedFiles': [5],
+'fallbackFiles': [0],
+'skippedFiles': [1],
 'task': '/sryu_TaskChain_Data_wq_testt_160204_061048_5587/RECOCOSD'}
-
 with open("fwjr_prod.json", 'w') as outfile:
     json.dump(fwjr, outfile)
     
