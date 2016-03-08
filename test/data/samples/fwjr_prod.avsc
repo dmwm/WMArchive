@@ -1,32 +1,39 @@
 {
-    "namespace": "ns10", 
+    "namespace": "ns11", 
     "type": "record", 
-    "name": "name10", 
+    "name": "name11", 
     "fields": [
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "PFNArrayRef"
+        }, 
         {
             "type": "string", 
             "name": "task"
         }, 
         {
             "type": {
-                "items": "string", 
+                "items": "long", 
                 "type": "array"
             }, 
             "name": "skippedFiles"
         }, 
         {
             "type": {
-                "items": "string", 
+                "items": "long", 
                 "type": "array"
             }, 
-            "name": "fileArrayRef"
+            "name": "fallbackFiles"
         }, 
         {
             "type": {
                 "items": "string", 
                 "type": "array"
             }, 
-            "name": "fallbackFiles"
+            "name": "LFNArray"
         }, 
         {
             "type": {
@@ -57,9 +64,9 @@
         {
             "type": {
                 "items": {
-                    "namespace": "ns9", 
+                    "namespace": "ns10", 
                     "type": "record", 
-                    "name": "name9", 
+                    "name": "name10", 
                     "fields": [
                         {
                             "type": "long", 
@@ -104,10 +111,6 @@
                                         {
                                             "type": "string", 
                                             "name": "branch_hash"
-                                        }, 
-                                        {
-                                            "type": "string", 
-                                            "name": "adler32"
                                         }, 
                                         {
                                             "type": "string", 
@@ -172,11 +175,8 @@
                                             "name": "validStatus"
                                         }, 
                                         {
-                                            "type": {
-                                                "items": "long", 
-                                                "type": "array"
-                                            }, 
-                                            "name": "outputPFN"
+                                            "type": "string", 
+                                            "name": "adler32"
                                         }, 
                                         {
                                             "type": "string", 
@@ -201,6 +201,13 @@
                                         {
                                             "type": "string", 
                                             "name": "StageOutCommand"
+                                        }, 
+                                        {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "outputPFNs"
                                         }, 
                                         {
                                             "type": "string", 
@@ -231,19 +238,19 @@
                                             "name": "runs"
                                         }, 
                                         {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "outputLFNs"
+                                        }, 
+                                        {
                                             "type": "long", 
                                             "name": "processingVer"
                                         }, 
                                         {
                                             "type": "string", 
                                             "name": "processingStr"
-                                        }, 
-                                        {
-                                            "type": {
-                                                "items": "long", 
-                                                "type": "array"
-                                            }, 
-                                            "name": "outputLFN"
                                         }, 
                                         {
                                             "type": "string", 
@@ -338,15 +345,65 @@
                         }, 
                         {
                             "type": {
-                                "namespace": "ns8", 
+                                "namespace": "ns9", 
                                 "type": "record", 
-                                "name": "name8", 
+                                "name": "name9", 
                                 "fields": [
                                     {
                                         "type": {
                                             "namespace": "ns6", 
                                             "type": "record", 
                                             "name": "name6", 
+                                            "fields": [
+                                                {
+                                                    "type": "double", 
+                                                    "name": "writeTotalMB"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readPercentageOps"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readAveragekB"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readTotalMB"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readNumOps"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readCachePercentageOps"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readMBSec"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readMaxMSec"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readTotalSecs"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "writeTotalSecs"
+                                                }
+                                            ]
+                                        }, 
+                                        "name": "storage"
+                                    }, 
+                                    {
+                                        "type": {
+                                            "namespace": "ns7", 
+                                            "type": "record", 
+                                            "name": "name7", 
                                             "fields": [
                                                 {
                                                     "type": "double", 
@@ -357,7 +414,7 @@
                                                     "name": "AvgEventCPU"
                                                 }, 
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "MaxEventCPU"
                                                 }, 
                                                 {
@@ -365,7 +422,7 @@
                                                     "name": "AvgEventTime"
                                                 }, 
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "MinEventCPU"
                                                 }, 
                                                 {
@@ -390,16 +447,16 @@
                                     }, 
                                     {
                                         "type": {
-                                            "namespace": "ns7", 
+                                            "namespace": "ns8", 
                                             "type": "record", 
-                                            "name": "name7", 
+                                            "name": "name8", 
                                             "fields": [
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "PeakValueRss"
                                                 }, 
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "PeakValueVsize"
                                                 }
                                             ]
@@ -421,7 +478,14 @@
                 "items": "string", 
                 "type": "array"
             }, 
-            "name": "fileArray"
+            "name": "PFNArray"
+        }, 
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "LFNArrayRef"
         }
     ]
 }
