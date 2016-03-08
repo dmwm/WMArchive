@@ -33,7 +33,7 @@ def match(rec, spec):
     "Find if record match given spec"
     for key, val in spec.items():
         if key == 'lfn':
-            for lfn in rec['fileArray']:
+            for lfn in rec['LFNArray']:
                 if match_value(lfn, val):
                     return True
         elif key in rec:
