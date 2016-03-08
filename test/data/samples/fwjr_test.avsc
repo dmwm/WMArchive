@@ -1,32 +1,39 @@
 {
-    "namespace": "ns13", 
+    "namespace": "ns15", 
     "type": "record", 
-    "name": "name13", 
+    "name": "name15", 
     "fields": [
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "PFNArrayRef"
+        }, 
         {
             "type": "string", 
             "name": "task"
         }, 
         {
             "type": {
-                "items": "string", 
+                "items": "long", 
                 "type": "array"
             }, 
             "name": "skippedFiles"
         }, 
         {
             "type": {
-                "items": "string", 
+                "items": "long", 
                 "type": "array"
             }, 
-            "name": "fileArrayRef"
+            "name": "fallbackFiles"
         }, 
         {
             "type": {
                 "items": "string", 
                 "type": "array"
             }, 
-            "name": "fallbackFiles"
+            "name": "LFNArray"
         }, 
         {
             "type": {
@@ -57,9 +64,9 @@
         {
             "type": {
                 "items": {
-                    "namespace": "ns12", 
+                    "namespace": "ns14", 
                     "type": "record", 
-                    "name": "name12", 
+                    "name": "name14", 
                     "fields": [
                         {
                             "type": "long", 
@@ -101,15 +108,74 @@
                         }, 
                         {
                             "type": {
-                                "namespace": "ns5", 
+                                "namespace": "ns7", 
                                 "type": "record", 
-                                "name": "name5", 
+                                "name": "name7", 
                                 "fields": [
                                     {
                                         "type": {
                                             "namespace": "ns3", 
                                             "type": "record", 
                                             "name": "name3", 
+                                            "fields": []
+                                        }, 
+                                        "name": "multicore"
+                                    }, 
+                                    {
+                                        "type": {
+                                            "namespace": "ns4", 
+                                            "type": "record", 
+                                            "name": "name4", 
+                                            "fields": [
+                                                {
+                                                    "type": "double", 
+                                                    "name": "writeTotalMB"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readPercentageOps"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readAveragekB"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readTotalMB"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readNumOps"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readCachePercentageOps"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readMBSec"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readMaxMSec"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "readTotalSecs"
+                                                }, 
+                                                {
+                                                    "type": "double", 
+                                                    "name": "writeTotalSecs"
+                                                }
+                                            ]
+                                        }, 
+                                        "name": "storage"
+                                    }, 
+                                    {
+                                        "type": {
+                                            "namespace": "ns5", 
+                                            "type": "record", 
+                                            "name": "name5", 
                                             "fields": [
                                                 {
                                                     "type": "double", 
@@ -120,7 +186,7 @@
                                                     "name": "AvgEventCPU"
                                                 }, 
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "MaxEventCPU"
                                                 }, 
                                                 {
@@ -128,11 +194,11 @@
                                                     "name": "AvgEventTime"
                                                 }, 
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "MinEventCPU"
                                                 }, 
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "TotalEventCPU"
                                                 }, 
                                                 {
@@ -153,12 +219,12 @@
                                     }, 
                                     {
                                         "type": {
-                                            "namespace": "ns4", 
+                                            "namespace": "ns6", 
                                             "type": "record", 
-                                            "name": "name4", 
+                                            "name": "name6", 
                                             "fields": [
                                                 {
-                                                    "type": "long", 
+                                                    "type": "double", 
                                                     "name": "PeakValueRss"
                                                 }, 
                                                 {
@@ -183,9 +249,9 @@
                         }, 
                         {
                             "type": {
-                                "namespace": "ns6", 
+                                "namespace": "ns8", 
                                 "type": "record", 
-                                "name": "name6", 
+                                "name": "name8", 
                                 "fields": []
                             }, 
                             "name": "analysis"
@@ -196,9 +262,9 @@
                         }, 
                         {
                             "type": {
-                                "namespace": "ns7", 
+                                "namespace": "ns9", 
                                 "type": "record", 
-                                "name": "name7", 
+                                "name": "name9", 
                                 "fields": []
                             }, 
                             "name": "cleanup"
@@ -206,16 +272,16 @@
                         {
                             "type": {
                                 "items": {
-                                    "namespace": "ns9", 
+                                    "namespace": "ns11", 
                                     "type": "record", 
-                                    "name": "name9", 
+                                    "name": "name11", 
                                     "fields": [
                                         {
                                             "type": {
                                                 "items": {
-                                                    "namespace": "ns8", 
+                                                    "namespace": "ns10", 
                                                     "type": "record", 
-                                                    "name": "name8", 
+                                                    "name": "name10", 
                                                     "fields": [
                                                         {
                                                             "type": "long", 
@@ -275,17 +341,13 @@
                         {
                             "type": {
                                 "items": {
-                                    "namespace": "ns11", 
+                                    "namespace": "ns13", 
                                     "type": "record", 
-                                    "name": "name11", 
+                                    "name": "name13", 
                                     "fields": [
                                         {
                                             "type": "string", 
                                             "name": "branch_hash"
-                                        }, 
-                                        {
-                                            "type": "string", 
-                                            "name": "adler32"
                                         }, 
                                         {
                                             "type": "string", 
@@ -350,11 +412,8 @@
                                             "name": "validStatus"
                                         }, 
                                         {
-                                            "type": {
-                                                "items": "long", 
-                                                "type": "array"
-                                            }, 
-                                            "name": "outputPFN"
+                                            "type": "string", 
+                                            "name": "adler32"
                                         }, 
                                         {
                                             "type": "string", 
@@ -381,15 +440,22 @@
                                             "name": "StageOutCommand"
                                         }, 
                                         {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "outputPFNs"
+                                        }, 
+                                        {
                                             "type": "string", 
                                             "name": "inputDataset"
                                         }, 
                                         {
                                             "type": {
                                                 "items": {
-                                                    "namespace": "ns10", 
+                                                    "namespace": "ns12", 
                                                     "type": "record", 
-                                                    "name": "name10", 
+                                                    "name": "name12", 
                                                     "fields": [
                                                         {
                                                             "type": "long", 
@@ -409,19 +475,19 @@
                                             "name": "runs"
                                         }, 
                                         {
+                                            "type": {
+                                                "items": "long", 
+                                                "type": "array"
+                                            }, 
+                                            "name": "outputLFNs"
+                                        }, 
+                                        {
                                             "type": "long", 
                                             "name": "processingVer"
                                         }, 
                                         {
                                             "type": "string", 
                                             "name": "processingStr"
-                                        }, 
-                                        {
-                                            "type": {
-                                                "items": "long", 
-                                                "type": "array"
-                                            }, 
-                                            "name": "outputLFN"
                                         }, 
                                         {
                                             "type": "string", 
@@ -448,7 +514,14 @@
                 "items": "string", 
                 "type": "array"
             }, 
-            "name": "fileArray"
+            "name": "PFNArray"
+        }, 
+        {
+            "type": {
+                "items": "string", 
+                "type": "array"
+            }, 
+            "name": "LFNArrayRef"
         }
     ]
 }
