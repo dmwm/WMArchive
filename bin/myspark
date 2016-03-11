@@ -1,3 +1,4 @@
+
 #!/bin/sh
 # Author: Valentin Kuznetsov <vkuznet AT gmail [DOT] com>
 # A wrapper script to submit spark job with myspark.py script
