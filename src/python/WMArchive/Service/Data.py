@@ -91,17 +91,16 @@ class WMAData(RESTEntity):
 
         The input HTTP request should be either
         {"data":some_data} for posting the data into WMArchive or
-        {"query":some_query} for querying the data in WMArchive.
+        {"spec":some_query, "fields":return_fields} for querying the data in WMArchive.
         The some_data should be proper JSON document(s).
-        The some_query should be either MongoDB or Hive or other supported
-        queries.
+        The some_query should be use MongoDB QL.
         """
         msg = 'expect "data", "query" attributes in your request'
         result = {'status':'Not supported, %s' % msg, 'data':[]}
         try:
             request = json.load(cherrypy.request.body)
-            if  'query' in request.keys():
-                result = self.mgr.read(request['query'])
+            if  'spec' in request.keys() and 'fields' in request.keys():
+                result = self.mgr.read(request['spec'], request['fields'])
             elif 'data' in request.keys():
                 result = self.mgr.write(request['data'])
             if  isinstance(result, GeneratorType):

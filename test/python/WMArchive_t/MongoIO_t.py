@@ -49,8 +49,12 @@ class MongoStorageTest(unittest.TestCase):
             data = self.mgr.read(wmaids[0])
             record = data[0]
             for key in ['wmaid', 'stype']:
-                del record[key]
+                if  key in record:
+                    del record[key]
             self.assertEqual(record, self.bare_data)
+            data = self.mgr.read(wmaids[0], ["dict"])
+            self.assertEqual(1, len(data))
+            self.assertEqual(data[0]["dict"], self.bare_data["dict"])
 
 #
 # main

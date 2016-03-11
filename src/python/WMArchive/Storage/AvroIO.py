@@ -92,20 +92,16 @@ class AvroStorage(Storage):
             with DataFileWriter(ostream, DatumWriter(), schema) as writer:
                 writer.append(data)
 
-    def _read(self, query=None):
+    def _read(self, spec, fields=None):
         "Internal read API"
-        if  PAT_UID.match(str(query)): # requested to read concrete file
+        if  PAT_UID.match(str(spec)): # requested to read concrete file
             out = []
-            fname = file_name(self.hdir, query)
+            fname = file_name(self.hdir, spec)
             with open_file(fname) as istream:
                 reader = DataFileReader(istream, DatumReader())
                 for data in reader:
                     if  isinstance(data, list):
                         for rec in data:
-                            self.check(rec)
-                        return data
-                    elif isinstance(data, dict) and 'bulk' in data:
-                        for rec in data['bulk']:
                             self.check(rec)
                         return data
                     self.check(data)

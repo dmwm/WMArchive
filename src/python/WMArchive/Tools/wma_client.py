@@ -141,6 +141,11 @@ def get_data(host, spec_file, ckey, cert, verbose=0):
         print(msg)
         print(str(exp))
         sys.exit(EX_DATAERR)
+    if  'spec' not in query or 'fields' not in query:
+        print('The input query must contain a "spec" and "fields"')
+        print('The "spec" represents a dict of conditions, e.g. "spec":{"lfn":"bla.root"} or list of wmaids')
+        print('The "fields" provides list of keys to look-up, e.g. "fields":["task"]')
+        sys.exit(EX_NOINPUT)
     path = '/wmarchive/data'
     pat  = re.compile('http[s]{0,1}://')
     if  not pat.match(host):
@@ -148,7 +153,7 @@ def get_data(host, spec_file, ckey, cert, verbose=0):
         print(msg)
         sys.exit(EX_UNAVAILABLE)
     url = host + path
-    data = json.dumps({'query':query})
+    data = json.dumps(query)
     client = '%s (%s)' % (WMArchive_CLIENT, os.environ.get('USER', ''))
     headers = {"Accept": "application/json", "User-Agent": client, "Content-type":"application/json"}
     req  = urllib2.Request(url=url, data=data, headers=headers)
@@ -169,6 +174,7 @@ def main():
     optmgr  = WMArchiveOptionParser()
     opts, _ = optmgr.get_opt()
     data = get_data(opts.host, opts.spec, opts.ckey, opts.cert, opts.verbose)
+    print(json.dumps(data))
 
 #
 # main
