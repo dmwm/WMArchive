@@ -91,13 +91,13 @@ class HdfsStorage(Storage):
         # close bytes stream
         bytes_writer.close()
 
-    def _read(self, query=None):
+    def _read(self, spec, fields=None):
         "Internal read API"
-        if  PAT_UID.match(str(query)): # requested to read concrete file
+        if  PAT_UID.match(str(spec)): # requested to read concrete file
             out = []
             year, month, _ = today()
             hdir = '%s/%s/%s' % (self.hdir, year, month)
-            fname = file_name(hdir, query, self.compress)
+            fname = file_name(hdir, spec, self.compress)
             data = hdfs.load(fname)
             bytes_reader = io.BytesIO(data)
 

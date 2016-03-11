@@ -34,10 +34,10 @@ class FileStorage(Storage):
         with open_file(fname, 'w') as ostream:
             ostream.write(json.dumps(data))
 
-    def _read(self, query=None):
+    def _read(self, spec, fields=None):
         "Internal read API"
-        if  PAT_UID.match(str(query)): # requested to read concrete file
-            fname = '%s/%s.gz' % (self.uri, query)
+        if  PAT_UID.match(str(spec)): # requested to read concrete file
+            fname = '%s/%s.gz' % (self.uri, spec)
             data = json.load(open_file(fname))
             if  isinstance(data, list):
                 for rec in data:

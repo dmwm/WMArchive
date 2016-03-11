@@ -93,7 +93,7 @@ class WMArchiveManager(object):
         result = {'stype': self.mgr.stype, 'ids': ids, 'status': status}
         return result
 
-    def read(self, query):
+    def read(self, spec, fields):
         """
         Send request to proxy server to read data for given query.
         Yield list of found documents or None.
@@ -101,7 +101,7 @@ class WMArchiveManager(object):
         status = 'ok'
         try:
             # request data from back-end
-            data = self.mgr.read(query)
+            data = self.mgr.read(spec, fields)
         except ReadError as exp:
             print(exp)
             data = []
@@ -110,5 +110,6 @@ class WMArchiveManager(object):
             data = []
             print(tstamp("WMArchiveManager::write"), "fail with %s" % str(exp))
             status = 'fail'
-        result = {'query': query, 'data': data, 'stype': self.mgr.stype, 'status': status}
+        result = {'input': {'spec': spec, 'fields': fields},
+                  'results': data, 'storage': self.mgr.stype, 'status': status}
         return result

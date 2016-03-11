@@ -84,27 +84,29 @@ class MongoStorage(Storage):
             raise WriteError(msg)
         return wmaids
 
-    def read(self, query=None):
-        "Read API, it reads data from MongoDB storage for provided query."
+    def read(self, spec, fields=None):
+        "Read API, it reads data from MongoDB storage for provided spec."
         try:
-            gen = self.find(query)
+            gen = self.find(spec, fields)
             docs = [r for r in gen]
             return docs
         except Exception as exp:
             raise ReadError(str(exp))
 
-    def find(self, query=None):
+    def find(self, spec, fields):
         """
-        Find records in MongoDB storage for provided query, returns generator
+        Find records in MongoDB storage for provided spec, returns generator
         over MongoDB collection
         """
-        if  not query:
-            query = {}
-        if  isinstance(query, list):
-            query = {'wmaid': {'$in': query}}
-        elif  PAT_UID.match(str(query)):
-            query = {'wmaid': query}
-        return self.coll.find(query)
+        if  not spec:
+            spec = {}
+        if  isinstance(spec, list):
+            spec = {'wmaid': {'$in': spec}}
+        elif  PAT_UID.match(str(spec)):
+            spec = {'wmaid': spec}
+        if  fields:
+            return self.coll.find(spec, fields)
+        return self.coll.find(spec)
 
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"
