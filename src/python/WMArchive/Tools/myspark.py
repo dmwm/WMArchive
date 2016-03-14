@@ -40,6 +40,8 @@ class OptionParser():
         msg = "json file with query spec"
         self.parser.add_argument("--spec", action="store",
             dest="spec", default="", help=msg)
+        self.parser.add_argument("--yarn", action="store_true",
+            dest="yarn", default=False, help="run job on analytics cluster via yarn resource manager")
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
 
