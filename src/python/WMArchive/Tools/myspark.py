@@ -42,6 +42,8 @@ class OptionParser():
             dest="spec", default="", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
+        self.parser.add_argument("--yarn", action="store_true",
+            dest="yarn", default=False, help="true if yarn mode is enabled")
 
 def basic_mapper(records):
     """
@@ -121,6 +123,8 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
     logger = SparkLogger(ctx)
     if  not verbose:
         logger.set_level('ERROR')
+    if yarn:
+        logger.info("YARN client mode enabled")
 
     # load FWJR schema
     rdd = ctx.textFile(schema_file, 1).collect()
