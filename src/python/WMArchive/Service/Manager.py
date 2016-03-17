@@ -22,8 +22,21 @@ import time
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.FileIO import FileStorage
 from WMArchive.Storage.AvroIO import AvroStorage
+try:
+    from WMArchive.Storage.SparkIO import SparkStorage
+    LTS = True
+except:
+    LTS = False
 from WMArchive.Utils.Utils import wmaHash, tstamp
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+
+def use_lts(trange):
+    """
+    Helper function to determine based on given time range either
+    to use Short Term Storage or Long Term Storage
+    """
+    # we need to implement the logic, trange is tuple of two values
+    return False
 
 class WMArchiveManager(object):
     """
@@ -40,11 +53,29 @@ class WMArchiveManager(object):
             self.mgr = AvroStorage(config.short_storage_uri)
         else:
             self.mgr = FileStorage(os.getenv('WMA_STORAGE_ROOT', '/tmp/wma_storage'))
-        self._version = "1.0.0"
+        # Short-Term Storage
+        self.sts = self.mgr
+        # Long-Term Storage
+        if  LTS: # we'll use this module if it's loaded
+            self.lts = SparkStorage(config.long_storage_uri)
+        else: # fallback
+            self.lts = self.mgr
+        self.specmap = {}
+        with open(config.specmap, 'r') as istream:
+            cdict = {}
+            for line in istream.readlines():
+                pair = line.replace('\n', '').split(',')
+                self.specmap[pair[0]] = pair[1] # lfn:LFNArray
+        print("WMArchive::Manager specmap", self.specmap)
 
-    def info(self):
-        "Return info about WMArchive"
-        return {'WMArchive' : {'version': self._version}}
+    def sconvert(self, mgr, spec):
+        "Convert user based spec into WMArhchive storage one"
+        newspec = {}
+        for key, val in spec.items():
+            newspec[self.specmap.get(key, key)] = val
+        if  hasattr(mgr, 'sconvert'):
+            return mgr.sconvert(newspec)
+        return newspec
 
     def encode(self, docs):
         """
@@ -98,18 +129,43 @@ class WMArchiveManager(object):
         Send request to proxy server to read data for given query.
         Yield list of found documents or None.
         """
+        # convert given spec into query suitable for sts/lts
+        try:
+            trange = spec.pop('timerange')
+        except KeyError:
+            data = []
+            print(tstamp("WMArchiveManager::read"), "fail with %s" % str(exp))
+            status = 'fail'
+            reason = 'No timerange is provided, please adjust your query spec'
+            result = {'input': {'spec': spec, 'fields': fields},
+                      'results': data, 'storage': self.mgr.stype,
+                      'status': status, 'reason': reason}
+            return result
+
+        # based on given time range define which manager
+        # we'll use for data look-up
+        mgr = self.sts
+        if  use_lts(trange):
+            mgr = self.lts
+
+        # convert spec into WMArchive one
+        spec = self.sconvert(mgr, spec)
         status = 'ok'
+        reason = None
         try:
             # request data from back-end
-            data = self.mgr.read(spec, fields)
+            data = mgr.read(spec, fields)
         except ReadError as exp:
             print(exp)
             data = []
             status = 'read error'
         except Exception as exp:
             data = []
-            print(tstamp("WMArchiveManager::write"), "fail with %s" % str(exp))
+            print(tstamp("WMArchiveManager::read"), "fail with %s" % str(exp))
+            reason = str(exp)
             status = 'fail'
         result = {'input': {'spec': spec, 'fields': fields},
                   'results': data, 'storage': self.mgr.stype, 'status': status}
+        if  reason:
+            result['reason'] = reason
         return result
