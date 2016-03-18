@@ -69,6 +69,15 @@ def today():
     date = time.strftime('%02d', tst)
     return year, month, date
 
+def check_tstamp(value):
+    "Check that given value conform YYYYMMDD time format"
+    value = str(value).lower()
+    if  PAT_YYYYMMDD.match(value):
+        return True
+    elif value.endswith('d'):
+        return True
+    return False
+
 def dateformat(value):
     """Return seconds since epoch for provided YYYYMMDD or number with suffix 'd' for days"""
     msg  = 'Unacceptable date format, value=%s, type=%s,' \

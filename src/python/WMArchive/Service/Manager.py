@@ -27,15 +27,22 @@ try:
     LTS = True
 except:
     LTS = False
-from WMArchive.Utils.Utils import wmaHash, tstamp
+from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 
-def use_lts(trange):
+def trange_check(trange):
+    "Check correctnes of trange values"
+    return len(trange) == 2 & check_tstamp(trange[0]) & check_tstamp(trange[1])
+
+def use_lts(trange, thr):
     """
     Helper function to determine based on given time range either
     to use Short Term Storage or Long Term Storage
     """
-    # we need to implement the logic, trange is tuple of two values
+    # check if max time is less than given threshold
+    maxt = dateformat(trange[1])
+    if  time.time()-maxt > thr:
+        return True
     return False
 
 class WMArchiveManager(object):
@@ -56,6 +63,7 @@ class WMArchiveManager(object):
         # Short-Term Storage
         self.sts = self.mgr
         # Long-Term Storage
+        self.tls_thr = config.long_storage_thr
         if  LTS: # we'll use this module if it's loaded
             self.lts = SparkStorage(config.long_storage_uri)
         else: # fallback
@@ -132,24 +140,28 @@ class WMArchiveManager(object):
         Send request to proxy server to read data for given query.
         Yield list of found documents or None.
         """
+        result = {'input': {'spec': spec, 'fields': fields},
+                  'results': [], 'storage': self.mgr.stype, 'status': 'ok'}
         # convert given spec into query suitable for sts/lts
         if  isinstance(spec, dict):
             try:
                 trange = spec.pop('timerange')
             except KeyError:
-                data = []
                 print(tstamp("WMArchiveManager::read"), "timerange is not provided")
-                status = 'fail'
-                reason = 'No timerange is provided, please adjust your query spec'
-                result = {'input': {'spec': spec, 'fields': fields},
-                          'results': data, 'storage': self.mgr.stype,
-                          'status': status, 'reason': reason}
+                result['reason'] = 'No timerange is provided, please adjust your query spec'
+                result['status'] = 'fail'
+                return result
+
+            if  not trange_check(trange):
+                print(tstamp("WMArchiveManager::read"), "bad timerange: %s" % trage)
+                result['reason'] = 'Unable to parse timerange, should be [YYYYMMDD, YYYYMMDD]'
+                result['status'] = 'fail'
                 return result
 
             # based on given time range define which manager
             # we'll use for data look-up
             mgr = self.sts
-            if  use_lts(trange):
+            if  use_lts(trange, self.tls_thr):
                 mgr = self.lts
 
             # convert spec into WMArchive one
@@ -172,8 +184,8 @@ class WMArchiveManager(object):
             print(tstamp("WMArchiveManager::read"), "fail with %s" % str(exp))
             reason = str(exp)
             status = 'fail'
-        result = {'input': {'spec': spec, 'fields': fields},
-                  'results': data, 'storage': self.mgr.stype, 'status': status}
+        result['data'] = data
+        result['status'] = status
         if  reason:
             result['reason'] = reason
         return result
