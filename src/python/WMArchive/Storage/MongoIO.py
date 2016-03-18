@@ -55,6 +55,10 @@ class MongoStorage(Storage):
         self.log(self.coll)
         self.chunk_size = chunk_size
 
+    def sconvert(self, spec, fields):
+        "convert input spec/fields into ones suitable for MognoDB QL"
+        return spec, fields
+
     def write(self, data, safe=None):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):

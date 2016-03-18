@@ -22,6 +22,7 @@ import pydoop.hdfs as hdfs
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+from WMArchive.Utils.Utils import wmaHash
 
 class SparkStorage(Storage):
     "Storage based on HDFS/Spark back-end"
@@ -36,6 +37,10 @@ class SparkStorage(Storage):
             raise Exception('HDFS path %s does not exists' % self.hdir)
         schema_doc = hdfs.load(schema)
         self.schema = avro.schema.parse(schema_doc)
+
+    def sconvert(self, spec, fields):
+        "convert input spec/fields into ones suitable for Skark QL"
+        return spec, fields
 
     def write(self, data, safe=None):
         "Write API, return ids of stored documents"
@@ -60,6 +65,11 @@ class SparkStorage(Storage):
             spec = {'wmaid': {'$in': spec}}
         elif  PAT_UID.match(str(spec)):
             spec = {'wmaid': spec}
-        if  fields:
-            return self.coll.find(spec, fields)
-        return self.coll.find(spec)
+        # implement logic how to find records on Spark platform
+        # - generate uid of given spec/fields
+        # - submit spark job in background, results should be written to MongoDB
+        #   results collection that later user can retrieve them
+        # - return uid of spec/fields back to user for results retrieval
+        rep = json.dumps(dict(spec=spec, fields=fields))
+        results = [wmaHash(rep)]
+        return results

@@ -68,14 +68,17 @@ class WMArchiveManager(object):
                 self.specmap[pair[0]] = pair[1] # lfn:LFNArray
         print("WMArchive::Manager specmap", self.specmap)
 
-    def sconvert(self, mgr, spec):
+    def sconvert(self, mgr, spec, fields):
         "Convert user based spec into WMArhchive storage one"
         newspec = {}
+        newfields = []
         for key, val in spec.items():
             newspec[self.specmap.get(key, key)] = val
+        for field in fields:
+            newfields.append(self.specmap.get(fields, field))
         if  hasattr(mgr, 'sconvert'):
-            return mgr.sconvert(newspec)
-        return newspec
+            return mgr.sconvert(newspec, fields)
+        return newspec, newfields
 
     def encode(self, docs):
         """
@@ -134,7 +137,7 @@ class WMArchiveManager(object):
             trange = spec.pop('timerange')
         except KeyError:
             data = []
-            print(tstamp("WMArchiveManager::read"), "fail with %s" % str(exp))
+            print(tstamp("WMArchiveManager::read"), "timerange is not provided")
             status = 'fail'
             reason = 'No timerange is provided, please adjust your query spec'
             result = {'input': {'spec': spec, 'fields': fields},
@@ -149,7 +152,7 @@ class WMArchiveManager(object):
             mgr = self.lts
 
         # convert spec into WMArchive one
-        spec = self.sconvert(mgr, spec)
+        spec, fields = self.sconvert(mgr, spec, fields)
         status = 'ok'
         reason = None
         try:
