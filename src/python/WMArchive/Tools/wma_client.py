@@ -142,9 +142,12 @@ def get_data(host, spec_file, ckey, cert, verbose=0):
         print(str(exp))
         sys.exit(EX_DATAERR)
     if  'spec' not in query or 'fields' not in query:
-        print('The input query must contain a "spec" and "fields"')
-        print('The "spec" represents a dict of conditions, e.g. "spec":{"lfn":"bla.root"} or list of wmaids')
-        print('The "fields" provides list of keys to look-up, e.g. "fields":["task"]')
+        print('The input query JSON file must contain a "spec" and "fields"')
+        print('The "spec" represents a dict of conditions or list of wmaids')
+        print('    Examples: "spec":{"lfn":"bla.root", "timerange":[YYYYMMDD,YYYYMMDD]}')
+        print('              "spec":[wmaid1, wmaid2]')
+        print('The "fields" provides list of keys to look-up')
+        print('    Examples: "fields":["wmaid", "lfn"]')
         sys.exit(EX_NOINPUT)
     path = '/wmarchive/data'
     pat  = re.compile('http[s]{0,1}://')

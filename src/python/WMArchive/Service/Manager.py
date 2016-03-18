@@ -68,14 +68,17 @@ class WMArchiveManager(object):
                 self.specmap[pair[0]] = pair[1] # lfn:LFNArray
         print("WMArchive::Manager specmap", self.specmap)
 
-    def sconvert(self, mgr, spec):
+    def sconvert(self, mgr, spec, fields):
         "Convert user based spec into WMArhchive storage one"
         newspec = {}
+        newfields = []
         for key, val in spec.items():
             newspec[self.specmap.get(key, key)] = val
+        for field in fields:
+            newfields.append(self.specmap.get(fields, field))
         if  hasattr(mgr, 'sconvert'):
-            return mgr.sconvert(newspec)
-        return newspec
+            return mgr.sconvert(newspec, fields)
+        return newspec, newfields
 
     def encode(self, docs):
         """
@@ -130,26 +133,31 @@ class WMArchiveManager(object):
         Yield list of found documents or None.
         """
         # convert given spec into query suitable for sts/lts
-        try:
-            trange = spec.pop('timerange')
-        except KeyError:
-            data = []
-            print(tstamp("WMArchiveManager::read"), "fail with %s" % str(exp))
-            status = 'fail'
-            reason = 'No timerange is provided, please adjust your query spec'
-            result = {'input': {'spec': spec, 'fields': fields},
-                      'results': data, 'storage': self.mgr.stype,
-                      'status': status, 'reason': reason}
-            return result
+        if  isinstance(spec, dict):
+            try:
+                trange = spec.pop('timerange')
+            except KeyError:
+                data = []
+                print(tstamp("WMArchiveManager::read"), "timerange is not provided")
+                status = 'fail'
+                reason = 'No timerange is provided, please adjust your query spec'
+                result = {'input': {'spec': spec, 'fields': fields},
+                          'results': data, 'storage': self.mgr.stype,
+                          'status': status, 'reason': reason}
+                return result
 
-        # based on given time range define which manager
-        # we'll use for data look-up
-        mgr = self.sts
-        if  use_lts(trange):
-            mgr = self.lts
+            # based on given time range define which manager
+            # we'll use for data look-up
+            mgr = self.sts
+            if  use_lts(trange):
+                mgr = self.lts
 
-        # convert spec into WMArchive one
-        spec = self.sconvert(mgr, spec)
+            # convert spec into WMArchive one
+            spec, fields = self.sconvert(mgr, spec, fields)
+        else:
+            # if spec is a list, it means user look-up docs by wmaids
+            # they represents results of LTS data look-up
+            mgr = self.sts
         status = 'ok'
         reason = None
         try:
