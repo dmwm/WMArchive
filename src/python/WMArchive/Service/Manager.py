@@ -95,9 +95,12 @@ class WMArchiveManager(object):
         Yield encoded documents to the client.
         """
         for doc in docs:
-            doc['wmaid'] = wmaHash(doc)
-            doc['wmats'] = time.time()
-            doc['stype'] = self.mgr.stype
+            if  not 'wmaid' in doc:
+                doc['wmaid'] = wmaHash(doc)
+            if  not 'wmats' in doc:
+                doc['wmats'] = time.time()
+            if  not 'stype' in doc:
+                doc['stype'] = self.mgr.stype
             yield doc
 
     def decode(self, docs):
