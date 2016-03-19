@@ -78,7 +78,7 @@ class WMAData(RESTEntity):
         if  info:
             return self.mgr.info()
         if  args and len(args) == 1: # requested uid
-            return results(self.mgr.read(args[0]))
+            return results(self.mgr.read(args[0], []))
         return results({'request': kwds, 'results': 'Not available'})
 
     @restcall(formats=[('application/json', JSONFormat())])
