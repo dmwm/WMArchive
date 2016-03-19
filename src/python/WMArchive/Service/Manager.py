@@ -65,7 +65,7 @@ class WMArchiveManager(object):
         # Long-Term Storage
         self.tls_thr = config.long_storage_thr
         if  LTS: # we'll use this module if it's loaded
-            self.lts = SparkStorage(config.long_storage_uri)
+            self.lts = SparkStorage(config.long_storage_uri, config.wmauri)
         else: # fallback
             self.lts = self.mgr
         self.specmap = {}
