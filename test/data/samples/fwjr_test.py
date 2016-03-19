@@ -4,6 +4,8 @@ fwjr = \
 {'meta_data': {'agent_ver': '1.0.14.pre5',
                'fwjr_id': '1-0',
                'host': 'test.fnal.gov',
+               'jobtype': "Processing",
+               'jobstate': "success", 
                'ts': 1456500229},
  'LFNArray': ['/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
               '/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
@@ -76,7 +78,11 @@ fwjr = \
                          #'user_dn': '',
                          #'user_vogroup': 'DEFAULT',
                          #'user_vorole': 'DEFAULT',
-                         'validStatus': 'PRODUCTION'}],
+                         'validStatus': 'PRODUCTION',
+                         "SEName": "srm-cms.cern.ch",
+                         "PNN": "T2_CERN_CH",
+                         "GUID": '',
+                         "StageOutCommand": "srmv2-lcg"}],
               'performance': {"multicore": {},
                   "storage": {
                     "readAveragekB": 77.8474891246,
@@ -91,7 +97,7 @@ fwjr = \
                     'writeTotalSecs': 575158.0},
                    "memory": {
                        "PeakValueRss": 0.0,
-                       "PeakValueVsize": 0
+                       "PeakValueVsize": 0.0
                    },
                    "cpu": {
                        "TotalJobCPU": 0.39894,
