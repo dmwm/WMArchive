@@ -1,4 +1,4 @@
-import json
+# schema definition for FWJR test documents
 
 fwjr = \
 {'meta_data': {'agent_ver': '1.0.14.pre5',
@@ -118,8 +118,3 @@ fwjr = \
 'fallbackFiles': [0],
 'skippedFiles': [1],
 'task': '/sryu_TaskChain_Data_wq_testt_160204_061048_5587/RECOCOSD'}
-
-with open("fwjr_test.json", 'w') as outfile:
-    json.dump(fwjr, outfile)
-    
-print "done"
