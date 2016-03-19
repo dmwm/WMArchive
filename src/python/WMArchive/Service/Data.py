@@ -103,6 +103,8 @@ class WMAData(RESTEntity):
                 result = self.mgr.read(request['spec'], request['fields'])
             elif 'data' in request.keys():
                 result = self.mgr.write(request['data'])
+            elif 'job' in request.keys():
+                result = self.mgr.write(request['job'])
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
             return results(result)
