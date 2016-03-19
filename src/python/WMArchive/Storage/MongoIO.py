@@ -110,8 +110,10 @@ class MongoStorage(Storage):
             spec = {}
         if  isinstance(spec, list):
             spec = {'wmaid': {'$in': spec}}
+            return self.jobs.find(spec)
         elif  PAT_UID.match(str(spec)):
             spec = {'wmaid': spec}
+            return self.jobs.find(spec)
         if  fields:
             return self.coll.find(spec, fields)
         return self.coll.find(spec)
