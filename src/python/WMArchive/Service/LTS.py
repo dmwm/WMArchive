@@ -45,7 +45,7 @@ class LTSManager(object):
         schema = uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        self.hdir = self.uri.rsplit('/', 1)[0]
+        self.hdir = schema.rsplit('/', 1)[0]
         if  not hdfs.path.isdir(self.hdir):
             raise Exception('HDFS path %s does not exists' % self.hdir)
         schema_doc = hdfs.load(schema)
