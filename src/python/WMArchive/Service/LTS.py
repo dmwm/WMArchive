@@ -42,7 +42,7 @@ class LTSManager(object):
     "Long-Term Storage manager based on HDFS/Spark back-end"
     def __init__(self, uri, wmauri):
         "ctor with LTS uri (hdfs:///path/schema.avsc) and WMArchive uri"
-        schema = self.uri
+        schema = uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
         self.hdir = self.uri.rsplit('/', 1)[0]
