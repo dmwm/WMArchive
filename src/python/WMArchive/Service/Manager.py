@@ -23,9 +23,10 @@ from WMArchive.Service.STS import STSManager
 try:
     from WMArchive.Service.LTS import LTSManager
     LTS = True
-except:
+except Exception as exp:
+    print("WARNING, unable to load LTS", str(exp))
     LTS = False
-from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp
+from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp, dateformat
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 
 def trange_check(trange):
@@ -73,7 +74,7 @@ class WMArchiveManager(object):
         for key, val in spec.items():
             newspec[self.specmap.get(key, key)] = val
         for field in fields:
-            newfields.append(self.specmap.get(fields, field))
+            newfields.append(self.specmap.get(field, field))
         if  hasattr(mgr, 'qmap'):
             return mgr.qmap(newspec, fields)
         return newspec, newfields
@@ -145,8 +146,8 @@ class WMArchiveManager(object):
                 result['status'] = 'fail'
                 return result
 
-            if  not trange_check(trange):
-                print(tstamp("WMArchiveManager::read"), "bad timerange: %s" % trage)
+            if  trange_check(trange):
+                print(tstamp("WMArchiveManager::read"), "bad timerange: %s" % trange)
                 result['reason'] = 'Unable to parse timerange, should be [YYYYMMDD, YYYYMMDD]'
                 result['status'] = 'fail'
                 return result
