@@ -52,6 +52,7 @@ class MongoStorage(Storage):
         self.mdb = self.client[dbname]
         self.mdb.add_son_manipulator(WMASONManipulator())
         self.coll = self.mdb[collname]
+        self.jobs = self.mdb['jobs'] # separate collection for job results
         self.log(self.coll)
         self.chunk_size = chunk_size
 
@@ -63,6 +64,9 @@ class MongoStorage(Storage):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
             data = [data] # ensure that we got list of data
+        coll = self.coll
+        if  isinstance(data[0], dict) and data[0].get('dtype', None) == 'job':
+            coll = self.jobs
         wmaids = self.getids(data)
         total = 0
         try:
@@ -70,7 +74,7 @@ class MongoStorage(Storage):
             # for MongoDB bulk insertion
             gen = (r for r in data)
             while True:
-                nres = self.coll.insert(itertools.islice(gen, self.chunk_size))
+                nres = coll.insert(itertools.islice(gen, self.chunk_size))
                 if  not nres:
                     break
                 total += len(nres)
@@ -106,8 +110,10 @@ class MongoStorage(Storage):
             spec = {}
         if  isinstance(spec, list):
             spec = {'wmaid': {'$in': spec}}
+            return self.jobs.find(spec)
         elif  PAT_UID.match(str(spec)):
             spec = {'wmaid': spec}
+            return self.jobs.find(spec)
         if  fields:
             return self.coll.find(spec, fields)
         return self.coll.find(spec)

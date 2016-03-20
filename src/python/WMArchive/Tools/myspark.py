@@ -19,10 +19,13 @@ import sys
 import imp
 import time
 import json
+import urllib
+import urllib2
+import httplib
 import argparse
 
 # WMArchive modules
-from WMArchive.Utils.Utils import htime
+from WMArchive.Utils.Utils import htime, wmaHash
 
 class OptionParser():
     def __init__(self):
@@ -42,8 +45,72 @@ class OptionParser():
             dest="spec", default="", help=msg)
         self.parser.add_argument("--yarn", action="store_true",
             dest="yarn", default=False, help="run job on analytics cluster via yarn resource manager")
+        msg = "store results into WMArchive, provide WMArchvie url"
+        self.parser.add_argument("--store", action="store",
+            dest="store", default="", help=msg)
+        msg = "provide wmaid for store submission"
+        self.parser.add_argument("--wmaid", action="wmaid",
+            dest="wmaid", default="", help=msg)
+        msg  = 'specify private key file name, default $X509_USER_PROXY'
+        self.parser.add_option("--ckey", action="store", type="string",
+                               default=x509(), dest="ckey", help=msg)
+        msg  = 'specify private certificate file name, default $X509_USER_PROXY'
+        self.parser.add_option("--cert", action="store", type="string",
+                               default=x509(), dest="cert", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
+
+def x509():
+    "Helper function to get x509 either from env or tmp file"
+    proxy = os.environ.get('X509_USER_PROXY', '')
+    if  not proxy:
+        proxy = '/tmp/x509up_u%s' % pwd.getpwuid( os.getuid() ).pw_uid
+        if  not os.path.isfile(proxy):
+            return ''
+    return proxy
+
+class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
+    """
+    Simple HTTPS client authentication class based on provided
+    key/ca information
+    """
+    def __init__(self, key=None, cert=None, level=0):
+        if  level > 1:
+            urllib2.HTTPSHandler.__init__(self, debuglevel=1)
+        else:
+            urllib2.HTTPSHandler.__init__(self)
+        self.key = key
+        self.cert = cert
+
+    def https_open(self, req):
+        """Open request method"""
+        #Rather than pass in a reference to a connection class, we pass in
+        # a reference to a function which, for all intents and purposes,
+        # will behave as a constructor
+        return self.do_open(self.get_connection, req)
+
+    def get_connection(self, host, timeout=300):
+        """Connection method"""
+        if  self.key:
+            return httplib.HTTPSConnection(host, key_file=self.key,
+                                                cert_file=self.cert)
+        return httplib.HTTPSConnection(host)
+
+def postdata(url, data, ckey=None, cert=None, verbose=0):
+    """
+    POST data into given url
+    """
+    headers = {'Content-type':'application/json','Accept':'application/json'}
+    req = urllib2.Request(url)
+    if  verbose > 1:
+        handler = urllib2.HTTPHandler(debuglevel=1)
+        opener  = urllib2.build_opener(handler)
+        urllib2.install_opener(opener)
+    if  ckey and cert:
+	handler = HTTPSClientAuthHandler(ckey, cert, verbose)
+	opener  = urllib2.build_opener(handler)
+	urllib2.install_opener(opener)
+    data = urllib2.urlopen(req, json.dumps(data))
 
 def basic_mapper(records):
     """
@@ -183,8 +250,16 @@ def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
+    time0 = time.time()
     results = run(opts.schema, opts.hdir, opts.script, opts.spec, opts.verbose)
-    print(results)
+    if  opts.store:
+        data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
+        data['wamid'] = opts.wmaid if opts.wmaid or wmaHash(data)
+        data['dtype'] = 'job'
+        pdata = dict(job=data)
+	postdata(opts.store, data, opts.ckey, opts.cert, opts.verbose)
+    else:
+        print(results)
 
 if __name__ == '__main__':
     main()

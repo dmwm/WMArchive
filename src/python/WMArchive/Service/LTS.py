@@ -2,10 +2,10 @@
 #-*- coding: utf-8 -*-
 #pylint: disable=
 """
-File       : SparkIO.py
+File       : LTSManager.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: WMArchive Spark storage client. This module is responsible
-for providing read api to HDFS via Spark interface.
+Description: WMArchive Long-Term Storage manager. This module is responsible
+for providing read/write APIs to Long-Term Storage.
 """
 
 # futures
@@ -25,15 +25,10 @@ import pydoop.hdfs as hdfs
 
 # WMArchive modules
 import WMArchive # to know location of the code
-from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Exceptions import WriteError, ReadError
-from WMArchive.Utils.Utils import wmaHash
+from WMArchive.Utils.Utils import wmaHash, tstamp
 from WMArchive.Utils.TaskManager import TaskManager
-
-def parse_spark_stdout(out):
-    "Parse spark job standard output"
-    return ""
 
 def make_hdfs_path(hdir, trange):
     """
@@ -43,11 +38,10 @@ def make_hdfs_path(hdir, trange):
     # TODO: implement how to provide pattern on HDFS path
     return hdir
 
-class SparkStorage(Storage):
-    "Storage based on HDFS/Spark back-end"
-    def __init__(self, uri):
-        "ctor with spark uri: sparkio://hdfspath/schema.avsc"
-        Storage.__init__(self, uri)
+class LTSManager(object):
+    "Long-Term Storage manager based on HDFS/Spark back-end"
+    def __init__(self, uri, wmauri):
+        "ctor with LTS uri (hdfs:///path/schema.avsc) and WMArchive uri"
         schema = self.uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
@@ -57,17 +51,18 @@ class SparkStorage(Storage):
         schema_doc = hdfs.load(schema)
         self.schema = avro.schema.parse(schema_doc)
         self.taskmgr = TaskManager()
+        self.wmauri = wmauri # WMArchive URL which will be used by submit
 
-    def sconvert(self, spec, fields):
-        "convert input spec/fields into ones suitable for Skark QL"
+    def lmap(self, spec, fields):
+        "map input spec/fields into ones suitable for LTS QL"
         return spec, fields
 
     def write(self, data, safe=None):
-        "Write API, return ids of stored documents"
+        "Write API for LTS, currently we do not provide direct write access to LTS"
         raise NotImplementedError
 
     def read(self, spec, fields=None):
-        "Read API, it reads data from HDFS/Spark storage for provided spec."
+        "Read API for LTS"
         try:
             if  not spec:
                 spec = {}
@@ -96,36 +91,32 @@ class SparkStorage(Storage):
 
     def read_from_storage(self, wmaids):
         "Retrieve results from storage for given set of ids"
-        # this method will provide read access for
-        # given wmaid(s) to HDFS/HBase/Oracle where results
-        # will be stored. The idea is for given wmaids get back results.
+        # this method provides read access for to STS/HDFS/HBase/Oracle
+        # back-end where results will be stored. So far we store results
+        # to STS and therefore will read from it.
+        return self.sts.read(wmaids)
 
     def submit_spark(self, spec, fields, wait=60):
         """
         Submit function provides interface how to submit job to
         HDFS/Spark/MR. It will use subprocess module to call
         specific function, e.g. bash script (myspark)
+
+        The job parameters includes: HDFS directory pattern, schema file,
+        script name, spec file and store uri. The job will be routed to
+        yarn cluster. The myspark script will store results back to
+        provided store uri, i.e. WMArchive REST interface.
         """
         "Run given command in subprocess"
         hdir = make_hdfs_path('hdfs://%s' % self.hdir, spec.pop('timerange'))
         schema = 'hdfs://%s' % self.uri
         script = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'Tools/myspark.py')
         fobj = tempfile.NamedTemporaryFile()
-        fobj.write(json.dumps(dict(spec=spec, fields=fields)))
+        data = json.dumps(dict(spec=spec, fields=fields))
+        fobj.write(data)
         spec_file = fobj.name
-        cmd = 'myspark --hdir=%s --schema=%s --script=%s --spec=%s' \
-                % (hdir, schema, script, spec_file)
+        wmaid = wmaHash(data)
+        cmd = 'myspark --hdir=%s --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s --yarn-cluster' \
+                % (hdir, schema, script, spec_file, self.wmauri, wmaid)
+        print(tstamp("WMArchive::SparkStorage"), cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        time0 = time.time()
-        while True:
-            if  time.time()-time0 > wait:
-                break
-            pout, perr = proc.communicate()
-            out = pout.read()
-            err = perr.read()
-            pout.close()
-            perr.close()
-            spark = parse_spark_stdout(out)
-            if  spark
-                return spark
-            time.sleep(5)

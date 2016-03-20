@@ -30,7 +30,18 @@ elif [ "$1" == "--yarn" ] || [ "$1" == "-yarn" ]; then
         --num-executors 4 \
         --master yarn-client \
         --executor-cores 4 \
-        $wmaroot/Tools/myspark.py ${1+"$@"} 
+        $wmaroot/Tools/myspark.py ${1+"$@"}
+elif [ "$1" == "--yarn-cluster" ] || [ "$1" == "-yarn-cluster" ]; then
+    # to tune up these numbers:
+    #  - executor-memory not more than 5G
+    #  - num-executor can be increased (suggested not more than 10)
+    #  - cores = 2/4/8
+    spark-submit --driver-class-path $avrojar:$sparkexjar \
+        --executor-memory 4G \
+        --num-executors 4 \
+        --master yarn-cluster \
+        --executor-cores 4 \
+        $wmaroot/Tools/myspark.py ${1+"$@"}
 else
     # submit spark job with our file, please note
     # that user may increase memory options if necessary
