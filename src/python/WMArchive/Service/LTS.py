@@ -2,10 +2,10 @@
 #-*- coding: utf-8 -*-
 #pylint: disable=
 """
-File       : SparkIO.py
+File       : LTSManager.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: WMArchive Spark storage client. This module is responsible
-for providing read api to HDFS via Spark interface.
+Description: WMArchive Long-Term Storage manager. This module is responsible
+for providing read/write APIs to Long-Term Storage.
 """
 
 # futures
@@ -25,7 +25,6 @@ import pydoop.hdfs as hdfs
 
 # WMArchive modules
 import WMArchive # to know location of the code
-from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 from WMArchive.Utils.Utils import wmaHash, tstamp
@@ -39,11 +38,10 @@ def make_hdfs_path(hdir, trange):
     # TODO: implement how to provide pattern on HDFS path
     return hdir
 
-class SparkStorage(Storage):
-    "Storage based on HDFS/Spark back-end"
+class LTSManager(object):
+    "Long-Term Storage manager based on HDFS/Spark back-end"
     def __init__(self, uri, wmauri):
-        "ctor with spark uri: sparkio://hdfspath/schema.avsc"
-        Storage.__init__(self, uri)
+        "ctor with LTS uri (hdfs:///path/schema.avsc) and WMArchive uri"
         schema = self.uri
         if  not hdfs.ls(schema):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
@@ -55,16 +53,16 @@ class SparkStorage(Storage):
         self.taskmgr = TaskManager()
         self.wmauri = wmauri # WMArchive URL which will be used by submit
 
-    def sconvert(self, spec, fields):
-        "convert input spec/fields into ones suitable for Skark QL"
+    def lmap(self, spec, fields):
+        "map input spec/fields into ones suitable for LTS QL"
         return spec, fields
 
     def write(self, data, safe=None):
-        "Write API, return ids of stored documents"
+        "Write API for LTS, currently we do not provide direct write access to LTS"
         raise NotImplementedError
 
     def read(self, spec, fields=None):
-        "Read API, it reads data from HDFS/Spark storage for provided spec."
+        "Read API for LTS"
         try:
             if  not spec:
                 spec = {}
@@ -93,9 +91,10 @@ class SparkStorage(Storage):
 
     def read_from_storage(self, wmaids):
         "Retrieve results from storage for given set of ids"
-        # this method will provide read access for
-        # given wmaid(s) to HDFS/HBase/Oracle where results
-        # will be stored. The idea is for given wmaids get back results.
+        # this method provides read access for to STS/HDFS/HBase/Oracle
+        # back-end where results will be stored. So far we store results
+        # to STS and therefore will read from it.
+        return self.sts.read(wmaids)
 
     def submit_spark(self, spec, fields, wait=60):
         """

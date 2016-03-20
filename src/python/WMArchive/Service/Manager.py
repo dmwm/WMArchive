@@ -19,11 +19,9 @@ import os
 import time
 
 # WMArchive modules
-from WMArchive.Storage.MongoIO import MongoStorage
-from WMArchive.Storage.FileIO import FileStorage
-from WMArchive.Storage.AvroIO import AvroStorage
+from WMArchive.Service.STS import STSManager
 try:
-    from WMArchive.Storage.SparkIO import SparkStorage
+    from WMArchive.Service.LTS import LTSManager
     LTS = True
 except:
     LTS = False
@@ -51,41 +49,33 @@ class WMArchiveManager(object):
     file will provide details of proxy server, agent information, etc.
     """
     def __init__(self, config=None):
-        self.config = config
-        if  config.short_storage_uri.startswith('mongo'):
-            self.mgr = MongoStorage(config.short_storage_uri)
-        elif config.short_storage_uri.startswith('file'):
-            self.mgr = FileStorage(config.short_storage_uri)
-        elif config.short_storage_uri.startswith('avro'):
-            self.mgr = AvroStorage(config.short_storage_uri)
-        else:
-            self.mgr = FileStorage(os.getenv('WMA_STORAGE_ROOT', '/tmp/wma_storage'))
         # Short-Term Storage
-        self.sts = self.mgr
+        self.sts = STSManager(config.short_storage_uri)
         # Long-Term Storage
         self.tls_thr = config.long_storage_thr
         if  LTS: # we'll use this module if it's loaded
-            self.lts = SparkStorage(config.long_storage_uri, config.wmauri)
+            self.lts = LTSManager(config.long_storage_uri, config.wmauri)
         else: # fallback
-            self.lts = self.mgr
+            self.lts = self.sts
         self.specmap = {}
         with open(config.specmap, 'r') as istream:
             cdict = {}
             for line in istream.readlines():
                 pair = line.replace('\n', '').split(',')
                 self.specmap[pair[0]] = pair[1] # lfn:LFNArray
-        print("WMArchive::Manager specmap", self.specmap)
+        msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" % (self.sts, self.lts, self.specmap)
+        print(tstamp("WMArchiveManager::init"), msg)
 
-    def sconvert(self, mgr, spec, fields):
-        "Convert user based spec into WMArhchive storage one"
+    def qmap(self, mgr, spec, fields):
+        "Map user based spec into WMArhchive storage QL"
         newspec = {}
         newfields = []
         for key, val in spec.items():
             newspec[self.specmap.get(key, key)] = val
         for field in fields:
             newfields.append(self.specmap.get(fields, field))
-        if  hasattr(mgr, 'sconvert'):
-            return mgr.sconvert(newspec, fields)
+        if  hasattr(mgr, 'qmap'):
+            return mgr.qmap(newspec, fields)
         return newspec, newfields
 
     def encode(self, docs):
@@ -100,7 +90,7 @@ class WMArchiveManager(object):
             if  not 'wmats' in doc:
                 doc['wmats'] = time.time()
             if  not 'stype' in doc:
-                doc['stype'] = self.mgr.stype
+                doc['stype'] = self.sts.stype
             yield doc
 
     def decode(self, docs):
@@ -124,7 +114,7 @@ class WMArchiveManager(object):
             if  not isinstance(data, list):
                 raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
             docs = [r for r in self.encode(data)]
-            ids = self.mgr.write(docs)
+            ids = self.sts.write(docs)
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
         except WriteError as exp:
@@ -135,7 +125,7 @@ class WMArchiveManager(object):
             print(tstamp("WMArchiveManager::write"), "fail with %s" % str(exp))
             status = 'fail'
             ids = []
-        result = {'stype': self.mgr.stype, 'ids': ids, 'status': status}
+        result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
         return result
 
     def read(self, spec, fields):
@@ -144,7 +134,7 @@ class WMArchiveManager(object):
         Yield list of found documents or None.
         """
         result = {'input': {'spec': spec, 'fields': fields},
-                  'results': [], 'storage': self.mgr.stype, 'status': 'ok'}
+                  'results': [], 'storage': self.sts.stype, 'status': 'ok'}
         # convert given spec into query suitable for sts/lts
         if  isinstance(spec, dict):
             try:
@@ -168,7 +158,7 @@ class WMArchiveManager(object):
                 mgr = self.lts
 
             # convert spec into WMArchive one
-            spec, fields = self.sconvert(mgr, spec, fields)
+            spec, fields = self.qmap(mgr, spec, fields)
         else:
             # if spec is a list, it means user look-up docs by wmaids
             # they represents results of LTS data look-up
