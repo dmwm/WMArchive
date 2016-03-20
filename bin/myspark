@@ -25,12 +25,13 @@ elif [ "$1" == "--yarn" ] || [ "$1" == "-yarn" ]; then
     #  - executor-memory not more than 5G
     #  - num-executor can be increased (suggested not more than 10)
     #  - cores = 2/4/8
-    spark-submit --driver-class-path $avrojar:$sparkexjar \
-        --executor-memory 4G \
-        --num-executors 4 \
-        --master yarn-client \
-        --executor-cores 4 \
-        $wmaroot/Tools/myspark.py ${1+"$@"} 
+    PYSPARK_PYTHON='/afs/cern.ch/user/l/lmeniche/public/python27' \
+        spark-submit --driver-class-path $avrojar:$sparkexjar \
+            --executor-memory 4G \
+            --num-executors 4 \
+            --master yarn-client \
+            --executor-cores 4 \
+            $wmaroot/Tools/myspark.py ${1+"$@"} 
 else
     # submit spark job with our file, please note
     # that user may increase memory options if necessary
