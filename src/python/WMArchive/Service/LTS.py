@@ -87,7 +87,7 @@ class LTSManager(object):
         wmaid = wmaHash(rep)
         # submit spark job
         # self.taskmgr.spawn(self.submit_spark, wmaid, spec, fields)
-        self.submit_spark(spec, fields)
+        self.submit_spark(wmaid, spec, fields)
         # return wmaids of submitted job
         results = [wmaid]
         return results
@@ -99,7 +99,7 @@ class LTSManager(object):
         # to STS and therefore will read from it.
         return self.sts.read(wmaids)
 
-    def submit_spark(self, spec, fields, wait=60):
+    def submit_spark(self, wmaid, spec, fields, wait=60):
         """
         Submit function provides interface how to submit job to
         HDFS/Spark/MR. It will use subprocess module to call
@@ -119,7 +119,6 @@ class LTSManager(object):
         ppath = '/'.join(WMArchive.__file__.split('/')[:-1])
         script = os.path.join(ppath, sfile)
         data = json.dumps(dict(spec=spec, fields=fields))
-        wmaid = wmaHash(data)
         os.environ['PYTHONPATH']=os.environ['PYTHONPATH']+':%s/PySpark' % ppath
         cmd = 'myspark --hdir="%s" --schema=%s --script=%s --spec=\'%s\' --store=%s --wmaid=%s %s' \
                 % (hdir, schema, script, data, self.wmauri, wmaid, self.yarn)
