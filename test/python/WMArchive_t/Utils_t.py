@@ -54,6 +54,21 @@ class WMBaseTest(unittest.TestCase):
                 tname = '%s/%s.avro' % (uri, wmaid)
             self.assertEqual(fname, tname)
         self.assertRaises(Exception, file_name, (uri, wmaid, 'gzip'))
+
+    def range_dates(self):
+        "Test range_dates function"
+        date1 = '20160129'
+        date2 = '20160201'
+        dates = range_dates([date1,date2])
+        expect = ['20160129', '20160130', '20160131', '20160201']
+        self.assertEqual(expect, dates)
+
+        date1 = '20151229'
+        date2 = '20160101'
+        dates = range_dates([date1,date2])
+        expect = ['20150129', '20150130', '20150131', '20160101']
+        self.assertEqual(expect, dates)
+
 #
 # main
 #
