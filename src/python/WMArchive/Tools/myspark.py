@@ -103,6 +103,8 @@ def postdata(url, data, ckey=None, cert=None, verbose=0):
     """
     headers = {'Content-type':'application/json','Accept':'application/json'}
     req = urllib2.Request(url)
+    for key, val in headers.iteritems():
+        req.add_header(key, val)
     if  verbose > 1:
         handler = urllib2.HTTPHandler(debuglevel=1)
         opener  = urllib2.build_opener(handler)

@@ -52,6 +52,8 @@ class LTSManager(object):
         self.schema = avro.schema.parse(schema_doc)
         self.taskmgr = TaskManager()
         self.wmauri = wmauri # WMArchive URL which will be used by submit
+        if  not self.wmauri.endswith('/wmarchive/data'):
+            self.wmauri = '%s/wmarchive/data' % self.wmauri
         self.yarn = yarn
 
     def lmap(self, spec, fields):
@@ -115,13 +117,17 @@ class LTSManager(object):
         sfile = 'PySpark/RecordFinder.py'
         if  'aggregate' in spec:
             sfile = 'PySpark/RecordReader.py'
-        script = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), sfile)
-        fobj = tempfile.NamedTemporaryFile()
+        ppath = '/'.join(WMArchive.__file__.split('/')[:-1])
+        script = os.path.join(ppath, sfile)
+        fobj = tempfile.NamedTemporaryFile(delete=False)
         data = json.dumps(dict(spec=spec, fields=fields))
         fobj.write(data)
+        fobj.close()
         spec_file = fobj.name
         wmaid = wmaHash(data)
+        os.environ['PYTHONPATH']=os.environ['PYTHONPATH']+':%s/PySpark' % ppath
         cmd = 'myspark --hdir="%s" --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s %s' \
-                % (hdir, schema, script, spec_file, self.wmauri, wmaidi, self.yarn)
+                % (hdir, schema, script, spec_file, self.wmauri, wmaid, self.yarn)
         print(tstamp("WMArchive::LTS"), cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ)
+        os.remove(fobj.name)
