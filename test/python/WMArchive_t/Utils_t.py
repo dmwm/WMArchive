@@ -69,6 +69,18 @@ class WMBaseTest(unittest.TestCase):
         expect = ['2015/12/29', '2015/12/30', '2015/12/31', '2016/01/01']
         self.assertEqual(expect, dates)
 
+        date1 = 20160101
+        date2 = 20160102
+        dates = range_dates([date1,date2])
+        expect = ['2016/01/01', '2016/01/02']
+        self.assertEqual(expect, dates)
+
+        date1 = 20160101
+        date2 = 20160101
+        dates = range_dates([date1,date2])
+        expect = ['2016/01/01']
+        self.assertEqual(expect, dates)
+
 #
 # main
 #
