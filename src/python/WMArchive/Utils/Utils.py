@@ -76,12 +76,14 @@ def hdate(date):
 def range_dates(trange):
     "Provides dates range in HDFS format from given list"
     out = [hdate(str(trange[0]))]
+    if  trange[0] == trange[1]:
+        return out
     tst = dateformat(trange[0])
     while True:
         tst += 24*60*60
         tdate = time.strftime("%Y%m%d", time.gmtime(tst))
         out.append(hdate(tdate))
-        if  tdate == trange[1]:
+        if  str(tdate) == str(trange[1]):
             break
     return out
 
