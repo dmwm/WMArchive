@@ -207,7 +207,10 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
     aconv="org.apache.spark.examples.pythonconverters.AvroWrapperToJavaConverter"
 
     # load data from HDFS
-    avro_rdd = ctx.newAPIHadoopFile(data_path, aformat, akey, awrite, aconv, conf=conf)
+    if  isinstance(data_path, list):
+        avro_rdd = ctx.union([ctx.newAPIHadoopFile(f, aformat, akey, awrite, aconv, conf=conf) for f in data_path])
+    else:
+        avro_rdd = ctx.newAPIHadoopFile(data_path, aformat, akey, awrite, aconv, conf=conf)
 
     # process data, here the map will read record from avro file
     # if we need a whole record we'll use lambda x: x[0], e.g.
@@ -252,7 +255,10 @@ def main():
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     time0 = time.time()
-    results = run(opts.schema, opts.hdir, opts.script, opts.spec, opts.verbose)
+    hdir = opts.hdir.split()
+    if  len(hdir) == 1:
+        hdir = hdir[0]
+    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
         if  opts.wmaid:
