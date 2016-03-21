@@ -110,9 +110,9 @@ def postdata(url, data, ckey=None, cert=None, verbose=0):
         opener  = urllib2.build_opener(handler)
         urllib2.install_opener(opener)
     if  ckey and cert:
-	handler = HTTPSClientAuthHandler(ckey, cert, verbose)
-	opener  = urllib2.build_opener(handler)
-	urllib2.install_opener(opener)
+        handler = HTTPSClientAuthHandler(ckey, cert, verbose)
+        opener  = urllib2.build_opener(handler)
+        urllib2.install_opener(opener)
     data = urllib2.urlopen(req, json.dumps(data))
 
 def basic_mapper(records):
@@ -269,7 +269,7 @@ def main():
             data['wmaid'] = wmaHash(data)
         data['dtype'] = 'job'
         pdata = dict(job=data)
-	postdata(opts.store, data, opts.ckey, opts.cert, opts.verbose)
+        postdata(opts.store, pdata, opts.ckey, opts.cert, opts.verbose)
     else:
         print(results)
 
