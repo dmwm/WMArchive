@@ -85,7 +85,8 @@ class LTSManager(object):
         rep = json.dumps(dict(spec=spec, fields=fields))
         wmaid = wmaHash(rep)
         # submit spark job
-        self.taskmgr.spawn(self.submit_spark, wmaid, spec, fields)
+        # self.taskmgr.spawn(self.submit_spark, wmaid, spec, fields)
+        self.submit_spark(spec, fields)
         # return wmaids of submitted job
         results = [wmaid]
         return results
