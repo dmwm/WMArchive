@@ -79,8 +79,7 @@ class Worker(Thread):
                 self._pids.discard(pid)
             except Exception as err:
                 self._pids.discard(pid)
-                print_exc(err)
-                print("\n### args", func, args, kwargs)
+                print("ERROR, TaskManager::Worker", func, args, kwargs, str(err))
             evt.set()
 
 class TaskManager(object):
