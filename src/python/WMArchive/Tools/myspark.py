@@ -17,6 +17,7 @@ https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
 import os
 import sys
 import imp
+import pwd
 import time
 import json
 import urllib
@@ -49,13 +50,13 @@ class OptionParser():
         self.parser.add_argument("--store", action="store",
             dest="store", default="", help=msg)
         msg = "provide wmaid for store submission"
-        self.parser.add_argument("--wmaid", action="wmaid",
+        self.parser.add_argument("--wmaid", action="store",
             dest="wmaid", default="", help=msg)
         msg  = 'specify private key file name, default $X509_USER_PROXY'
-        self.parser.add_option("--ckey", action="store", type="string",
+        self.parser.add_argument("--ckey", action="store",
                                default=x509(), dest="ckey", help=msg)
         msg  = 'specify private certificate file name, default $X509_USER_PROXY'
-        self.parser.add_option("--cert", action="store", type="string",
+        self.parser.add_argument("--cert", action="store",
                                default=x509(), dest="cert", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
@@ -254,7 +255,10 @@ def main():
     results = run(opts.schema, opts.hdir, opts.script, opts.spec, opts.verbose)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
-        data['wamid'] = opts.wmaid if opts.wmaid or wmaHash(data)
+        if  opts.wmaid:
+            data['wamid'] = opts.wmaid
+        else:
+            data['wmaid'] = wmaHash(data)
         data['dtype'] = 'job'
         pdata = dict(job=data)
 	postdata(opts.store, data, opts.ckey, opts.cert, opts.verbose)
