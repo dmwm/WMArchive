@@ -14,7 +14,6 @@ from __future__ import print_function, division
 # system modules
 import os
 import json
-import tempfile
 import subprocess
 
 # avro modules
@@ -119,15 +118,10 @@ class LTSManager(object):
             sfile = 'PySpark/RecordReader.py'
         ppath = '/'.join(WMArchive.__file__.split('/')[:-1])
         script = os.path.join(ppath, sfile)
-        fobj = tempfile.NamedTemporaryFile(delete=False)
         data = json.dumps(dict(spec=spec, fields=fields))
-        fobj.write(data)
-        fobj.close()
-        spec_file = fobj.name
         wmaid = wmaHash(data)
         os.environ['PYTHONPATH']=os.environ['PYTHONPATH']+':%s/PySpark' % ppath
-        cmd = 'myspark --hdir="%s" --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s %s' \
-                % (hdir, schema, script, spec_file, self.wmauri, wmaid, self.yarn)
+        cmd = 'myspark --hdir="%s" --schema=%s --script=%s --spec=\'%s\' --store=%s --wmaid=%s %s' \
+                % (hdir, schema, script, data, self.wmauri, wmaid, self.yarn)
         print(tstamp("WMArchive::LTS"), cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ)
-        os.remove(fobj.name)
