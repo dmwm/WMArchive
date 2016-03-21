@@ -28,16 +28,15 @@ import pydoop.hdfs as hdfs
 import WMArchive # to know location of the code
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Exceptions import WriteError, ReadError
-from WMArchive.Utils.Utils import wmaHash, tstamp
+from WMArchive.Utils.Utils import wmaHash, tstamp, range_dates
 from WMArchive.Utils.TaskManager import TaskManager
 
 def make_hdfs_path(hdir, trange):
     """
-    Create an HDFS path pattern to look at from provided main hdfs dir
-    and user spec which provides timeframe
+    Create an HDFS paths to look at from provided main hdfs dir
+    and provided time range list.
     """
-    # TODO: implement how to provide pattern on HDFS path
-    return hdir
+    return ['%s/%s' % (hdir, d) for d in range_dates(trange)]
 
 class LTSManager(object):
     "Long-Term Storage manager based on HDFS/Spark back-end"
@@ -110,15 +109,18 @@ class LTSManager(object):
         provided store uri, i.e. WMArchive REST interface.
         """
         "Run given command in subprocess"
-        hdir = make_hdfs_path(self.hdir, spec.pop('timerange'))
+        hdir = ' '.join(make_hdfs_path(self.hdir, spec.pop('timerange')))
         schema = self.uri
-        script = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'Tools/myspark.py')
+        sfile = 'PySpark/RecordFinder.py'
+        if  'aggregate' in spec:
+            sfile = 'PySpark/RecordReader.py'
+        script = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), sfile)
         fobj = tempfile.NamedTemporaryFile()
         data = json.dumps(dict(spec=spec, fields=fields))
         fobj.write(data)
         spec_file = fobj.name
         wmaid = wmaHash(data)
-        cmd = 'myspark --hdir=%s --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s %s' \
+        cmd = 'myspark --hdir="%s" --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s %s' \
                 % (hdir, schema, script, spec_file, self.wmauri, wmaidi, self.yarn)
         print(tstamp("WMArchive::LTS"), cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

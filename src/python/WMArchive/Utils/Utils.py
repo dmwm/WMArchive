@@ -69,6 +69,21 @@ def today():
     date = time.strftime('%02d', tst)
     return year, month, date
 
+def hdate(date):
+    "Transform given YYYYMMDD date into HDFS dir structure YYYY/MM/DD"
+    return '%s/%s/%s' % (date[0:4], date[4:6], date[6:8])
+
+def range_dates(trange):
+    "Provides dates range in HDFS format from given list"
+    out = [hdate(trange[0])]
+    tst = trange[0]
+    while True:
+        tst += 24*60*60
+        tdate = time.strftime("%Y%m%d", time.gmtime(tst))
+        out.append(hdate)
+        if  tdate == trange[1]:
+            break
+
 def check_tstamp(value):
     "Check that given value conform YYYYMMDD time format"
     value = str(value).lower()
