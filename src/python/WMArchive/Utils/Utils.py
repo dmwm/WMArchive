@@ -75,14 +75,15 @@ def hdate(date):
 
 def range_dates(trange):
     "Provides dates range in HDFS format from given list"
-    out = [hdate(trange[0])]
-    tst = trange[0]
+    out = [hdate(str(trange[0]))]
+    tst = dateformat(trange[0])
     while True:
         tst += 24*60*60
         tdate = time.strftime("%Y%m%d", time.gmtime(tst))
-        out.append(hdate)
+        out.append(hdate(tdate))
         if  tdate == trange[1]:
             break
+    return out
 
 def check_tstamp(value):
     "Check that given value conform YYYYMMDD time format"

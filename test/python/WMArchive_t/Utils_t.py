@@ -14,7 +14,7 @@ import os
 import unittest
 
 # WMArchive modules
-from WMArchive.Utils.Utils import wmaHash, dateformat, file_name
+from WMArchive.Utils.Utils import wmaHash, dateformat, file_name, range_dates
 
 class WMBaseTest(unittest.TestCase):
     def test_wmaHash(self):
@@ -55,18 +55,18 @@ class WMBaseTest(unittest.TestCase):
             self.assertEqual(fname, tname)
         self.assertRaises(Exception, file_name, (uri, wmaid, 'gzip'))
 
-    def range_dates(self):
+    def test_range_dates(self):
         "Test range_dates function"
         date1 = '20160129'
         date2 = '20160201'
         dates = range_dates([date1,date2])
-        expect = ['20160129', '20160130', '20160131', '20160201']
+        expect = ['2016/01/29', '2016/01/30', '2016/01/31', '2016/02/01']
         self.assertEqual(expect, dates)
 
         date1 = '20151229'
         date2 = '20160101'
         dates = range_dates([date1,date2])
-        expect = ['20150129', '20150130', '20150131', '20160101']
+        expect = ['2015/12/29', '2015/12/30', '2015/12/31', '2016/01/01']
         self.assertEqual(expect, dates)
 
 #
