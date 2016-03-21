@@ -13,6 +13,7 @@ from __future__ import print_function, division
 
 # system modules
 import os
+import json
 import tempfile
 import subprocess
 
@@ -40,18 +41,19 @@ def make_hdfs_path(hdir, trange):
 
 class LTSManager(object):
     "Long-Term Storage manager based on HDFS/Spark back-end"
-    def __init__(self, uri, wmauri):
+    def __init__(self, uri, wmauri, yarn=''):
         "ctor with LTS uri (hdfs:///path/schema.avsc) and WMArchive uri"
-        schema = uri
-        if  not hdfs.ls(schema):
+        self.uri = uri
+        if  not hdfs.ls(self.uri):
             raise Exception("No avro schema file found in provided uri: %s" % uri)
-        self.hdir = schema.rsplit('/', 1)[0]
+        self.hdir = self.uri.rsplit('/', 1)[0]
         if  not hdfs.path.isdir(self.hdir):
             raise Exception('HDFS path %s does not exists' % self.hdir)
-        schema_doc = hdfs.load(schema)
+        schema_doc = hdfs.load(self.uri)
         self.schema = avro.schema.parse(schema_doc)
         self.taskmgr = TaskManager()
         self.wmauri = wmauri # WMArchive URL which will be used by submit
+        self.yarn = yarn
 
     def lmap(self, spec, fields):
         "map input spec/fields into ones suitable for LTS QL"
@@ -108,15 +110,15 @@ class LTSManager(object):
         provided store uri, i.e. WMArchive REST interface.
         """
         "Run given command in subprocess"
-        hdir = make_hdfs_path('hdfs://%s' % self.hdir, spec.pop('timerange'))
-        schema = 'hdfs://%s' % self.uri
+        hdir = make_hdfs_path(self.hdir, spec.pop('timerange'))
+        schema = self.uri
         script = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'Tools/myspark.py')
         fobj = tempfile.NamedTemporaryFile()
         data = json.dumps(dict(spec=spec, fields=fields))
         fobj.write(data)
         spec_file = fobj.name
         wmaid = wmaHash(data)
-        cmd = 'myspark --hdir=%s --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s --yarn-cluster' \
-                % (hdir, schema, script, spec_file, self.wmauri, wmaid)
-        print(tstamp("WMArchive::SparkStorage"), cmd)
+        cmd = 'myspark --hdir=%s --schema=%s --script=%s --spec=%s --store=%s --wmaid=%s %s' \
+                % (hdir, schema, script, spec_file, self.wmauri, wmaidi, self.yarn)
+        print(tstamp("WMArchive::LTS"), cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
