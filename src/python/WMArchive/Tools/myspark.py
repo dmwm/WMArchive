@@ -267,7 +267,7 @@ def main():
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
         if  opts.wmaid:
-            data['wamid'] = opts.wmaid
+            data['wmaid'] = opts.wmaid
         else:
             data['wmaid'] = wmaHash(data)
         data['dtype'] = 'job'
