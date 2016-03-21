@@ -55,7 +55,7 @@ class WMArchiveManager(object):
         # Long-Term Storage
         self.tls_thr = config.long_storage_thr
         if  LTS: # we'll use this module if it's loaded
-            self.lts = LTSManager(config.long_storage_uri, config.wmauri)
+            self.lts = LTSManager(config.long_storage_uri, config.wmauri, config.yarn)
         else: # fallback
             self.lts = self.sts
         self.specmap = {}
@@ -156,6 +156,7 @@ class WMArchiveManager(object):
             # we'll use for data look-up
             mgr = self.sts
             if  use_lts(trange, self.tls_thr):
+                spec['timerange'] = trange # put back timerange for HDFS hdir constraint
                 mgr = self.lts
 
             # convert spec into WMArchive one
