@@ -41,7 +41,7 @@ class OptionParser():
         msg = "python script with custom mapper/reducer functions"
         self.parser.add_argument("--script", action="store",
             dest="script", default="", help=msg)
-        msg = "json file with query spec"
+        msg = "json file with query spec or valid json"
         self.parser.add_argument("--spec", action="store",
             dest="spec", default="", help=msg)
         self.parser.add_argument("--yarn", action="store_true",
@@ -226,7 +226,10 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
     # executed by Spark via collect call
     spec = None
     if  spec_file:
-        spec = json.load(open(spec_file))
+        if  os.path.isfile(spec_file):
+            spec = json.load(open(spec_file))
+        else:
+            spec = json.loads(spec_file)
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
