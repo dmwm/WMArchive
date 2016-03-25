@@ -67,6 +67,18 @@ class WMArchiveManager(object):
         msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" % (self.sts, self.lts, self.specmap)
         print(tstamp("WMArchiveManager::init"), msg)
 
+    def status(self):
+        "Return current status about WMArchive queue"
+        sdict = {}
+        sdict.update(self.sts.status())
+        if  self.lts != self.sts:
+            sdict.update(self.lts.status())
+        return sdict
+
+    def jobs(self):
+        "Return jobs from WMArchive STS"
+        return self.sts.jobs()
+
     def qmap(self, mgr, spec, fields):
         "Map user based spec into WMArhchive storage QL"
         newspec = {}
