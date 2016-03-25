@@ -19,45 +19,13 @@ from Queue import Queue
 # DAS modules
 from WMArchive.Utils.Utils import wmaHash
 
-class UidSet(object):
-    "UID holder keeps track of uid frequency"
-    def __init__(self):
-        self._set = {}
-
-    def add(self, uid):
-        "Add given uid or increment uid occurence in a set"
-        if  not uid:
-            return
-        if  uid in self._set.keys():
-            self._set[uid] += 1
-        else:
-            self._set[uid]  = 1
-
-    def discard(self, uid):
-        "Either discard or downgrade uid occurence in a set"
-        if  uid in self._set:
-            self._set[uid] -= 1
-        if  uid in self._set and not self._set[uid]:
-            del self._set[uid]
-
-    def __contains__(self, uid):
-        "Check if uid present in a set"
-        if  uid in self._set:
-            return True
-        return False
-
-    def get(self, uid):
-        "Get value for given uid"
-        return self._set.get(uid, 0)
-
 class Worker(Thread):
     """Thread executing worker from a given tasks queue"""
-    def __init__(self, name, taskq, pidq, uidq):
+    def __init__(self, name, taskq, pidq):
         Thread.__init__(self, name=name)
         self.exit   = 0
         self._tasks = taskq
         self._pids  = pidq
-        self._uids  = uidq
         self.daemon = True
         self.start()
 
@@ -73,13 +41,13 @@ class Worker(Thread):
             task = self._tasks.get()
             if  task == None:
                 return
-            evt, pid, func, args, kwargs = task
+            evt, pid, func, args = task
             try:
-                func(*args, **kwargs)
+                func(*args)
                 self._pids.discard(pid)
             except Exception as err:
                 self._pids.discard(pid)
-                print("ERROR, TaskManager::Worker", func, args, kwargs, str(err))
+                print("ERROR, TaskManager::Worker", func, args, str(err))
             evt.set()
 
 class TaskManager(object):
@@ -102,16 +70,16 @@ class TaskManager(object):
         self.name   = name
         self.debug  = debug
         self._pids  = set()
-        self._uids  = UidSet()
         self._tasks = Queue()
-        self._workers = [Worker(name, self._tasks, self._pids, self._uids) \
+        self._workers = [Worker(name, self._tasks, self._pids) \
                         for _ in xrange(0, nworkers)]
 
     def status(self):
         "Return status of task manager queue"
         info = {'qsize':self._tasks.qsize(), 'full':self._tasks.full(),
-                'unfinished':self._tasks.unfinished_tasks,
-                'nworkers':len(self._workers)}
+                'nworkers':len(self._workers),
+                'pids':len(self._pids),
+                }
         return {self.name:info}
 
     def nworkers(self):
@@ -120,10 +88,11 @@ class TaskManager(object):
 
     def spawn(self, func, pid, spec, fields):
         """Spawn new process for given function"""
+        args = (pid, spec, fields) # function input parameters
         evt = Event()
         if  not pid in self._pids:
             self._pids.add(pid)
-            task  = (evt, pid, func, spec, fields)
+            task  = (evt, pid, func, args)
             self._tasks.put(task)
         else:
             # the event was not added to task list, invoke set()

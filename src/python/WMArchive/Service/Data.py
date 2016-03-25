@@ -55,8 +55,11 @@ class WMAData(RESTEntity):
         if  method == 'GET':
             if 'query' in param.kwargs.keys():
                 validate_str('query', param, safe, PAT_QUERY, optional=True)
-            if 'info' in param.kwargs.keys():
-                validate_str('info', param, safe, PAT_INFO, optional=True)
+            for key in ['status', 'jobs', '_']:
+                if  key in param.kwargs.keys():
+                    validate_str(key, param, safe, PAT_INFO, optional=True)
+                    # underscore may come from ajax call via jQuery
+                    validate_str('_', param, safe, PAT_INFO, optional=True)
             # test if user provided uid
             if len(param.args) == 1 and PAT_UID.match(param.args[0]):
                 safe.args.append(param.args[0])
@@ -74,9 +77,10 @@ class WMAData(RESTEntity):
         Implement GET request with given uid or set of parameters
         All work is done by WMArchiveManager
         """
-        info = kwds.get('info', '')
-        if  info:
-            return self.mgr.info()
+        if  kwds.get('status', ''):
+            return results(dict(status=self.mgr.status()))
+        if  kwds.get('jobs', ''):
+            return results(dict(jobs=self.mgr.jobs()))
         if  args and len(args) == 1: # requested uid
             return results(self.mgr.read(args[0], []))
         return results({'request': kwds, 'results': 'Not available'})

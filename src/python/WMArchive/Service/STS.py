@@ -41,3 +41,15 @@ class STSManager(object):
     def read(self, spec, fields=None):
         "Read API for STS"
         return self.mgr.read(spec, fields)
+
+    def jobs(self):
+        "Fetch jobs ID from underlying storage"
+        return self.mgr.read({'wmaid':{'$exists':True}}, ['wmaid'])
+
+    def stats(self):
+        "Return statistics about underlying storage"
+        return self.mgr.stats()
+
+    def status(self):
+        "Return status api"
+        return {'sts':{'mgr':str(self.mgr), 'stype':self.stype, 'stats':self.stats()}}

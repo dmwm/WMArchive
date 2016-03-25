@@ -55,6 +55,10 @@ class LTSManager(object):
             self.wmauri = '%s/wmarchive/data' % self.wmauri
         self.yarn = yarn
 
+    def status(self):
+        "Return status of taskmgr"
+        return dict(lts=self.taskmgr.status())
+
     def lmap(self, spec, fields):
         "map input spec/fields into ones suitable for LTS QL"
         return spec, fields
@@ -86,8 +90,8 @@ class LTSManager(object):
         rep = json.dumps(dict(spec=spec, fields=fields))
         wmaid = wmaHash(rep)
         # submit spark job
-        # self.taskmgr.spawn(self.submit_spark, wmaid, spec, fields)
-        self.submit_spark(wmaid, spec, fields)
+        self.taskmgr.spawn(self.submit_spark, wmaid, spec, fields)
+        # self.submit_spark(wmaid, spec, fields)
         # return wmaids of submitted job
         results = [wmaid]
         return results
@@ -124,3 +128,6 @@ class LTSManager(object):
                 % (hdir, schema, script, data, self.wmauri, wmaid, self.yarn)
         print(tstamp("WMArchive::LTS"), cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ)
+        # wait for process if we use taskmgr. The taskmgr has internal queue
+        # which controls number of running jobs
+        proc.wait()

@@ -14,7 +14,7 @@ import re
 
 # global regexp
 PAT_QUERY = re.compile(r"^[a-zA-Z]+")
-PAT_INFO = re.compile(r"^[0-9]$")
+PAT_INFO = re.compile(r"^[0-9]+$")
 PAT_UID = re.compile(r"^[a-z0-9]{32,32}$")
 
 # time patterns

@@ -51,6 +51,7 @@ class MongoStorage(Storage):
         self.client = MongoClient(uri, w=1)
         self.mdb = self.client[dbname]
         self.mdb.add_son_manipulator(WMASONManipulator())
+        self.collname = collname
         self.coll = self.mdb[collname]
         self.jobs = self.mdb['jobs'] # separate collection for job results
         self.log(self.coll)
@@ -132,3 +133,15 @@ class MongoStorage(Storage):
     def dropdb(self, dbname):
         "Remove given database from MongoDB"
         return self.client.drop_database(dbname)
+
+    def stats(self):
+        "Return statistics about MongoDB"
+        return self.mdb.command("collstats", self.collname)
+
+    def jobs(self):
+        "Return jobs id"
+        out = []
+        for row in self.jobs.find():
+            if  'wmaid' in row:
+                out.append(row['wmaid'])
+        return out
