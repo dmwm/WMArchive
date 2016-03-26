@@ -138,10 +138,10 @@ class MongoStorage(Storage):
         "Return statistics about MongoDB"
         return self.mdb.command("collstats", self.collname)
 
-    def jobs(self):
-        "Return jobs id"
+    def jobsids(self):
+        "Return jobs ids"
         out = []
         for row in self.jobs.find():
             if  'wmaid' in row:
-                out.append(row['wmaid'])
+                out.append({'wmaid':row['wmaid']})
         return out
