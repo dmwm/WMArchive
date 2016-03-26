@@ -80,7 +80,7 @@ class TaskManager(object):
                 'nworkers':len(self._workers),
                 'pids':len(self._pids),
                 }
-        return {self.name:info}
+        return info
 
     def nworkers(self):
         """Return number of workers associated with this manager"""
