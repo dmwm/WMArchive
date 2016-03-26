@@ -44,7 +44,7 @@ class STSManager(object):
 
     def jobs(self):
         "Fetch jobs ID from underlying storage"
-        return self.mgr.read({'wmaid':{'$exists':True}}, ['wmaid'])
+        return self.mgr.jobsids()
 
     def stats(self):
         "Return statistics about underlying storage"

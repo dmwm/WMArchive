@@ -132,12 +132,13 @@ function ajaxRequestStatus() {
             html += '<h5>Short-Term Storage</h5>\n';
             stats = sts.stats;
             for(key in stats) {
-                html += key+': '+stats[key]+'<br/>\n';
+                html += key+': '+JSON.stringify(stats[key])+'<br/>\n';
             }
             if (lts != null) {
                 html += '<h5>Long-Term Storage</h5>\n';
-                html += 'qsize: '+ sts.qsize + '<br/>\n';
-                html += 'npids: '+ sts.pids + '<br/>\n';
+                html += 'qsize: '+ lts.qsize + '<br/>\n';
+                html += 'npids: '+ lts.pids + '<br/>\n';
+                html += 'nworkers: '+ lts.workers + '<br/>\n';
             }
         }
         $('#wmaStatus').html(html);
