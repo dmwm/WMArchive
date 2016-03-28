@@ -1,1 +1,52 @@
 <h3>WMArchive stats</h3>
+
+<span class="label label-black">Sites</span>
+<a href="javascript:Plot('Site plot');">show</a>
+<div id="sites">Site links goes here</div>
+<hr />
+
+<span class="label label-black">Agents</span>
+<a href="javascript:Plot('Agent plot');">show</a>
+<div id="agents">agents links goes here</div>
+<hr />
+
+<span class="label label-black">General</span>
+<a href="javascript:Plot('General plot');">show</a>
+<div id="general">general info plot links goes here</div>
+<hr />
+
+<div id="wma-figure" class="hide"></div>
+
+<script>
+// This is an example to make chart plot within wma-figure placeholder.
+// Later we'll replace it with specific ajax functions which will retrieve
+// data from WMArchive and make corresponding plot
+// For full documentation please see http://www.chartjs.org/docs/
+function Plot(msg) {
+    $('#wma-figure').show();
+    var html = '<h5>'+msg+'</h5>'+'<canvas id="canvas" height="300" width="500"></canvas>';
+    $('#wma-figure').html(html);
+	var randomScalingFactor = function(){ return Math.round(Math.random()*100)};
+	var barChartData = {
+		labels : ["January","February","March","April","May","June","July"],
+		datasets : [
+			{
+				fillColor : "rgba(220,220,220,0.5)",
+				strokeColor : "rgba(220,220,220,0.8)",
+				highlightFill: "rgba(220,220,220,0.75)",
+				highlightStroke: "rgba(220,220,220,1)",
+				data : [randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor()]
+			},
+			{
+				fillColor : "rgba(151,187,205,0.5)",
+				strokeColor : "rgba(151,187,205,0.8)",
+				highlightFill : "rgba(151,187,205,0.75)",
+				highlightStroke : "rgba(151,187,205,1)",
+				data : [randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor(),randomScalingFactor()]
+			}
+		]
+	}
+    var ctx = $('#canvas').get(0).getContext("2d");
+    var myBar = new Chart(ctx).Bar(barChartData, {responsive : true, maintainAspectRatio: false});
+}
+</script>
