@@ -4,7 +4,7 @@
  */
 function loadContent() {
     html = '<div id="header" class="header shadow"></div><div id="center"></div><div id="footer"></div>';
-    $("#content").append(html);
+    $("#main-content").append(html);
     img = '<img src="/wmarchive/web/static/images/cms_logo.png" alt="" style="width:30px">&nbsp;';
     title = '<h3>' + img + ' CMS WMArchive data-service</h3>'
     $("#header").html('<row centered><column cols="8">' + title + '</column></row>');
