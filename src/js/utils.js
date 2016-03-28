@@ -131,18 +131,33 @@ function ajaxRequestStatus() {
             var lts = d.lts;
             html += '<h5>Short-Term Storage</h5>\n';
             stats = sts.stats;
-            for(key in stats) {
-                html += key+': '+JSON.stringify(stats[key])+'<br/>\n';
+            html += 'Number of docs: ' + stats.count+'<br/>';
+            html += 'Storage size:' + sizeFormat(stats.storageSize) +'<br/>';
+            html += 'Index size:' + sizeFormat(stats.totalIndexSize) +'<br/>';
+            for(key in stats.indexSizes) {
+                html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+key+': '+sizeFormat(stats.indexSizes[key])+'<br/>\n';
             }
             if (lts != null) {
                 html += '<h5>Long-Term Storage</h5>\n';
-                html += 'qsize: '+ lts.qsize + '<br/>\n';
-                html += 'npids: '+ lts.pids + '<br/>\n';
-                html += 'nworkers: '+ lts.workers + '<br/>\n';
+                html += 'Docs in queue: '+ lts.qsize + '<br/>\n';
+                var docs = lts.pids-lts.qsize;
+                html += 'Docs in progress: '+ docs + '<br/>\n';
             }
         }
         $('#wmaStatus').html(html);
     });
+}
+function sizeFormat(v) {
+    var o = v;
+    var base = 1000. // CMS convention to use power of 10
+    var xlist = ['', 'KB', 'MB', 'GB', 'TB', 'PB'];
+    for(var i=0;i<xlist.length;i++) {
+        if(v<base) {
+            return o+' ('+v.toFixed(2)+xlist[i]+')';
+        }
+        v /= base
+    }
+    return o+' ('+v.toFixed(2)+xlist[i]+')';
 }
 function ajaxRequestJobs() {
     var request = $.ajax({
