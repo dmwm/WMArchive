@@ -55,7 +55,7 @@ class WMAData(RESTEntity):
         if  method == 'GET':
             if 'query' in param.kwargs.keys():
                 validate_str('query', param, safe, PAT_QUERY, optional=True)
-            for key in ['status', 'jobs', '_']:
+            for key in ['status', 'jobs', 'adocs', '_']:
                 if  key in param.kwargs.keys():
                     validate_str(key, param, safe, PAT_INFO, optional=True)
                     # underscore may come from ajax call via jQuery
@@ -81,6 +81,8 @@ class WMAData(RESTEntity):
             return results(dict(status=self.mgr.status()))
         if  kwds.get('jobs', ''):
             return results(dict(jobs=self.mgr.jobs()))
+        if  kwds.get('adocs', ''):
+            return results(dict(adocs=self.mgr.adocs()))
         if  args and len(args) == 1: # requested uid
             return results(self.mgr.read(args[0], []))
         return results({'request': kwds, 'results': 'Not available'})
