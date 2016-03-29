@@ -50,6 +50,10 @@ class STSManager(object):
         "Return statistics about underlying storage"
         return self.mgr.stats()
 
+    def adocs(self):
+        "Return aggregated documents from underlying storage"
+        return self.mgr.adocs()
+
     def status(self):
         "Return status api"
         return {'sts':{'mgr':str(self.mgr), 'stype':self.stype, 'stats':self.stats()}}

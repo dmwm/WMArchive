@@ -180,3 +180,21 @@ function ajaxRequestJobs() {
         $('#wmaJobs').html(html);
     });
 }
+// Example function how to get aggregated records from WMArchive
+// and feed wma-figure placeholder
+function ajaxRequestAdocsExample(imsg) {
+    var request = $.ajax({
+        url: '/wmarchive/data/?adocs=1',
+        contentType: "application/json",
+        type: 'GET',
+        cache: false,
+    });
+    request.done(function(data, msg, xhr) {
+        $('#wma-figure').show();
+        var html = '<h5>'+imsg+'</h5>'+'<canvas id="canvas" height="300" width="500"></canvas>';
+        $('#wma-figure').html(html);
+        var res = data.result[0];
+        var ctx = $('#canvas').get(0).getContext("2d");
+        var myBar = new Chart(ctx).Bar(res.adocs, {responsive : true, maintainAspectRatio: false});
+    });
+}
