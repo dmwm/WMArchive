@@ -14,6 +14,7 @@ from __future__ import print_function, division
 # system modules
 import io
 import os
+import json
 import traceback
 
 # avro modules
@@ -55,6 +56,7 @@ class AvroStorage(Storage):
             if  mode == 'a':
                 print("We're unable yet to implement read-write mode with compressed avro files")
                 raise NotImplementedError
+            rec = None # keep doc in case of failure
             with DataFileWriter(open_file(fname, mode), DatumWriter(), schema) as writer:
                 for rec in data:
                     writer.append(rec)
@@ -67,6 +69,8 @@ class AvroStorage(Storage):
             line = ' '.join(str(exc).replace('\n', '').split())
             msg = 'Failure in %s storage, error=%s, exception=%s' \
                     % (self.stype, err, line)
+            msg += ' Failed document: '
+            msg += json.dumps(doc)
             raise WriteError(msg)
 
     def file_read(self, fname):
