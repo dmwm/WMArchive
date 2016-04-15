@@ -25,23 +25,29 @@ elif [ "$1" == "--yarn" ] || [ "$1" == "-yarn" ]; then
     #  - executor-memory not more than 5G
     #  - num-executor can be increased (suggested not more than 10)
     #  - cores = 2/4/8
-    spark-submit --driver-class-path $avrojar:$sparkexjar \
-        --executor-memory 4G \
-        --num-executors 4 \
-        --master yarn-client \
-        --executor-cores 4 \
-        $wmaroot/Tools/myspark.py ${1+"$@"}
+    # Temp solution to have a wrapper for python27 on spark cluster
+    # once CERN IT will resolve python version we can remove PYSPARK_PYTHON
+    PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
+        spark-submit --jars $avrojar,$sparkexjar \
+            --executor-memory 4G \
+            --num-executors 4 \
+            --master yarn-client \
+            --executor-cores 4 \
+            $wmaroot/Tools/myspark.py ${1+"$@"} 
 elif [ "$1" == "--yarn-cluster" ] || [ "$1" == "-yarn-cluster" ]; then
     # to tune up these numbers:
     #  - executor-memory not more than 5G
     #  - num-executor can be increased (suggested not more than 10)
     #  - cores = 2/4/8
-    spark-submit --driver-class-path $avrojar:$sparkexjar \
-        --executor-memory 4G \
-        --num-executors 4 \
-        --master yarn-cluster \
-        --executor-cores 4 \
-        $wmaroot/Tools/myspark.py ${1+"$@"}
+    # Temp solution to have a wrapper for python27 on spark cluster
+    # once CERN IT will resolve python version we can remove PYSPARK_PYTHON
+    PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
+        spark-submit --jars $avrojar,$sparkexjar \
+            --executor-memory 4G \
+            --num-executors 4 \
+            --master yarn-cluster \
+            --executor-cores 4 \
+            $wmaroot/Tools/myspark.py ${1+"$@"} 
 else
     # submit spark job with our file, please note
     # that user may increase memory options if necessary
@@ -50,7 +56,7 @@ else
 
     # Modify with local[*] to use all the available cores in the node
     #   optionally increase driver memory with --driver-memory 2G (default 1G)
-    spark-submit --driver-class-path $avrojar:$sparkexjar \
+	spark-submit --jars $avrojar,$sparkexjar \
         --executor-memory $((`nproc`/4))G \
         --master local[$((`nproc`/4))] \
         $wmaroot/Tools/myspark.py ${1+"$@"}

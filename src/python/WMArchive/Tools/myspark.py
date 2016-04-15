@@ -178,7 +178,7 @@ def import_(filename):
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
 
-def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
+def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=None):
     """
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
@@ -189,10 +189,12 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
 
     # define spark context, it's main object which allow
     # to communicate with spark
-    ctx = SparkContext(appName="AvroKeyInputFormat")
+    ctx = SparkContext(appName="AvroKeyInputFormat", pyFiles=[script])
     logger = SparkLogger(ctx)
     if  not verbose:
         logger.set_level('ERROR')
+    if  yarn:
+	logger.info("YARN client mode enabled")
 
     # load FWJR schema
     rdd = ctx.textFile(schema_file, 1).collect()
@@ -263,7 +265,7 @@ def main():
     hdir = opts.hdir.split()
     if  len(hdir) == 1:
         hdir = hdir[0]
-    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose)
+    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
         if  opts.wmaid:
