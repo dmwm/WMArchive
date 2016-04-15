@@ -27,9 +27,10 @@ def schema(stype, fout):
         fwjr = fwjr_test
     else:
         raise NotImplementedError
-    fwjr['wmaid'] = 'wmaidstring'
-    fwjr['wmats'] = time.time()
-    fwjr['stype'] = 'storage type'
+    # use default values for schema, WMArchive will put real values later
+    fwjr['wmaid'] = ''
+    fwjr['wmats'] = 0.
+    fwjr['stype'] = ''
     if  fout:
         with open(fout, 'w') as ostream:
             ostream.write(json.dumps(fwjr))
