@@ -5,16 +5,17 @@
 File       : HdfsIO.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: WMArchive HDFS storage module based on pydoop python module
-    pydoop HDFS docs:
-    http://crs4.github.io/pydoop/api_docs/hdfs_api.html#hdfs-api
-    http://crs4.github.io/pydoop/tutorial/hdfs_api.html#hdfs-api-tutorial
-    http://stackoverflow.com/questions/23614588/encode-an-object-with-avro-to-a-byte-array-in-python
 
-    python gzip: https://docs.python.org/2/library/gzip.html
-    python io: https://docs.python.org/2/library/io.html
+pydoop HDFS docs:
+http://crs4.github.io/pydoop/api_docs/hdfs_api.html#hdfs-api
+http://crs4.github.io/pydoop/tutorial/hdfs_api.html#hdfs-api-tutorial
+http://stackoverflow.com/questions/23614588/encode-an-object-with-avro-to-a-byte-array-in-python
 
-    Usage of GzipFile with file-like object, e.g. io.BytesIO
-    http://stackoverflow.com/questions/4204604/how-can-i-create-a-gzipfile-instance-from-the-file-like-object-that-urllib-url
+python gzip: https://docs.python.org/2/library/gzip.html
+python io: https://docs.python.org/2/library/io.html
+
+Usage of GzipFile with file-like object, e.g. io.BytesIO
+http://stackoverflow.com/questions/4204604/how-can-i-create-a-gzipfile-instance-from-the-file-like-object-that-urllib-url
 """
 
 # futures
