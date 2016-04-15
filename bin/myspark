@@ -26,7 +26,7 @@ elif [ "$1" == "--yarn" ] || [ "$1" == "-yarn" ]; then
     #  - num-executor can be increased (suggested not more than 10)
     #  - cores = 2/4/8
     PYSPARK_PYTHON='/afs/cern.ch/user/l/lmeniche/public/python27' \
-        spark-submit --driver-class-path $avrojar:$sparkexjar \
+        spark-submit --jars $avrojar,$sparkexjar \
             --executor-memory 4G \
             --num-executors 4 \
             --master yarn-client \
@@ -40,7 +40,7 @@ else
 
     # Modify with local[*] to use all the available cores in the node
     #   optionally increase driver memory with --driver-memory 2G (default 1G)
-    spark-submit --driver-class-path $avrojar:$sparkexjar \
+    spark-submit --jars $avrojar,$sparkexjar \
         --executor-memory $((`nproc`/4))G \
         --master local[$((`nproc`/4))] \
         $wmaroot/Tools/myspark.py ${1+"$@"}

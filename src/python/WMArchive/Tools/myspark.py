@@ -108,7 +108,7 @@ def import_(filename):
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
 
-def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
+def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=None):
     """
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
@@ -119,7 +119,7 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None):
 
     # define spark context, it's main object which allow
     # to communicate with spark
-    ctx = SparkContext(appName="AvroKeyInputFormat")
+    ctx = SparkContext(appName="AvroKeyInputFormat", pyFiles=[script])
     logger = SparkLogger(ctx)
     if  not verbose:
         logger.set_level('ERROR')
@@ -185,7 +185,7 @@ def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    results = run(opts.schema, opts.hdir, opts.script, opts.spec, opts.verbose)
+    results = run(opts.schema, opts.hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
     print(results)
 
 if __name__ == '__main__':
