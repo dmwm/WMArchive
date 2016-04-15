@@ -70,7 +70,7 @@ class AvroStorage(Storage):
             msg = 'Failure in %s storage, error=%s, exception=%s' \
                     % (self.stype, err, line)
             msg += ' Failed document: '
-            msg += json.dumps(doc)
+            msg += json.dumps(rec)
             raise WriteError(msg)
 
     def file_read(self, fname):
