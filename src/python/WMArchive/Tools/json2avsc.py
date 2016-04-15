@@ -63,15 +63,15 @@ def baseTypes(val):
 def stype(val):
     "Return type string representation"
     if isinstance(val, basestring):
-        return 'string'
+        return ['string', 'null']
     elif isinstance(val, int):
-        return 'long'
+        return ['long', 'null']
     elif isinstance(val, long):
-        return 'long'
+        return ['long', 'null']
     elif isinstance(val, bool):
-        return 'boolean'
+        return ['boolean', 'null']
     elif isinstance(val, float):
-        return 'double'
+        return ['double', 'null']
     elif isinstance(val, NoneType):
         return 'null'
     return 'null'
