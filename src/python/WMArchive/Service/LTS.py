@@ -124,8 +124,8 @@ class LTSManager(object):
         script = os.path.join(ppath, sfile)
         data = json.dumps(dict(spec=spec, fields=fields))
         os.environ['PYTHONPATH']=os.environ['PYTHONPATH']+':%s/PySpark' % ppath
-        cmd = 'myspark --hdir="%s" --schema=%s --script=%s --spec=\'%s\' --store=%s --wmaid=%s %s' \
-                % (hdir, schema, script, data, self.wmauri, wmaid, self.yarn)
+        cmd = 'myspark %s --hdir="%s" --schema=%s --script=%s --spec=\'%s\' --store=%s --wmaid=%s' \
+                % (self.yarn, hdir, schema, script, data, self.wmauri, wmaid)
         print(tstamp("WMArchive::LTS"), cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ)
         # wait for process if we use taskmgr. The taskmgr has internal queue
