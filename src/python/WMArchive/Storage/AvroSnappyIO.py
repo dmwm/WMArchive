@@ -13,7 +13,7 @@ class AvroSnappyIO(object):
         self.sqlc = sparkSQLContext
         self.sc = sparkContext
 
-    def file_write(self, fname, data, repartitionNumber=None):
+    def file_write(self, fname, data, repartitionNumber=None, write_mode="append"):
         """
         fname: output folder name, usually a HDFS path
         data: an array of JSONs
@@ -24,6 +24,6 @@ class AvroSnappyIO(object):
         jsonDocsDF = self.sqlc.jsonRDD(self.sc.parallelize([json.dumps(j) for j in data]))
         if repartitionNumber:
             sqlContext.setConf("spark.sql.avro.compression.codec", "snappy")
-            jsonDocsDF.repartition(repartitionNumber).write.format("com.databricks.spark.avro").save(fname)
+            jsonDocsDF.repartition(repartitionNumber).write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
         else:
-            jsonDocsDF.write.format("com.databricks.spark.avro").save(fname)
+            jsonDocsDF.write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
