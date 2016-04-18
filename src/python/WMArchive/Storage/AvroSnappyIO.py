@@ -22,8 +22,8 @@ class AvroSnappyIO(object):
         if not self.sqlc or not self.sc:
             raise Exception("Both Spark Context and SQLContext must be available")
         jsonDocsDF = self.sqlc.jsonRDD(self.sc.parallelize([json.dumps(j) for j in data]))
+        sqlContext.setConf("spark.sql.avro.compression.codec", "snappy")
         if repartitionNumber:
-            sqlContext.setConf("spark.sql.avro.compression.codec", "snappy")
-            jsonDocsDF.repartition(repartitionNumber).write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
+            jsonDocsDF.repartition(repartitionNumber).save(fname, "com.databricks.spark.avro", mode=write_mode)
         else:
-            jsonDocsDF.write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
+            jsonDocsDF.save(fname, "com.databricks.spark.avro", mode=write_mode)
