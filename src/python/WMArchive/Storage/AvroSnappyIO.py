@@ -5,12 +5,15 @@ Author     : Luca Menichetti <luca.menichetti AT cern dot ch>
 Description: Converts a set of JSONs into Avro files with Snappy conversion,
 Spark SQLContext is needed (or HiveContext)
 Usage      : this code can be used as following, write a script as:
+
     .. code-block:: python
+
         # test_snappy.py
         import json
         from WMArchive.Storage.AvroSnappyIO import AvroSnappyIO
         from pyspark import SparkContext, SparkConf
         from pyspark.sql import SQLContext
+
         ctx = SparkContext()
         sqlContext = SQLContext(ctx)
         avro_snappy_IO = AvroSnappyIO(ctx, sqlContext)
@@ -22,7 +25,6 @@ To run the code use the following
     --packages com.databricks:spark-avro_2.10:1.0.0 \
     --jars /usr/lib/avro/avro-mapred-hadoop2.jar \
     test_snappy.py``
-"""
 
 import json
 

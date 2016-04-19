@@ -51,14 +51,24 @@ class MongoStorage(Storage):
         self.client = MongoClient(uri, w=1)
         self.mdb = self.client[dbname]
         self.mdb.add_son_manipulator(WMASONManipulator())
+        self.collname = collname
         self.coll = self.mdb[collname]
+        self.jobs = self.mdb['jobs'] # separate collection for job results
+        self.acol = self.mdb['acol'] # separate collection for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
+
+    def sconvert(self, spec, fields):
+        "convert input spec/fields into ones suitable for MognoDB QL"
+        return spec, fields
 
     def write(self, data, safe=None):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
             data = [data] # ensure that we got list of data
+        coll = self.coll
+        if  isinstance(data[0], dict) and data[0].get('dtype', None) == 'job':
+            coll = self.jobs
         wmaids = self.getids(data)
         total = 0
         try:
@@ -66,7 +76,7 @@ class MongoStorage(Storage):
             # for MongoDB bulk insertion
             gen = (r for r in data)
             while True:
-                nres = self.coll.insert(itertools.islice(gen, self.chunk_size))
+                nres = coll.insert(itertools.islice(gen, self.chunk_size))
                 if  not nres:
                     break
                 total += len(nres)
@@ -84,27 +94,31 @@ class MongoStorage(Storage):
             raise WriteError(msg)
         return wmaids
 
-    def read(self, query=None):
-        "Read API, it reads data from MongoDB storage for provided query."
+    def read(self, spec, fields=None):
+        "Read API, it reads data from MongoDB storage for provided spec."
         try:
-            gen = self.find(query)
+            gen = self.find(spec, fields)
             docs = [r for r in gen]
             return docs
         except Exception as exp:
             raise ReadError(str(exp))
 
-    def find(self, query=None):
+    def find(self, spec, fields):
         """
-        Find records in MongoDB storage for provided query, returns generator
+        Find records in MongoDB storage for provided spec, returns generator
         over MongoDB collection
         """
-        if  not query:
-            query = {}
-        if  isinstance(query, list):
-            query = {'wmaid': {'$in': query}}
-        elif  PAT_UID.match(str(query)):
-            query = {'wmaid': query}
-        return self.coll.find(query)
+        if  not spec:
+            spec = {}
+        if  isinstance(spec, list):
+            spec = {'wmaid': {'$in': spec}}
+            return self.jobs.find(spec)
+        elif  PAT_UID.match(str(spec)):
+            spec = {'wmaid': spec}
+            return self.jobs.find(spec)
+        if  fields:
+            return self.coll.find(spec, fields)
+        return self.coll.find(spec)
 
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"
@@ -120,3 +134,36 @@ class MongoStorage(Storage):
     def dropdb(self, dbname):
         "Remove given database from MongoDB"
         return self.client.drop_database(dbname)
+
+    def stats(self):
+        "Return statistics about MongoDB"
+        return self.mdb.command("collstats", self.collname)
+
+    def jobsids(self):
+        "Return jobs ids"
+        out = []
+        for row in self.jobs.find():
+            if  'wmaid' in row:
+                out.append({'wmaid':row['wmaid']})
+        return out
+
+#     def adocs(self):
+#         "Return aggregated statistics documents"
+#         return [d for d in self.acol.find()]
+
+# Below is an example of how we can extract aggregated docs, convert them
+# to Charts.js data format and return the data. This data can be used
+# by WMArchive web interface, see ajaxRequestAdocsExample() Javascript
+# function which feeds a data to a bar plot on web interface, see stats.tmpl
+    def adocs(self):
+        "Return aggregated documents in chart.js representation"
+        docs = {}
+        for row in self.acol.find():
+            docs.update(row)
+        out = {"labels":docs.keys(), "datasets":[]}
+        values = []
+        for key in out['labels']:
+            site_stats = docs[key]
+            values.append(site_stats['storage']['writeTotalMB'])
+        out['datasets'].append(dict(data=values))
+        return out

@@ -1,9 +1,11 @@
-import json
+# schema definition for FWJR test documents
 
 fwjr = \
 {'meta_data': {'agent_ver': '1.0.14.pre5',
                'fwjr_id': '1-0',
                'host': 'test.fnal.gov',
+               'jobtype': "Processing",
+               'jobstate': "success", 
                'ts': 1456500229},
  'LFNArray': ['/store/data/Run2011A/Cosmics/RAW/v1/000/160/960/E8099605-8853-E011-A848-0030487A18F2.root',
               '/store/unmerged/CMSSW_7_0_0_pre11/Cosmics/ALCARECO/DtCalib-RECOCOSD_TaskChain_Data_pile_up_test-v1/00000/ECCFE421-08CB-E511-9F4C-02163E017804.root',
@@ -19,9 +21,9 @@ fwjr = \
  'PFNArrayRef': ['inputPFNs', 'outputPFNs', 'pfn'],  # list of keys whose value is referencing fileArray index
  
  'steps': [{'name': 'cmsRun1',
-             #'analysis': {},
-             #'cleanup': {},
-             #'logs': {},
+             'analysis': {},
+             'cleanup': {},
+             'logs': {},
              'errors': [
                    {
                        "details": "An exception of category 'ExternalLHEProducer' occurred while\n   [0] Processing run: 1\n   [1] Running path 'lhe_step'\n   [2] Calling beginRun for module ExternalLHEProducer/'externalLHEProducer'\nException Message:\nChild failed with exit code 2.",
@@ -76,8 +78,12 @@ fwjr = \
                          #'user_dn': '',
                          #'user_vogroup': 'DEFAULT',
                          #'user_vorole': 'DEFAULT',
-                         'validStatus': 'PRODUCTION'}],
-              'performance': {#"multicore": {},
+                         'validStatus': 'PRODUCTION',
+                         "SEName": "srm-cms.cern.ch",
+                         "PNN": "T2_CERN_CH",
+                         "GUID": '',
+                         "StageOutCommand": "srmv2-lcg"}],
+              'performance': {"multicore": {},
                   "storage": {
                     "readAveragekB": 77.8474891246,
                     "readCachePercentageOps": 0.0,
@@ -99,7 +105,7 @@ fwjr = \
                        "MaxEventCPU": 0.0,
                        "AvgEventTime": -1.0, # for ("inf")
                        "MinEventCPU": 0.0,
-                       "TotalEventCPU": 0,
+                       "TotalEventCPU": 0.0,
                        "TotalJobTime": 26.4577,
                        "MinEventTime": 0.0,
                        "MaxEventTime": 0.0
@@ -112,8 +118,3 @@ fwjr = \
 'fallbackFiles': [0],
 'skippedFiles': [1],
 'task': '/sryu_TaskChain_Data_wq_testt_160204_061048_5587/RECOCOSD'}
-with open("fwjr_prod.json", 'w') as outfile:
-    json.dump(fwjr, outfile)
-    
-    
-print "done"

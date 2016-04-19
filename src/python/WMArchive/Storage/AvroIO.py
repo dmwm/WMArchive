@@ -14,6 +14,7 @@ from __future__ import print_function, division
 # system modules
 import io
 import os
+import json
 import traceback
 
 # avro modules
@@ -55,6 +56,7 @@ class AvroStorage(Storage):
             if  mode == 'a':
                 print("We're unable yet to implement read-write mode with compressed avro files")
                 raise NotImplementedError
+            rec = None # keep doc in case of failure
             with DataFileWriter(open_file(fname, mode), DatumWriter(), schema) as writer:
                 for rec in data:
                     writer.append(rec)
@@ -67,6 +69,8 @@ class AvroStorage(Storage):
             line = ' '.join(str(exc).replace('\n', '').split())
             msg = 'Failure in %s storage, error=%s, exception=%s' \
                     % (self.stype, err, line)
+            msg += ' Failed document: '
+            msg += json.dumps(rec)
             raise WriteError(msg)
 
     def file_read(self, fname):
@@ -92,20 +96,16 @@ class AvroStorage(Storage):
             with DataFileWriter(ostream, DatumWriter(), schema) as writer:
                 writer.append(data)
 
-    def _read(self, query=None):
+    def _read(self, spec, fields=None):
         "Internal read API"
-        if  PAT_UID.match(str(query)): # requested to read concrete file
+        if  PAT_UID.match(str(spec)): # requested to read concrete file
             out = []
-            fname = file_name(self.hdir, query)
+            fname = file_name(self.hdir, spec)
             with open_file(fname) as istream:
                 reader = DataFileReader(istream, DatumReader())
                 for data in reader:
                     if  isinstance(data, list):
                         for rec in data:
-                            self.check(rec)
-                        return data
-                    elif isinstance(data, dict) and 'bulk' in data:
-                        for rec in data['bulk']:
                             self.check(rec)
                         return data
                     self.check(data)

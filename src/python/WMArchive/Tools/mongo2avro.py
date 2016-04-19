@@ -100,7 +100,7 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
 
     # read data from MongoDB, returned mdocs is generator type
     query = {'stype': mstg.stype}
-    mdocs = mstg.find(query)
+    mdocs = mstg.find(query, None) # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
     wmaids = []

@@ -1,0 +1,5 @@
+lfn,LFNArray
+agent,meta_data.agent_ver
+jobtype,meta_data.jobtype
+error,steps.errors.details
+errorcode,steps.errors.exitCode
