@@ -16,17 +16,15 @@ Usage      : this code can be used as following, write a script as:
 
         ctx = SparkContext()
         sqlContext = SQLContext(ctx)
-
         avro_snappy_IO = AvroSnappyIO(ctx, sqlContext)
         rec = json.load(open('fwjr_prod.json'))
         fwjr_array = [rec, rec]
-        avro_snappy_IO.file_write("test-json2avro-snappy",fwjr_array, 0)
-
+        avro_snappy_IO.file_write("test-json2avro-snappy",fwjr_array, 1)
 To run the code use the following
-``spark-submit --packages com.databricks:spark-avro_2.10:1.0.0 test_snappy.py``
-
-Please note, that aforementioned example will work only with new version of spark, 1.5.0 and above.
-"""
+``spark-submit \
+    --packages com.databricks:spark-avro_2.10:1.0.0 \
+    --jars /usr/lib/avro/avro-mapred-hadoop2.jar \
+    test_snappy.py``
 
 import json
 
@@ -35,7 +33,7 @@ class AvroSnappyIO(object):
         self.sqlc = sparkSQLContext
         self.sc = sparkContext
 
-    def file_write(self, fname, data, repartitionNumber=None, write_mode="append"):
+    def file_write(self, fname, data, repartitionNumber=None):
         """
         fname: output folder name, usually a HDFS path
         data: an array of JSONs
@@ -46,6 +44,8 @@ class AvroSnappyIO(object):
         jsonDocsDF = self.sqlc.jsonRDD(self.sc.parallelize([json.dumps(j) for j in data]))
         self.sqlc.setConf("spark.sql.avro.compression.codec", "snappy")
         if repartitionNumber:
-            jsonDocsDF.repartition(repartitionNumber).save(fname, "com.databricks.spark.avro", mode=write_mode)
+            if repartitionNumber < 1:
+                repartitionNumber = 1
+            jsonDocsDF.repartition(repartitionNumber).save(fname, "com.databricks.spark.avro")
         else:
-            jsonDocsDF.save(fname, "com.databricks.spark.avro", mode=write_mode)
+            jsonDocsDF.save(fname, "com.databricks.spark.avro")
