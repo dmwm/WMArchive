@@ -16,18 +16,11 @@ import pprint
 import argparse
 
 # WMArchive modules
-from WMArchive.Schemas.FWJRProduction import fwjr as fwjr_prod
-from WMArchive.Schemas.FWJRTest import fwjr as fwjr_test
+from WMArchive.Schemas.FWJRProduction import fwjr
 
 def schema(stype, fout):
     "Write out schema of given type into provided output file name"
-    if  stype == 'production':
-        fwjr = fwjr_prod
-    elif stype == 'test':
-        fwjr = fwjr_test
-    else:
-        raise NotImplementedError
-    # use default values for schema, WMArchive will put real values later
+
     fwjr['wmaid'] = ''
     fwjr['wmats'] = 0.
     fwjr['stype'] = ''
@@ -41,8 +34,6 @@ class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='PROG')
-        self.parser.add_argument("--schema", action="store",
-            dest="schema", default="production", help="Specify schema type, production or test")
         self.parser.add_argument("--fout", action="store",
             dest="fout", default="", help="Specify output file name")
 
