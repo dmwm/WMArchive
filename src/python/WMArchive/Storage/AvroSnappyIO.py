@@ -25,6 +25,7 @@ To run the code use the following
     --packages com.databricks:spark-avro_2.10:1.0.0 \
     --jars /usr/lib/avro/avro-mapred-hadoop2.jar \
     test_snappy.py``
+"""
 
 import json
 
