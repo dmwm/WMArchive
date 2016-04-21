@@ -29,6 +29,11 @@ MongoIO
 .. automodule:: WMArchive.Storage.MongoIO
         :members:
 
+ElasticSearchIO
+---------------
+.. automodule:: WMArchive.Storage.ElasticSearchIO
+        :members:
+
 HdfsIO
 ------
 .. automodule:: WMArchive.Storage.HdfsIO
