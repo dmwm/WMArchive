@@ -18,7 +18,7 @@ import argparse
 # WMArchive modules
 from WMArchive.Schemas.FWJRProduction import fwjr
 
-def schema(stype, fout):
+def schema(fout):
     "Write out schema of given type into provided output file name"
 
     fwjr['wmaid'] = ''
@@ -41,7 +41,7 @@ def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
-    schema(opts.schema, opts.fout)
+    schema(opts.fout)
 
 if __name__ == '__main__':
     main()
