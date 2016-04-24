@@ -1,0 +1,177 @@
+{
+  "PFNArrayRef": [
+    "inputPFNs", 
+    "outputPFNs"
+  ], 
+  "task": "/sryu_MonteCarlo_eff_Sryu_reqmgr2_160317_161133_1935/Production", 
+  "skippedFiles": [], 
+  "fallbackFiles": [], 
+  "LFNArray": [
+    "/store/unmerged/Integ_Test/QCD_Pt-40toInf_fwdJet_bwdJet_Tune4C_2p76TeV-pythia8/GEN-SIM/MonteCarlo_eff_reqmgr2_test-v1/00000/16A4A65C-73EC-E511-BC4A-02163E00E66E.root", 
+    "/store/unmerged/logs/prod/2016/3/17/sryu_MonteCarlo_eff_Sryu_reqmgr2_160317_161133_1935/Production/0000/0/1aa266ea-ec73-11e5-a0d7-02163e00efd5-0-0-logArchive.tar.gz"
+  ], 
+  "meta_data": {
+    "jobstate": "success", 
+    "ts": 1458243230, 
+    "fwjr_id": "1-0", 
+    "host": "mac-122010.local", 
+    "agent_ver": "1.0.16.pre1", 
+    "jobtype": "Production"
+  }, 
+  "steps": [
+    {
+      "status": 0, 
+      "errors": [], 
+      "name": "stageOut1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": 1458243113, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": 1458243111, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [], 
+      "logs": {}
+    }, 
+    {
+      "status": 0, 
+      "errors": [], 
+      "name": "logArch1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": 1458243115, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": 1458243113, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [
+        {
+          "runs": [], 
+          "inputPFNs": [], 
+          "adler32": "907535e6", 
+          "inputLFNs": [], 
+          "outputLFNs": [
+            1
+          ], 
+          "outputPFNs": [], 
+          "module_label": "logArchive", 
+          "location": "", 
+          "cksum": "3435610233", 
+          "events": 0, 
+          "merged": false, 
+          "size": 0
+        }
+      ], 
+      "logs": {}
+    }, 
+    {
+      "status": 0, 
+      "errors": [], 
+      "name": "cmsRun1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": 1458243110, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": 1458241509, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {
+          "writeTotalMB": 8.24952, 
+          "readPercentageOps": 1.0, 
+          "readAveragekB": 35.7686557377, 
+          "readTotalMB": 25.569, 
+          "readNumOps": 732.0, 
+          "readCachePercentageOps": 0.0, 
+          "readMBSec": 0.00454358063083, 
+          "readMaxMSec": 662.374, 
+          "readTotalSecs": 0.0, 
+          "writeTotalSecs": 222624.0
+        }, 
+        "cpu": {
+          "TotalJobCPU": 1497.96, 
+          "AvgEventCPU": 2.75182, 
+          "MaxEventCPU": 201.035, 
+          "AvgEventTime": 3.03261, 
+          "MinEventCPU": 0.005999, 
+          "TotalEventCPU": 1375.91, 
+          "TotalJobTime": 1516.3, 
+          "MinEventTime": 0.00542712, 
+          "MaxEventTime": 201.851
+        }, 
+        "memory": {
+          "PeakValueRss": 581.73, 
+          "PeakValueVsize": 902.422
+        }
+      }, 
+      "output": [
+        {
+          "branch_hash": "e5c544fe05085963dcd484bf06dcf308", 
+          "guid": "16A4A65C-73EC-E511-BC4A-02163E00E66E", 
+          "size": 8650159, 
+          "applicationName": "cmsRun", 
+          "acquisitionEra": "Integ_Test", 
+          "applicationVersion": "CMSSW_5_3_16", 
+          "inputPFNs": [], 
+          "configURL": "https://cmsweb.cern.ch/couchdb;;reqmgr_config_cache;;a09fa7ea98f8c88bdae47b19ed049d44", 
+          "outputPFNs": [
+            0
+          ], 
+          "outputDataset": "/QCD_Pt-40toInf_fwdJet_bwdJet_Tune4C_2p76TeV-pythia8/Integ_Test-MonteCarlo_eff_reqmgr2_test-v1/GEN-SIM", 
+          "location": "", 
+          "inputLFNs": [], 
+          "async_dest": "", 
+          "events": 11, 
+          "merged": false, 
+          "validStatus": "PRODUCTION", 
+          "adler32": "4276d250", 
+          "ouput_module_class": "PoolOutputModule", 
+          "globalTag": "STARTHI53_V28::All", 
+          "catalog": "", 
+          "module_label": "RAWSIMoutput", 
+          "cksum": "2703102873", 
+          "StageOutCommand": "rfcp-CERN", 
+          "inputDataset": "", 
+          "runs": [
+            {
+              "runNumber": 1, 
+              "lumis": [
+                1, 
+                2
+              ]
+            }
+          ], 
+          "outputLFNs": [
+            0
+          ], 
+          "processingVer": 1, 
+          "processingStr": "MonteCarlo_eff_reqmgr2_test", 
+          "prep_id": "FSQ-ppSpring2014-00007"
+        }
+      ], 
+      "logs": {}
+    }
+  ], 
+  "PFNArray": [
+    "root://eoscms.cern.ch//eos/cms/store/unmerged/Integ_Test/QCD_Pt-40toInf_fwdJet_bwdJet_Tune4C_2p76TeV-pythia8/GEN-SIM/MonteCarlo_eff_reqmgr2_test-v1/00000/16A4A65C-73EC-E511-BC4A-02163E00E66E.root"
+  ], 
+  "LFNArrayRef": [
+    "fallbackFiles", 
+    "outputLFNs", 
+    "skippedFiles", 
+    "inputLFNs"
+  ]
+}
