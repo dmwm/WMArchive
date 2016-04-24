@@ -1,0 +1,76 @@
+{
+  "PFNArrayRef": [
+    "inputPFNs", 
+    "outputPFNs"
+  ], 
+  "task": "/sryu_DQMHarvesting_Sryu_reqmgr2_160318_050142_4405/EndOfRunDQMHarvest/EndOfRunDQMHarvestLogCollect", 
+  "skippedFiles": [], 
+  "fallbackFiles": [], 
+  "LFNArray": [
+    "srm://srm-cms.cern.ch:8443/srm/managerv2?SFN=/castor/cern.ch/cms/store/logs/prod/2016/03/WMAgent/sryu_DQMHarvesting_Sryu_reqmgr2_160318_050142_4405/sryu_DQMHarvesting_Sryu_reqmgr2_160318_050142_4405-EndOfRunDQMHarvestLogCollect-b6d9613445-1-logs.tar", 
+    "/store/unmerged/logs/prod/2016/3/18/sryu_DQMHarvesting_Sryu_reqmgr2_160318_050142_4405/EndOfRunDQMHarvest/0000/0/f7a862f8-ecc1-11e5-b4f2-02163e00efd5-EndOfRun-Harvest-1-0-logArchive.tar.gz", 
+    "/store/unmerged/logs/prod/2016/3/18/sryu_DQMHarvesting_Sryu_reqmgr2_160318_050142_4405/EndOfRunDQMHarvest/0000/0/f7a862f8-ecc1-11e5-b4f2-02163e00efd5-EndOfRun-Harvest-2-0-logArchive.tar.gz"
+  ], 
+  "meta_data": {
+    "jobstate": "success", 
+    "ts": 1458276675, 
+    "fwjr_id": "1411-0", 
+    "host": "mac-122010.local", 
+    "agent_ver": "1.0.16.pre1", 
+    "jobtype": "LogCollect"
+  }, 
+  "steps": [
+    {
+      "status": 0, 
+      "errors": [], 
+      "name": "logCollect1", 
+      "parameters": {}, 
+      "input": [
+        {
+          "runs": [], 
+          "lfn": 1
+        }, 
+        {
+          "runs": [], 
+          "lfn": 2
+        }
+      ], 
+      "stop": 1458276604, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": 1458276586, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [
+        {
+          "runs": [], 
+          "SEName": "srm-cms.cern.ch", 
+          "outputLFNs": [
+            0
+          ], 
+          "outputPFNs": [], 
+          "location": "", 
+          "inputLFNs": [], 
+          "PNN": "T2_CH_CERN", 
+          "GUID": "", 
+          "inputPFNs": [], 
+          "StageOutCommand": "srmv2-lcg"
+        }
+      ], 
+      "logs": {}
+    }
+  ], 
+  "PFNArray": [], 
+  "LFNArrayRef": [
+    "fallbackFiles", 
+    "outputLFNs", 
+    "lfn", 
+    "skippedFiles", 
+    "inputLFNs"
+  ]
+}

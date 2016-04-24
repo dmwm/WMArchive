@@ -1,0 +1,50 @@
+{
+  "PFNArrayRef": [], 
+  "task": "/sryu_MonteCarlo_PhEDEx_Sryu_reqmgr2_160318_050123_7744/Production/ProductionMergeLHEoutput/ProductionLHEoutputMergeLogCollect", 
+  "skippedFiles": [], 
+  "fallbackFiles": [], 
+  "LFNArray": [
+    "/store/unmerged/logs/prod/2016/3/18/sryu_MonteCarlo_PhEDEx_Sryu_reqmgr2_160318_050123_7744/Production/ProductionMergeLHEoutput/0000/0/29392490-ecec-11e5-b4f2-02163e00efd5-1-0-logArchive.tar.gz"
+  ], 
+  "meta_data": {
+    "jobstate": "jobfailed", 
+    "ts": 1458295736, 
+    "fwjr_id": "3754-0", 
+    "host": "mac-122010.local", 
+    "agent_ver": "1.0.16.pre1", 
+    "jobtype": "LogCollect"
+  }, 
+  "steps": [
+    {
+      "status": 1, 
+      "errors": [], 
+      "name": "logCollect1", 
+      "parameters": {}, 
+      "input": [
+        {
+          "runs": [], 
+          "lfn": 0
+        }
+      ], 
+      "stop": null, 
+      "site": "T1_US_FNAL_Disk", 
+      "analysis": {}, 
+      "start": 1458294038, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [], 
+      "logs": {}
+    }
+  ], 
+  "PFNArray": [], 
+  "LFNArrayRef": [
+    "lfn", 
+    "skippedFiles", 
+    "fallbackFiles"
+  ]
+}
