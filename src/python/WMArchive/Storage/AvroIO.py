@@ -27,6 +27,7 @@ from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Utils import wmaHash, open_file, file_name
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+from WMArchive.Tools.diff_avsc2json import validate
 
 class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
@@ -41,9 +42,35 @@ class AvroStorage(Storage):
             os.makedirs(self.hdir)
         schema_doc = open(schema).read()
         self.schema = avro.schema.parse(schema_doc)
+        self.schema_json = json.loads(schema_doc)
 
     def file_write(self, fname, data):
         "Write documents in append mode to given file name"
+        # perform input data validation
+        good_data = []
+        # write bad data records into output file
+        bdir = '%s/bad' % os.path.dirname(fname)
+        if  not os.path.exists(bdir):
+            os.makedirs(bdir)
+        bfname = '%s/%s_bad.txt' % (bdir, os.path.basename(fname))
+        ecount = count = 0
+        with open(bfname, 'a') as bstream:
+            for rec in data:
+                err = validate(rec, self.schema_json)
+                if  err:
+                    detectedFailure = True
+                    bstream.write(json.dumps(rec)+'\n')
+                    bstream.write(err+'\n')
+                    bstream.write('-------------\n')
+                    ecount += 1
+                else:
+                    good_data.append(rec)
+                count += 1
+        if  ecount:
+            print("WARNING: received %s docs, found %s bad docs, see %s"\
+                    % (count, ecount, bdir))
+        # use only good portion of the data
+        data = good_data
         try:
             schema = self.schema
             wmaids = []
