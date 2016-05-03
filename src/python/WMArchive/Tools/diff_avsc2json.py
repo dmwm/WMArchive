@@ -46,7 +46,7 @@ def error(name, ftype, data, refname):
     print('NAME: %s' % name)
     print('TYPE: %s' % subtype)
     print('AREC: %s' % ftype)
-    print('DATA: %s' % data)
+    print('DATA: %s %s' % (data, type(data)))
     sys.exit(1)
 
 def print_details(name, ftype, data, verbose):
@@ -60,7 +60,7 @@ def print_details(name, ftype, data, verbose):
         print("## NAME: %s" % name)
         print("## TYPE: %s" % subtype)
         print("## AREC: %s" % ftype)
-        print("## DATA: %s" % data)
+        print("## DATA: %s %s" % (data, type(data)))
 
 def check_ctype(name, ftype, data, refname, verbose=0):
     "Check composed data types"
