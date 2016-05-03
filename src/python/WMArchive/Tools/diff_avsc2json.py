@@ -35,12 +35,16 @@ def check_atype(data, atype):
     if  atype == 'float' or atype == 'double':
         return isinstance(data, float)
     if  atype == 'null':
-        res = False if data else True
+#         res = False if data else True
+        res = True if data == '' or data == None else False
         return res
 
 def error(name, ftype, data, refname):
     "Print error message and exit"
-    subtype = ftype['type']
+    subtype = 'Basic data type'
+    if  isinstance(ftype, dict):
+        subtype = ftype['type']
+
     print("\n\n========= ERROR =========\n")
     print('KEY : %s' % refname)
     print('NAME: %s' % name)
@@ -74,6 +78,8 @@ def check_ctype(name, ftype, data, refname, verbose=0):
             error(name, ftype, data, refname)
         items = ftype['items']
         if  isinstance(items, list):
+            if  not isinstance(data, list):
+                error(name, ftype, data, refname)
             for item in ftype['items']:
                 if  not data and item == 'null':
                     print_ok(data, item, verbose=verbose)
