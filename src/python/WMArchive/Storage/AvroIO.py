@@ -27,7 +27,7 @@ from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Utils import wmaHash, open_file, file_name
 from WMArchive.Utils.Exceptions import WriteError, ReadError
-from WMArchive.Tools.diff_avsc2json import validate
+from WMArchive.Tools.diff_avsc2json import RecordValidator
 
 class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
@@ -53,22 +53,27 @@ class AvroStorage(Storage):
         if  not os.path.exists(bdir):
             os.makedirs(bdir)
         bfname = '%s/%s_bad.txt' % (bdir, os.path.basename(fname))
-        ecount = count = 0
+        count = ecount = edocs = 0
         with open(bfname, 'a') as bstream:
             for rec in data:
-                err = validate(rec, self.schema_json)
-                if  err:
-                    detectedFailure = True
+                validator = RecordValidator()
+                validator.run(self.schema_json, rec)
+                if  validator.errors:
                     bstream.write(json.dumps(rec)+'\n')
-                    bstream.write(err+'\n')
+                    for err in validator.errors:
+                        msg = 'SCHEMA ERROR '
+                        for key, val in err.items():
+                            msg += '%s: %s ' % (key.upper(), json.dumps(val))
+                        bstream.write(msg+'\n')
                     bstream.write('-------------\n')
-                    ecount += 1
+                    ecount += len(validator.errors)
+                    edocs += 1
                 else:
                     good_data.append(rec)
                 count += 1
         if  ecount:
-            print("WARNING: received %s docs, found %s bad docs, see %s"\
-                    % (count, ecount, bdir))
+            print("WARNING: received %s docs, found %s bad docs, %s errors, see %s"\
+                    % (count, edocs, ecount, bdir))
         # use only good portion of the data
         data = good_data
         try:
