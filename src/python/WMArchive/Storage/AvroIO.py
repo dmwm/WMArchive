@@ -73,7 +73,7 @@ class AvroStorage(Storage):
                 count += 1
         if  ecount:
             print("WARNING: received %s docs, found %s bad docs, %s errors, see %s"\
-                    % (count, edocs, ecount, bdir))
+                    % (count, edocs, ecount, bfname))
         # use only good portion of the data
         data = good_data
         try:
