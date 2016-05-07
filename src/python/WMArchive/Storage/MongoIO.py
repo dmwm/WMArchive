@@ -14,7 +14,7 @@ from __future__ import print_function, division
 import itertools
 
 # Mongo modules
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from pymongo.errors import InvalidDocument, InvalidOperation, DuplicateKeyError
 from pymongo.son_manipulator import SONManipulator
 from bson.son import SON
@@ -54,34 +54,35 @@ class MongoStorage(Storage):
         self.coll = self.mdb[collname]
         self.log(self.coll)
         self.chunk_size = chunk_size
+        try:
+            self.coll.ensure_index([('wmaid', DESCENDING)], unique=True)
+            self.coll.ensure_index([('wmats', DESCENDING), ('stype', DESCENDING)])
+        except:
+            pass
 
     def write(self, data, safe=None):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
             data = [data] # ensure that we got list of data
         wmaids = self.getids(data)
-        total = 0
-        try:
-            # we use generator and itertools to slice specific chunk of data
-            # for MongoDB bulk insertion
-            gen = (r for r in data)
-            while True:
-                nres = self.coll.insert(itertools.islice(gen, self.chunk_size))
-                if  not nres:
-                    break
-                total += len(nres)
-        except InvalidDocument as exp:
-            self.log('WARNING InvalidDocument: %s' % str(exp))
-        except InvalidOperation as exp:
-            self.log('WARNING InvalidOperation: %s' % str(exp))
-        except DuplicateKeyError as exp:
-            pass
-        except Exception as exp:
-            raise WriteError(str(exp))
+        total = nres = 0
+        for idx in range(0, len(data), self.chunk_size):
+            docs = data[idx:idx+self.chunk_size]
+            try:
+                nres = self.coll.insert(docs, continue_on_error=True)
+            except InvalidDocument as exp:
+                self.log('WARNING InvalidDocument: %s' % str(exp))
+            except InvalidOperation as exp:
+                self.log('WARNING InvalidOperation: %s' % str(exp))
+            except DuplicateKeyError as exp:
+                pass
+            except Exception as exp:
+                raise WriteError(str(exp))
+            total += len(nres)
         if  total != len(wmaids):
-            err = 'Unable to insert all records, given (%s) != inserted (%s)' \
+            msg = 'Unable to insert all records, given (%s) != inserted (%s)' \
                     % (len(wmaids), total)
-            raise WriteError(msg)
+            self.log('WARNING %s' % msg)
         return wmaids
 
     def read(self, query=None):
@@ -108,8 +109,14 @@ class MongoStorage(Storage):
 
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"
-        doc_query = {'wmaid' : {'$in': ids}}
-        self.coll.update(doc_query, spec, multi=True)
+        if  len(ids) > self.chunk_size:
+            for idx in range(0, len(ids), self.chunk_size):
+                sub_ids = ids[idx:idx+self.chunk_size]
+                doc_query = {'wmaid' : {'$in': sub_ids}}
+                self.coll.update(doc_query, spec, multi=True)
+        else:
+            doc_query = {'wmaid' : {'$in': ids}}
+            self.coll.update(doc_query, spec, multi=True)
 
     def remove(self, spec=None):
         "Remove documents from MongoDB for given spec"
