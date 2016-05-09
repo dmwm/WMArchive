@@ -75,23 +75,24 @@ class MongoStorage(Storage):
         if  isinstance(data[0], dict) and data[0].get('dtype', None) == 'job':
             coll = self.jobs
         wmaids = self.getids(data)
-        total = nres = 0
+        total = nres = count_dup = count_inv = 0
         for idx in range(0, len(data), self.chunk_size):
             docs = data[idx:idx+self.chunk_size]
             try:
                 nres = self.coll.insert(docs, continue_on_error=True)
             except InvalidDocument as exp:
+                count_inv += 1
                 self.log('WARNING InvalidDocument: %s' % str(exp))
             except InvalidOperation as exp:
                 self.log('WARNING InvalidOperation: %s' % str(exp))
             except DuplicateKeyError as exp:
-                pass
+                count_dup += 1
             except Exception as exp:
                 raise WriteError(str(exp))
             total += len(nres)
-        if  total != len(wmaids):
-            msg = 'Unable to insert all records, given (%s) != inserted (%s)' \
-                    % (len(wmaids), total)
+        if  total != len(wmaids) or count_dup or count_inv:
+            msg = 'unable to insert all records, given %s, inserted %s, duplicates %s, invalid %s' \
+                    % (len(wmaids), total, count_dup, count_inv)
             self.log('WARNING %s' % msg)
         return wmaids
 
