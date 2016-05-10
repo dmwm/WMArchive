@@ -11,10 +11,10 @@ Description: WMArchive Mongo storage client
 from __future__ import print_function, division
 
 # system modules
-import itertools
+import traceback
 
 # Mongo modules
-from pymongo import MongoClient, DESCENDING
+from pymongo import MongoClient
 from pymongo.errors import InvalidDocument, InvalidOperation, DuplicateKeyError
 from pymongo.son_manipulator import SONManipulator
 from bson.son import SON
@@ -57,11 +57,6 @@ class MongoStorage(Storage):
         self.acol = self.mdb['acol'] # separate collection for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
-        try:
-            self.coll.ensure_index([('wmaid', DESCENDING)], unique=True)
-            self.coll.ensure_index([('wmats', DESCENDING), ('stype', DESCENDING)])
-        except:
-            pass
 
     def sconvert(self, spec, fields):
         "convert input spec/fields into ones suitable for MognoDB QL"

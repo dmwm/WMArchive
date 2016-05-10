@@ -90,7 +90,7 @@ def file_name(odir, mdir, thr, compress):
     except OSError:
         pass
     shutil.move(fname, mdir)
-    return gen_file_name(odir, compress)
+    return file_name(odir, mdir, thr, compress)
 
 def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
@@ -100,16 +100,15 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
 
     # read data from MongoDB, returned mdocs is generator type
     query = {'stype': mstg.stype}
-    mdocs = mstg.find(query, None) # with no fields we'll get entire docs
+    mdocs = [r for r in mstg.find(query, None)] # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
     wmaids = []
     fsize = 0
-    while True:
-        fname = file_name(odir, mdir, thr, compress)
-        ids = astg.file_write(fname, itertools.islice(mdocs, chunk))
-        if  not len(ids):
-            break
+    fname = file_name(odir, mdir, thr, compress)
+    for idx in range(0, len(mdocs), chunk):
+        data = mdocs[idx:idx+chunk]
+        ids = astg.file_write(fname, data)
         if  os.path.isfile(fname):
             fsize = os.path.getsize(fname)
         wmaids += ids
@@ -123,12 +122,20 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
                 rss = ''
             print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
                     % (len(wmaids), fname, size_format(fsize), fsize, rss))
+        fname = file_name(odir, mdir, thr, compress)
     print(tstamp('mongo2avro'), "wrote %s docs %s %s (%s bytes)" \
             % (len(wmaids), fname, size_format(fsize), fsize))
 
     # update status attributes of docs in MongoDB
     spec = {'$set' : {'stype': astg.stype}}
     mstg.update(wmaids, spec)
+
+    # remove bad files (if any, see AvroIO.py)
+    bfname = os.path.join(odir, 'bad/%_bad.txt' % fname)
+    if  os.path.isfile(bfname):
+        bfsize = os.path.getsize(bfname)
+        if  not bfsize:
+            os.remove(bfname)
 
 def main():
     "Main function"
