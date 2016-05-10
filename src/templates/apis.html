@@ -6,27 +6,28 @@ Below we provide examples for curl and python clients.
 <hr />
 
 <h5>Curl client</h5>
-POST request:<br/>
+POST requests can be used to query documents in WMArchive<br/>
 <div><pre class="alert alert-success">
 # define some parameters
 OUT=/dev/stdout
 HEADERS="Content-type: application/json"
 URL=http://hostname:port/wmarchive/data
 
+# prepare your query.json file
+{"spec":{"task":"AbcCde09[0-9]", "timerange":[20160101,20160102]}, "fields":["task"]}
+
 # single document injection, POST request
-curl -D $OUT -X POST -H $HEADERS -d file.json $URL
+curl -D $OUT -X POST -H $HEADERS -d query.json $URL
+
+# depending on provided timerange you'll either get results
+# or you'll be given UID of your request which can be used later
+# to locate your results
 </pre></div>
 
-GET request:<br/>
+GET requests can be used to fetch results from WMArchive placed previously via POST request<br/>
 <div><pre class="alert-success alert">
 # single document retrieval, GET request for provided UID
 curl -D $OUT -H $HEADERS $URL/UID
-
-# multiple documents retrieval, POST request with query for known UID’s
-curl -D $OUT -X POST -H $HEADERS -d '{"query":["UID1", "UID2]}' $URL
-
-# document search, POST request with MongoDB Query Language
-curl -D $OUT -X POST -H $HEADERS -d '{"query":{"fwjr.task":"TaskName"}}' $URL
 </pre></div>
 
 <h5>Python client</h5>
@@ -36,24 +37,8 @@ import os, json, httplib
 # get connection to our service
 conn = httplib.HTTPConnection(host, port)
 
-# prepare some data to upload to WMArchive
-record = json.load(open(jsonFile))
-docs = []
-
-# create fake records to show the load
-for idx in range(10):
-     rec = dict(record)
-     rec[“rev”] = str(idx)*3 # fake field
-     docs.append(rec)
-data = dict(data=docs) # our data consists of series of records
-
-# post series of docs to WMArchive
-headers = {"Content-type": "application/json", "Accept":"application/json"}
-path = "/wmarchive/data"
-conn.request("POST", path, json.dumps(data), headers)
-
 # get data from WMArchive
-query = dict(query={"fwjr.task":"/path/task/Name"}) # MongoDB QUERY
+query = dict(spec={"task":"taskName", "timerange":[20160101,20160102]}, fields=["task"])
 conn.request("POST", path, json.dumps(query), headers)
 response = conn.getresponse()
 print("STATUS", response.status, "REASON", response.reason)

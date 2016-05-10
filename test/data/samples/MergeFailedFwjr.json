@@ -1,0 +1,48 @@
+{
+  "PFNArrayRef": [], 
+  "task": "/sryu_ReRecoSkim_Sryu_reqmgr2_160318_050217_7302/DataProcessing/DataProcessingMergeRECOoutput", 
+  "skippedFiles": [], 
+  "fallbackFiles": [], 
+  "LFNArray": [], 
+  "meta_data": {
+    "jobstate": "jobfailed", 
+    "ts": 1458291090, 
+    "fwjr_id": "3427-0", 
+    "host": "mac-122010.local", 
+    "agent_ver": "1.0.16.pre1", 
+    "jobtype": "Merge"
+  }, 
+  "steps": [
+    {
+      "status": 1, 
+      "errors": [
+        {
+          "type": "JobKilled", 
+          "details": "The job was killed by the WMAgent for using too much wallclock time (WMAgent).\n Job last known status was: Unknown", 
+          "exitCode": 71304
+        }
+      ], 
+      "name": "JobKilled", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": null, 
+      "site": {}, 
+      "analysis": {}, 
+      "start": null, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [], 
+      "logs": {}
+    }
+  ], 
+  "PFNArray": [], 
+  "LFNArrayRef": [
+    "skippedFiles", 
+    "fallbackFiles"
+  ]
+}

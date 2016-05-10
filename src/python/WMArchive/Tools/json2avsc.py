@@ -6,9 +6,11 @@ File       : json2avsc.py
 Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
 Description: Tool to generate Avro schema out of provided JSON file
 Avro schema definition can be found here:
-    https://avro.apache.org/docs/1.7.7/spec.html#Arrays
-    http://docs.oracle.com/cd/E26161_02/html/GettingStartedGuide/avroschemas.html
+https://avro.apache.org/docs/1.7.7/spec.html#Arrays
+http://docs.oracle.com/cd/E26161_02/html/GettingStartedGuide/avroschemas.html
+
 The conversion logic relies on few constraints:
+
     - list data type should contain values of identical types, e.g.
       integers, floats, another dictionaries
     - int/floats are stored as long and double
@@ -63,15 +65,15 @@ def baseTypes(val):
 def stype(val):
     "Return type string representation"
     if isinstance(val, basestring):
-        return 'string'
+        return ['string', 'null']
     elif isinstance(val, int):
-        return 'long'
+        return ['long', 'null']
     elif isinstance(val, long):
-        return 'long'
+        return ['long', 'null']
     elif isinstance(val, bool):
-        return 'boolean'
+        return ['boolean', 'null']
     elif isinstance(val, float):
-        return 'double'
+        return ['double', 'null']
     elif isinstance(val, NoneType):
         return 'null'
     return 'null'

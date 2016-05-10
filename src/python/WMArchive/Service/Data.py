@@ -55,8 +55,11 @@ class WMAData(RESTEntity):
         if  method == 'GET':
             if 'query' in param.kwargs.keys():
                 validate_str('query', param, safe, PAT_QUERY, optional=True)
-            if 'info' in param.kwargs.keys():
-                validate_str('info', param, safe, PAT_INFO, optional=True)
+            for key in ['status', 'jobs', 'adocs', '_']:
+                if  key in param.kwargs.keys():
+                    validate_str(key, param, safe, PAT_INFO, optional=True)
+                    # underscore may come from ajax call via jQuery
+                    validate_str('_', param, safe, PAT_INFO, optional=True)
             # test if user provided uid
             if len(param.args) == 1 and PAT_UID.match(param.args[0]):
                 safe.args.append(param.args[0])
@@ -74,11 +77,14 @@ class WMAData(RESTEntity):
         Implement GET request with given uid or set of parameters
         All work is done by WMArchiveManager
         """
-        info = kwds.get('info', '')
-        if  info:
-            return self.mgr.info()
+        if  kwds.get('status', ''):
+            return results(dict(status=self.mgr.status()))
+        if  kwds.get('jobs', ''):
+            return results(dict(jobs=self.mgr.jobs()))
+        if  kwds.get('adocs', ''):
+            return results(dict(adocs=self.mgr.adocs()))
         if  args and len(args) == 1: # requested uid
-            return results(self.mgr.read(args[0]))
+            return results(self.mgr.read(args[0], []))
         return results({'request': kwds, 'results': 'Not available'})
 
     @restcall(formats=[('application/json', JSONFormat())])
@@ -91,19 +97,20 @@ class WMAData(RESTEntity):
 
         The input HTTP request should be either
         {"data":some_data} for posting the data into WMArchive or
-        {"query":some_query} for querying the data in WMArchive.
+        {"spec":some_query, "fields":return_fields} for querying the data in WMArchive.
         The some_data should be proper JSON document(s).
-        The some_query should be either MongoDB or Hive or other supported
-        queries.
+        The some_query should be use MongoDB QL.
         """
         msg = 'expect "data", "query" attributes in your request'
         result = {'status':'Not supported, %s' % msg, 'data':[]}
         try:
             request = json.load(cherrypy.request.body)
-            if  'query' in request.keys():
-                result = self.mgr.read(request['query'])
+            if  'spec' in request.keys() and 'fields' in request.keys():
+                result = self.mgr.read(request['spec'], request['fields'])
             elif 'data' in request.keys():
                 result = self.mgr.write(request['data'])
+            elif 'job' in request.keys():
+                result = self.mgr.write(request['job'])
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
             return results(result)

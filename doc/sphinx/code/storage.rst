@@ -19,9 +19,19 @@ AvroIO
 .. automodule:: WMArchive.Storage.AvroIO
         :members:
 
+AvroSnappyIO
+------------
+.. automodule:: WMArchive.Storage.AvroSnappyIO
+        :members:
+
 MongoIO
 -------
 .. automodule:: WMArchive.Storage.MongoIO
+        :members:
+
+ElasticSearchIO
+---------------
+.. automodule:: WMArchive.Storage.ElasticSearchIO
         :members:
 
 HdfsIO

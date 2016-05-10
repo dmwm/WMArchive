@@ -41,8 +41,15 @@ def match(rec, spec):
     return False
 
 class MapReduce(object):
-    def __init__(self, spec=None):
-        if  spec:
+    def __init__(self, ispec=None):
+        self.fields = []
+        if  ispec:
+            if  'spec' in ispec:
+                spec = ispec['spec']
+            if  'fields' in ispec:
+                self.fields = ispec['fields']
+            if  'timerange' in spec:
+                del spec['timerange'] # this is not used for record search
             self.spec = parse_spec(spec)
         else:
             self.spec = {}
@@ -67,5 +74,7 @@ class MapReduce(object):
         for rec in records:
             if  rec:
                 nrec += 1
-                out.append(rec)
+                if  self.fields:
+                    fields = [rec[f] for f in self.fields]
+                    out.append(fields)
         return {"nrecords":nrec, "result":out}

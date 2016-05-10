@@ -14,6 +14,7 @@ from __future__ import print_function, division
 # system modules
 import io
 import os
+import json
 import traceback
 
 # avro modules
@@ -26,6 +27,7 @@ from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Utils import wmaHash, open_file, file_name
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+from WMArchive.Tools.diff_avsc2json import RecordValidator
 
 class AvroStorage(Storage):
     "Storage based on Avro file based back-end"
@@ -40,9 +42,40 @@ class AvroStorage(Storage):
             os.makedirs(self.hdir)
         schema_doc = open(schema).read()
         self.schema = avro.schema.parse(schema_doc)
+        self.schema_json = json.loads(schema_doc)
 
     def file_write(self, fname, data):
         "Write documents in append mode to given file name"
+        # perform input data validation
+        good_data = []
+        # write bad data records into output file
+        bdir = '%s/bad' % os.path.dirname(fname)
+        if  not os.path.exists(bdir):
+            os.makedirs(bdir)
+        bfname = '%s/%s_bad.txt' % (bdir, os.path.basename(fname))
+        count = ecount = edocs = 0
+        with open(bfname, 'a') as bstream:
+            for rec in data:
+                validator = RecordValidator()
+                validator.run(self.schema_json, rec)
+                if  validator.errors:
+                    bstream.write(json.dumps(rec)+'\n')
+                    for err in validator.errors:
+                        msg = 'SCHEMA ERROR '
+                        for key, val in err.items():
+                            msg += '%s: %s ' % (key.upper(), json.dumps(val))
+                        bstream.write(msg+'\n')
+                    bstream.write('-------------\n')
+                    ecount += len(validator.errors)
+                    edocs += 1
+                else:
+                    good_data.append(rec)
+                count += 1
+        if  ecount:
+            print("WARNING: received %s docs, found %s bad docs, %s errors, see %s"\
+                    % (count, edocs, ecount, bfname))
+        # use only good portion of the data
+        data = good_data
         try:
             schema = self.schema
             wmaids = []
@@ -55,6 +88,7 @@ class AvroStorage(Storage):
             if  mode == 'a':
                 print("We're unable yet to implement read-write mode with compressed avro files")
                 raise NotImplementedError
+            rec = None # keep doc in case of failure
             with DataFileWriter(open_file(fname, mode), DatumWriter(), schema) as writer:
                 for rec in data:
                     writer.append(rec)
@@ -67,6 +101,8 @@ class AvroStorage(Storage):
             line = ' '.join(str(exc).replace('\n', '').split())
             msg = 'Failure in %s storage, error=%s, exception=%s' \
                     % (self.stype, err, line)
+            msg += ' Failed document: '
+            msg += json.dumps(rec)
             raise WriteError(msg)
 
     def file_read(self, fname):
@@ -92,20 +128,16 @@ class AvroStorage(Storage):
             with DataFileWriter(ostream, DatumWriter(), schema) as writer:
                 writer.append(data)
 
-    def _read(self, query=None):
+    def _read(self, spec, fields=None):
         "Internal read API"
-        if  PAT_UID.match(str(query)): # requested to read concrete file
+        if  PAT_UID.match(str(spec)): # requested to read concrete file
             out = []
-            fname = file_name(self.hdir, query)
+            fname = file_name(self.hdir, spec)
             with open_file(fname) as istream:
                 reader = DataFileReader(istream, DatumReader())
                 for data in reader:
                     if  isinstance(data, list):
                         for rec in data:
-                            self.check(rec)
-                        return data
-                    elif isinstance(data, dict) and 'bulk' in data:
-                        for rec in data['bulk']:
                             self.check(rec)
                         return data
                     self.check(data)

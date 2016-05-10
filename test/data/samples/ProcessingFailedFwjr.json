@@ -1,0 +1,48 @@
+{
+  "PFNArrayRef": [], 
+  "task": "/sryu_ReDigi_3steps_Sryu_reqmgr2_160318_050052_982/StepOneProc/StepOneProcMergeRAWSIMoutput/StepTwoProc/StepTwoProcMergeAODSIMoutput/StepThreeProc", 
+  "skippedFiles": [], 
+  "fallbackFiles": [], 
+  "LFNArray": [], 
+  "meta_data": {
+    "jobstate": "jobfailed", 
+    "ts": 1458291472, 
+    "fwjr_id": "3451-0", 
+    "host": "mac-122010.local", 
+    "agent_ver": "1.0.16.pre1", 
+    "jobtype": "Processing"
+  }, 
+  "steps": [
+    {
+      "status": "Failed", 
+      "errors": [
+        {
+          "type": "99997", 
+          "details": "jobReport with no steps: /data/srv/wmagent/v1.0.14.patch1/install/wmagent/JobCreator/JobCache/sryu_ReDigi_3steps_Sryu_reqmgr2_160318_050052_982/StepOneProc/StepOneProcMergeRAWSIMoutput/StepTwoProc/StepTwoProcMergeAODSIMoutput/StepThreeProc/JobCollection_647_0/job_3451/Report.0.pkl ", 
+          "exitCode": 84
+        }
+      ], 
+      "name": "cmsRun1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": null, 
+      "site": {}, 
+      "analysis": {}, 
+      "start": null, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [], 
+      "logs": {}
+    }
+  ], 
+  "PFNArray": [], 
+  "LFNArrayRef": [
+    "skippedFiles", 
+    "fallbackFiles"
+  ]
+}

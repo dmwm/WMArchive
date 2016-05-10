@@ -1,63 +1,65 @@
-<h5>WMArchive Tools</h5>
+<h3>WMArchive Tools</h3>
 
-Here we outline useful tools used by WMArchive. All tools are written in python
+Here we outline useful tools available in WMArchive. All tools are written in python
 and associative bash wrapper script is provided for each of them (this is
-mostly for convenience, e.g. setup proper PYTHONPATH).
+mostly for convenience, e.g. setup proper PYTHONPATH). Majority of the users
+will only need to use wma_client tool, while advanced users can use either
+myspark (to place Spark jobs) or mrjob (to place MapReduce jobs) tools.
+<br/>
+<br/>
 
 <hr />
 
-<span class="label label-black">dump2hdfs</span>
-tool dumps file into HDFS as is, i.e. it will neither modify file content or
-convert it into Avro format. This is useful to store some files into HDFS, e.g.
-avro schema files.
+<span class="label label-black">wma_client.py</span> tool to query data in WMArchive.
 
 <pre class="alert-success alert">
-dump2hdfs --help
-usage: dump2hdfs [-h] [--fin FIN]
+Usage: wma_client.py [options]
+For more help please visit https://github.com/dmwm/WMArchive/wiki
 
-optional arguments:
-  -h, --help  show this help message and exit
-  --fin FIN   Input avro schema file
+Options:
+  -h, --help         show this help message and exit
+  --verbose=VERBOSE  verbosity level
+  --spec=SPEC        specify query spec file, defalt query.json
+  --host=HOST        host name of WMArchive server, default is
+                     https://vocms013.cern.ch
+  --key=CKEY         specify private key file name, default $X509_USER_PROXY
+  --cert=CERT        specify private certificate file name, default
+                     $X509_USER_PROXY
 </pre>
 
-<span class="label label-black">json2avsc</span>
-tool is designed to convert given JSON data file into Avro schema file.
+<hr />
+
+<span class="label label-black">myspark</span>
+tools can be used to execute python code on Spark platform. End-user is responsible to write his/her own executor (mapper) function.
 
 <pre class="alert-success alert">
-json2avsc --help
-usage: json2avsc [-h] [--fin FIN] [--fout FOUT]
-
-optional arguments:
-  -h, --help   show this help message and exit
-  --fin FIN    Input JSON file
-  --fout FOUT  Output Avro schema file
-</pre>
-
-<span class="label label-black">mongo2hdfs</span>
-tool migrate data from MongoDB into HDFS based on mongodb storage record type, i.e. it reads records with mongodb storage type from MongoDB and dumps them into HDFS. After successful dump it updates MongoDB storage types to hdfsio.
-
-<pre class="alert-success alert">
-mongo2hdfs --help
-usage: mongo2hdfs [-h] [--mongo MURI] [--hdfs HURI]
-
-optional arguments:
-  -h, --help    show this help message and exit
-  --mongo MURI  MongoDB URI
-  --hdfs HURI   HDFS URI
-</pre>
-
-<span class="label label-black">mongocleanup</span>
-performs clean-up of data records in MongoDB. It is based on two factors, first, only records with hdfsio storage type are read and, second, only those which exceeds their lifetime are wiped out from MongoDB.
-
-<pre class="alert-success alert">
-mongocleanup --help
-usage: mongocleanup [-h] [--mongo MURI] [--tstamp TSTAMP]
+myspark --help
+usage: PROG [-h] [--hdir HDIR] [--schema SCHEMA] [--script SCRIPT]
+            [--spec SPEC] [--yarn] [--store STORE] [--wmaid WMAID]
+            [--ckey CKEY] [--cert CERT] [--verbose]
 
 optional arguments:
   -h, --help       show this help message and exit
-  --mongo MURI     MongoDB URI
-  --tstamp TSTAMP  Lifetime timestamp
+  --hdir HDIR      Input data location on HDFS, e.g. hdfs:///path/data
+  --schema SCHEMA  Input schema, e.g. hdfs:///path/fwjr.avsc
+  --script SCRIPT  python script with custom mapper/reducer functions
+  --spec SPEC      json file with query spec
+  --yarn           run job on analytics cluster via yarn resource manager
+  --store STORE    store results into WMArchive, provide WMArchvie url
+  --wmaid WMAID    provide wmaid for store submission
+  --ckey CKEY      specify private key file name, default $X509_USER_PROXY
+  --cert CERT      specify private certificate file name, default
+                   $X509_USER_PROXY
+  --verbose        verbose output
+
+Example: executes Spark job on HDFS with provided script and query JSON file
+myspark --hdir=hdfs:///hdfspath/data
+        --schema=hdfs:///hdfspath/schema.avsc
+        --script=/path/WMArchive/Tools/RecordFinder.py
+        --spec=query.json
 </pre>
+
+<hr />
 
 <span class="label label-black">mrjob</span>
 generates (and optionally executes) MR bash script for end-user.

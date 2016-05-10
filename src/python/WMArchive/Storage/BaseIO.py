@@ -81,21 +81,21 @@ class Storage(object):
                     raise Exception('Data mismatch: %s %s' % (rec1, rec2))
         return wmaids
 
-    def _read(self, query=None):
+    def _read(self, spec, fields=None):
         "Internal read API, should be implemented in subclasses"
         return self.empty_data
 
-    def read(self, spec=None):
+    def read(self, spec, fields=None):
         "Read data from local storage for given spec"
         try:
             if  isinstance(spec, list):
                 out = []
                 for item in spec:
-                    res = self._read(item)
+                    res = self._read(item, fields)
                     if  res and len(res) == 1:
                         out.append(res[0])
                 return out
-            data = self._read(spec)
+            data = self._read(spec, fields)
             return data
         except Exception as exc:
             err = traceback.format_exc(limit=1).splitlines()[-1]

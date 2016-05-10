@@ -1,0 +1,153 @@
+{
+  "PFNArrayRef": [
+    "inputPFNs", 
+    "outputPFNs"
+  ], 
+  "task": "/sryu_MonteCarlo_Sryu_reqmgr2_160318_050144_6584/Production", 
+  "skippedFiles": [], 
+  "fallbackFiles": [], 
+  "LFNArray": [
+    "/store/unmerged/Integ_Test/TTJets_MSDecays_matchingup_7TeV-madgraph/GEN/MonteCarlo_reqmgr2_test-v1/00000/LHEoutput.root", 
+    "/store/unmerged/logs/prod/2016/3/18/sryu_MonteCarlo_Sryu_reqmgr2_160318_050144_6584/Production/0000/0/41ad3360-ecc2-11e5-b4f2-02163e00efd5-4-0-logArchive.tar.gz"
+  ], 
+  "meta_data": {
+    "jobstate": "jobfailed", 
+    "ts": 1458283295, 
+    "fwjr_id": "1257-0", 
+    "host": "mac-122010.local", 
+    "agent_ver": "1.0.16.pre1", 
+    "jobtype": "Production"
+  }, 
+  "steps": [
+    {
+      "status": 1, 
+      "errors": [
+        {
+          "type": "ReportManipulatingError", 
+          "details": "Could not find report file for step stageOut1!", 
+          "exitCode": 99999
+        }
+      ], 
+      "name": "stageOut1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": null, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": null, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [], 
+      "logs": {}
+    }, 
+    {
+      "status": 0, 
+      "errors": [], 
+      "name": "logArch1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": 1458283183, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": 1458283181, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {}, 
+        "memory": {}
+      }, 
+      "output": [
+        {
+          "runs": [], 
+          "inputPFNs": [], 
+          "adler32": "2793ae12", 
+          "inputLFNs": [], 
+          "outputLFNs": [
+            1
+          ], 
+          "outputPFNs": [], 
+          "module_label": "logArchive", 
+          "location": "", 
+          "cksum": "2485028195", 
+          "events": 0, 
+          "merged": false, 
+          "size": 0
+        }
+      ], 
+      "logs": {}
+    }, 
+    {
+      "status": 8001, 
+      "errors": [
+        {
+          "type": "Fatal Exception", 
+          "details": "An exception of category 'ExternalLHEProducer' occurred while\n   [0] Processing run: 1\n   [1] Running path 'lhe_step'\n   [2] Calling beginRun for module ExternalLHEProducer/'externalLHEProducer'\nException Message:\nChild failed with exit code 2.", 
+          "exitCode": "8001"
+        }, 
+        {
+          "type": "CMSExeption", 
+          "details": "Exit 8001: CMSExeption Exception from cmsRun\n Adding last ten lines of CMSSW stderr:\nWARNING: In non-interactive mode release checks e.g. deprecated releases, production architectures are disabled.\nWARNING: There already exists /pool/grid/cmsplt04/home_cream_720422223/CREAM720422223/glide_JrrbYI/execute/dir_9971/job/WMTaskSpace/cmsRun1/CMSSW_5_3_19 area for SCRAM_ARCH slc6_amd64_gcc472.\n\n Adding last ten lines of CMSSW stdout:\nWARNING: In non-interactive mode release checks e.g. deprecated releases, production architectures are disabled.\nWARNING: There already exists /pool/grid/cmsplt04/home_cream_720422223/CREAM720422223/glide_JrrbYI/execute/dir_9971/job/WMTaskSpace/cmsRun1/CMSSW_5_3_19 area for SCRAM_ARCH slc6_amd64_gcc472.\n", 
+          "exitCode": 8001
+        }
+      ], 
+      "name": "cmsRun1", 
+      "parameters": {}, 
+      "input": [], 
+      "stop": null, 
+      "site": "T2_CH_CERN", 
+      "analysis": {}, 
+      "start": 1458283144, 
+      "cleanup": {}, 
+      "performance": {
+        "multicore": {}, 
+        "storage": {}, 
+        "cpu": {
+          "TotalJobCPU": 0.32795, 
+          "AvgEventCPU": -1.0, 
+          "MaxEventCPU": 0.0, 
+          "AvgEventTime": -1.0, 
+          "MinEventCPU": 0.0, 
+          "TotalEventCPU": 0.0, 
+          "TotalJobTime": 12.2269, 
+          "MinEventTime": 0.0, 
+          "MaxEventTime": 0.0
+        }, 
+        "memory": {
+          "PeakValueRss": 0.0, 
+          "PeakValueVsize": 0.0
+        }
+      }, 
+      "output": [
+        {
+          "runs": [], 
+          "inputPFNs": [], 
+          "ouput_module_class": "PoolOutputModule", 
+          "branch_hash": "377789ad04112acdb0f63bb42001606d", 
+          "outputLFNs": [
+            0
+          ], 
+          "catalog": "", 
+          "module_label": "LHEoutput", 
+          "inputLFNs": [], 
+          "guid": "5812542A-D4EC-E511-9A28-02163E017973", 
+          "events": 0, 
+          "outputPFNs": []
+        }
+      ], 
+      "logs": {}
+    }
+  ], 
+  "PFNArray": [], 
+  "LFNArrayRef": [
+    "fallbackFiles", 
+    "outputLFNs", 
+    "skippedFiles", 
+    "inputLFNs"
+  ]
+}
