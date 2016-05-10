@@ -15,7 +15,7 @@ wmaroot=`python -c "import WMArchive; print '/'.join(WMArchive.__file__.split('/
 
 # set avro jars
 avrojar=/usr/lib/avro/avro-mapred.jar
-sparkexjar=/usr/lib/spark/examples/lib/spark-examples-1.3.0-cdh5.4.2-hadoop2.6.0-cdh5.4.2.jar
+sparkexjar=/usr/lib/spark/examples/lib/spark-examples-1.6.0-cdh5.7.0-hadoop2.6.0-cdh5.7.0.jar
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "-help" ]; then
     # run help

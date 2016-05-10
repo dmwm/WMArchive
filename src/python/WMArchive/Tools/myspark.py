@@ -60,8 +60,6 @@ class OptionParser():
                                default=x509(), dest="cert", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
-        self.parser.add_argument("--yarn", action="store_true",
-            dest="yarn", default=False, help="true if yarn mode is enabled")
 
 def x509():
     "Helper function to get x509 either from env or tmp file"
