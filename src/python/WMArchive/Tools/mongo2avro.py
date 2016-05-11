@@ -89,7 +89,16 @@ def file_name(odir, mdir, thr, compress):
         os.mkdir(mdir)
     except OSError:
         pass
+
+    # move files into migration area
     shutil.move(fname, mdir)
+
+    # remove bad file (see AvroIO.py) associated with fname
+    bfname = os.path.join(odir, 'bad/%s_bad.txt' % fname)
+    if  os.path.isfile(bfname):
+        bfsize = os.path.getsize(bfname)
+        if  not bfsize:
+            os.remove(bfname)
     return file_name(odir, mdir, thr, compress)
 
 def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
@@ -103,12 +112,10 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
     mdocs = mstg.find(query, None) # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
-    files = set()
     wmaids = []
     total = 0
     fsize = 0
     fname = file_name(odir, mdir, thr, compress)
-    files.add(fname)
     while True:
         data = [r for r in itertools.islice(mdocs, chunk)]
         total += len(data)
@@ -124,30 +131,22 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
             spec = {'$set' : {'stype': astg.stype}}
             mstg.update(ids, spec)
 
-        if  verbose:
+        try:
             if  PSUTIL:
-		pid = os.getpid()
-		proc = psutil.Process(pid)
-		mem = proc.memory_info_ex()
+                pid = os.getpid()
+                proc = psutil.Process(pid)
+                mem = proc.memory_info_ex()
                 rss = 'RSS:%s' % size_format(mem.rss)
             else:
                 rss = ''
-            print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
-                    % (len(wmaids), fname, size_format(fsize), fsize, rss))
+        except:
+            rss = ''
+        print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
+                % (len(wmaids), fname, size_format(fsize), fsize, rss))
         fname = file_name(odir, mdir, thr, compress)
-        files.add(fname)
     print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
-    for fname in files:
-        print(tstamp('mongo2avro'), "%s %s (%s bytes)" \
-                % (fname, size_format(fsize), fsize))
-
-    # remove bad files (if any, see AvroIO.py)
-    for fname in files:
-        bfname = os.path.join(odir, 'bad/%_bad.txt' % fname)
-        if  os.path.isfile(bfname):
-            bfsize = os.path.getsize(bfname)
-            if  not bfsize:
-                os.remove(bfname)
+    print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes)" \
+            % (len(wmaids), fname, size_format(fsize), fsize))
 
 def main():
     "Main function"
