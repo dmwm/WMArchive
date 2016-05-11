@@ -142,11 +142,11 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
         except:
             rss = ''
         print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
-                % (len(wmaids), fname, size_format(fsize), fsize, rss))
+                % (len(ids), fname, size_format(fsize), fsize, rss))
         fname = file_name(odir, mdir, thr, compress)
-    print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
     print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes)" \
-            % (len(wmaids), fname, size_format(fsize), fsize))
+            % (len(ids), fname, size_format(fsize), fsize))
+    print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
 
 def main():
     "Main function"
