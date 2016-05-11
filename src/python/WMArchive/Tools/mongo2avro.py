@@ -103,11 +103,15 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
     mdocs = mstg.find(query, None) # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
+    files = set()
     wmaids = []
+    total = 0
     fsize = 0
     fname = file_name(odir, mdir, thr, compress)
+    files.add(fname)
     while True:
         data = [r for r in itertools.islice(mdocs, chunk)]
+        total += len(data)
         if  not len(data):
             break
         ids = astg.file_write(fname, data)
@@ -125,19 +129,23 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
             print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
                     % (len(wmaids), fname, size_format(fsize), fsize, rss))
         fname = file_name(odir, mdir, thr, compress)
-    print(tstamp('mongo2avro'), "wrote %s docs %s %s (%s bytes)" \
-            % (len(wmaids), fname, size_format(fsize), fsize))
+        files.add(fname)
+    print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
+    for fname in files:
+        print(tstamp('mongo2avro'), "%s %s (%s bytes)" \
+                % (fname, size_format(fsize), fsize))
 
     # update status attributes of docs in MongoDB
     spec = {'$set' : {'stype': astg.stype}}
     mstg.update(wmaids, spec)
 
     # remove bad files (if any, see AvroIO.py)
-    bfname = os.path.join(odir, 'bad/%_bad.txt' % fname)
-    if  os.path.isfile(bfname):
-        bfsize = os.path.getsize(bfname)
-        if  not bfsize:
-            os.remove(bfname)
+    for fname in files:
+        bfname = os.path.join(odir, 'bad/%_bad.txt' % fname)
+        if  os.path.isfile(bfname):
+            bfsize = os.path.getsize(bfname)
+            if  not bfsize:
+                os.remove(bfname)
 
 def main():
     "Main function"
