@@ -162,9 +162,9 @@ def cleanup(muri, tst, stype):
     # remove records whose type is hdfsio, i.e. already migrated to HDFS,
     # and whose time stamp is less than provided one
     query = {'stype': stype, 'wmats':{'$lt': dateformat(tst)}}
-    ndocs = mstg.ndocs()
+    rdocs = mstg.ndocs(query)
     tdocs = time.time()-time0
-    print(tstamp('mongo2avro'), 'found %s docs (in %s) to be removed' % (ndocs, elapsed_time(time0)))
+    print(tstamp('mongo2avro'), 'found %s docs (in %s) to be removed' % (rdocs, elapsed_time(time0)))
     time0 = time.time()
     response = mstg.remove(query)
     print(tstamp('mongo2avro'), 'remove query %s in %s' % (query, elapsed_time(time0)))
