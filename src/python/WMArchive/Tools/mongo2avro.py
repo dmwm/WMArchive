@@ -100,14 +100,16 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
 
     # read data from MongoDB, returned mdocs is generator type
     query = {'stype': mstg.stype}
-    mdocs = [r for r in mstg.find(query, None)] # with no fields we'll get entire docs
+    mdocs = mstg.find(query, None) # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
     wmaids = []
     fsize = 0
     fname = file_name(odir, mdir, thr, compress)
-    for idx in range(0, len(mdocs), chunk):
-        data = mdocs[idx:idx+chunk]
+    while True:
+        data = [r for r in itertools.islice(mdocs, chunk)]
+        if  not len(data):
+            break
         ids = astg.file_write(fname, data)
         if  os.path.isfile(fname):
             fsize = os.path.getsize(fname)
