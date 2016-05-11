@@ -117,6 +117,10 @@ class MongoStorage(Storage):
             return self.coll.find(spec, fields)
         return self.coll.find(spec)
 
+    def ndocs(self, spec):
+        "Return number of documents for given spec"
+        return self.coll.find(spec).count()
+
     def update(self, ids, spec):
         "Update documents with given set of document ids and update spec"
         if  len(ids) > self.chunk_size:

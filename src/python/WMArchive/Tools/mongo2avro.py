@@ -19,6 +19,7 @@ import time
 import shutil
 import argparse
 import itertools
+import threading
 
 # try to use psutil for memory monitoring
 PSUTIL = False
@@ -32,6 +33,7 @@ except ImportError:
 from WMArchive.Storage.MongoIO import MongoStorage
 from WMArchive.Storage.AvroIO import AvroStorage
 from WMArchive.Utils.Utils import size_format, tstamp
+from WMArchive.Utils.Utils import dateformat, elapsed_time
 
 class OptionParser(object):
     "User based option parser"
@@ -55,8 +57,15 @@ class OptionParser(object):
         self.parser.add_argument("--chunk", action="store", type=int,\
             dest="chunk", default=chunk,\
             help="Chunk size for reading Mongo docs, default %s" % chunk)
-        self.parser.add_argument("--verbose", action="store_true",\
-            dest="verbose", default=False, help="Verbose output")
+        sleep = 600
+        self.parser.add_argument("--sleep", action="store", type=int, \
+            dest="sleep", default=sleep, help="Sleep interval, default %s seconds" % sleep)
+        self.parser.add_argument("--tstamp", action="store",\
+            dest="tstamp", default="",\
+            help="timestamp below which records will be removed, YYYYMMDD \
+            or number with suffix 'd' for days")
+        self.parser.add_argument("--stype", action="store",\
+            dest="stype", default="avroio", help="Record storage type to clean-up, default avroio")
 
 def gen_file_name(odir, compress=''):
     "Generate new file name in given odir"
@@ -101,7 +110,7 @@ def file_name(odir, mdir, thr, compress):
             os.remove(bfname)
     return file_name(odir, mdir, thr, compress)
 
-def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
+def migrate(muri, odir, mdir, avsc, thr, compress, chunk):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
     mstg = MongoStorage(muri)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
@@ -146,14 +155,64 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
         fname = file_name(odir, mdir, thr, compress)
     print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
 
+def cleanup(muri, tst, stype):
+    "Cleanup data in MongoDB (muri) for given timestamp (tst)"
+    time0 = time.time()
+    mstg = MongoStorage(muri)
+    # remove records whose type is hdfsio, i.e. already migrated to HDFS,
+    # and whose time stamp is less than provided one
+    query = {'stype': stype, 'wmats':{'$lt': dateformat(tst)}}
+    ndocs = mstg.ndocs()
+    tdocs = time.time()-time0
+    print(tstamp('mongo2avro'), 'found %s docs (in %s) to be removed' % (ndocs, elapsed_time(time0)))
+    time0 = time.time()
+    response = mstg.remove(query)
+    print(tstamp('mongo2avro'), 'remove query %s in %s' % (query, elapsed_time(time0)))
+
+def daemon(name, opts):
+    "Daemon function"
+    thr = opts.thr*1024*1024 # convert input in MB into bytes
+    while True:
+        print(tstamp(name), 'Migrate mongodb records to avro files')
+        migrate(opts.muri, opts.odir, opts.mdir, \
+                opts.schema, thr, opts.compress, opts.chunk)
+
+        print(tstamp(name), 'Cleanup MongoDB')
+        cleanup(opts.muri, opts.tstamp, opts.stype)
+        time.sleep(opts.sleep)
+
+def start_new_thread(name, func, args):
+    "Wrapper around standard thread.strart_new_thread call"
+    threads = threading.enumerate()
+    threads.sort()
+    for thr in threads:
+	if  name == thr.name:
+	    return thr
+    thr = threading.Thread(target=func, name=name, args=args)
+    thr.daemon = True
+    thr.start()
+    return thr
+
+def monitor(name, func, args):
+    "Monitor thread for given name/func/args"
+    while True:
+        threads = threading.enumerate()
+        threads.sort()
+        found = False
+        for thr in threads:
+            if  name == thr.name:
+                found = True
+                break
+        if  not found:
+            print(tstamp('WARNING'), 'mongo2avro thread was not found, start new one')
+            start_new_thread(name, func, (name, args))
+        time.sleep(5)
+
 def main():
     "Main function"
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
-    thr = opts.thr*1024*1024 # convert input in MB into bytes
-    migrate(opts.muri, opts.odir, opts.mdir, \
-            opts.schema, thr, opts.compress, \
-            opts.chunk, opts.verbose)
+    monitor('mongo2avro', daemon, opts)
 
 if __name__ == '__main__':
     main()
