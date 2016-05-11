@@ -94,7 +94,7 @@ def file_name(odir, mdir, thr, compress):
     shutil.move(fname, mdir)
 
     # remove bad file (see AvroIO.py) associated with fname
-    bfname = os.path.join(odir, 'bad/%s_bad.txt' % fname)
+    bfname = '%s/bad/%s_bad.txt' % (os.path.dirname(fname), os.path.basename(fname))
     if  os.path.isfile(bfname):
         bfsize = os.path.getsize(bfname)
         if  not bfsize:
@@ -144,8 +144,6 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
         print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
                 % (len(ids), fname, size_format(fsize), fsize, rss))
         fname = file_name(odir, mdir, thr, compress)
-    print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes)" \
-            % (len(ids), fname, size_format(fsize), fsize))
     print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
 
 def main():
