@@ -118,6 +118,12 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
         if  os.path.isfile(fname):
             fsize = os.path.getsize(fname)
         wmaids += ids
+
+        if  ids:
+            # update status attributes of docs in MongoDB
+            spec = {'$set' : {'stype': astg.stype}}
+            mstg.update(ids, spec)
+
         if  verbose:
             if  PSUTIL:
 		pid = os.getpid()
@@ -134,10 +140,6 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, verbose):
     for fname in files:
         print(tstamp('mongo2avro'), "%s %s (%s bytes)" \
                 % (fname, size_format(fsize), fsize))
-
-    # update status attributes of docs in MongoDB
-    spec = {'$set' : {'stype': astg.stype}}
-    mstg.update(wmaids, spec)
 
     # remove bad files (if any, see AvroIO.py)
     for fname in files:
