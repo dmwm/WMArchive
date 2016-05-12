@@ -216,7 +216,8 @@ def main():
     "Main function"
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
-    monitor('mongo2avro', daemon, opts)
+#     monitor('mongo2avro', daemon, opts)
+    daemon('mongo2avro', opts)
 
 if __name__ == '__main__':
     main()
