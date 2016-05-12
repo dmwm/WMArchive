@@ -139,7 +139,9 @@ class WMArchiveManager(object):
             data = []
             status = 'write error'
         except Exception as exp:
-            print(tstamp("WMArchiveManager::write"), "fail with %s" % str(exp))
+            print(tstamp("WMArchiveManager::write"), \
+                    "exception: %s" % str(exp), \
+                    "input data: %s %s" % (data, type(data)))
             status = 'fail'
             ids = []
         result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
