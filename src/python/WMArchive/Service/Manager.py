@@ -17,6 +17,7 @@ from __future__ import print_function, division
 # system modules
 import os
 import time
+import traceback
 
 # WMArchive modules
 from WMArchive.Service.STS import STSManager
@@ -139,9 +140,8 @@ class WMArchiveManager(object):
             data = []
             status = 'write error'
         except Exception as exp:
-            print(tstamp("WMArchiveManager::write"), \
-                    "exception: %s" % str(exp), \
-                    "input data: %s %s" % (data, type(data)))
+            print(tstamp("WMArchiveManager::write"), "exception: %s" % str(exp))
+            traceback.print_exc()
             status = 'fail'
             ids = []
         result = {'stype': self.sts.stype, 'ids': ids, 'status': status}

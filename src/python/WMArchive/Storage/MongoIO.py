@@ -84,6 +84,7 @@ class MongoStorage(Storage):
                 count_dup += 1
             except Exception as exp:
                 raise WriteError(str(exp))
+        if  nres and isinstance(nres, list):
             total += len(nres)
         if  total != len(wmaids) or count_dup or count_inv:
             msg = 'unable to insert all records, given %s, inserted %s, duplicates %s, invalid %s' \
