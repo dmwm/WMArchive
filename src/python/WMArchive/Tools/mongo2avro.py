@@ -177,13 +177,13 @@ def daemon(name, opts):
     "Daemon function"
     thr = opts.thr*1024*1024 # convert input in MB into bytes
     while True:
+        time.sleep(opts.sleep)
         print(tstamp(name), 'Migrate mongodb records to avro files')
         migrate(opts.muri, opts.odir, opts.mdir, \
                 opts.schema, thr, opts.compress, opts.chunk)
 
         print(tstamp(name), 'Cleanup MongoDB')
         cleanup(opts.muri, opts.tstamp, opts.stype)
-        time.sleep(opts.sleep)
 
 def start_new_thread(name, func, args):
     "Wrapper around standard thread.strart_new_thread call"
