@@ -100,7 +100,11 @@ def file_name(odir, mdir, thr, compress):
         pass
 
     # move files into migration area
-    shutil.move(fname, mdir)
+    bname = os.path.basename(fname).split('.')[0]
+    tname = name = time.strftime("%H%M%S", time.gmtime())
+    nname = os.path.join(mdir, '%s_%s.avro' % (bname, tname))
+    print(tstamp('mongo2avro'), 'mv %s %s' % (fname, nname))
+    shutil.move(fname, nname)
 
     # remove bad file (see AvroIO.py) associated with fname
     bfname = '%s/bad/%s_bad.txt' % (os.path.dirname(fname), os.path.basename(fname))
