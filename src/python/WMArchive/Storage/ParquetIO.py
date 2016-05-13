@@ -23,6 +23,6 @@ class ParquetIO(object):
             raise Exception("Both Spark Context and SQLContext have to be available")
         jsonDocsDF = self.sqlc.jsonRDD(self.sc.parallelize([json.dumps(j) for j in data]))
         if repartitionNumber:
-            jsonDocsDF.repartition(repartitionNumber).saveAsParquetFile(fname)
+            jsonDocsDF.repartition(repartitionNumber).write.parquet(fname)
         else:
-            jsonDocsDF.saveAsParquetFile(fname)
+            jsonDocsDF.write.parquet(fname)

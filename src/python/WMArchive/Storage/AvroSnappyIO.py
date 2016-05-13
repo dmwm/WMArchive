@@ -22,7 +22,7 @@ Usage      : this code can be used as following, write a script as:
         avro_snappy_IO.file_write("test-json2avro-snappy",fwjr_array, 1)
 To run the code use the following
 ``spark-submit \
-    --packages com.databricks:spark-avro_2.10:1.0.0 \
+    --packages com.databricks:spark-avro_2.10:2.0.1 \
     --jars /usr/lib/avro/avro-mapred-hadoop2.jar \
     test_snappy.py``
 """
@@ -34,12 +34,13 @@ class AvroSnappyIO(object):
         self.sqlc = sparkSQLContext
         self.sc = sparkContext
 
-    def file_write(self, fname, data, repartitionNumber=None):
+    def file_write(self, fname, data, repartitionNumber=None, write_mode="append"):
         """
         fname: output folder name, usually a HDFS path
         data: an array of JSONs
         repartitionNumer: [optional] the number of partitions used to write the output file
         """
+        print "PRINTINGGG"
         if not self.sqlc or not self.sc:
             raise Exception("Both Spark Context and SQLContext must be available")
         jsonDocsDF = self.sqlc.jsonRDD(self.sc.parallelize([json.dumps(j) for j in data]))
@@ -47,6 +48,6 @@ class AvroSnappyIO(object):
         if repartitionNumber:
             if repartitionNumber < 1:
                 repartitionNumber = 1
-            jsonDocsDF.repartition(repartitionNumber).save(fname, "com.databricks.spark.avro")
+            jsonDocsDF.repartition(repartitionNumber).write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
         else:
-            jsonDocsDF.save(fname, "com.databricks.spark.avro")
+            jsonDocsDF.write.mode(write_mode).format("com.databricks.spark.avro").save(fname)
