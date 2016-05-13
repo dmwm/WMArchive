@@ -193,8 +193,8 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
     logger = SparkLogger(ctx)
     if  not verbose:
         logger.set_level('ERROR')
-    if  yarn:
-	logger.info("YARN client mode enabled")
+    if yarn:
+        logger.info("YARN client mode enabled")
 
     # load FWJR schema
     rdd = ctx.textFile(schema_file, 1).collect()
