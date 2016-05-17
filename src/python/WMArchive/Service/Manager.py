@@ -45,6 +45,14 @@ def use_lts(trange, thr):
         return True
     return False
 
+def extractFWJRids(docs):
+    "Extract from given list of docs FWJR ids"
+    ids = []
+    for row in docs:
+        meta = row.get('meta_data', {})
+        ids.append(meta.get('fwjr_id', -1))
+    return ids
+
 class WMArchiveManager(object):
     """
     Initialize WMArchive proxy server configuration. The given configuration
@@ -124,11 +132,12 @@ class WMArchiveManager(object):
         Write given data chunk (list of WM documents) into proxy server.
         Return true or false of write operation.
         """
+        reason = ''
         status = 'ok'
         ids = []
+        if  isinstance(data, dict):
+            data = [data]
         try:
-            if  isinstance(data, dict):
-                data = [data]
             if  not isinstance(data, list):
                 raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
             docs = [r for r in self.encode(data)]
@@ -136,15 +145,20 @@ class WMArchiveManager(object):
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
         except WriteError as exp:
-            print(exp)
-            data = []
-            status = 'write error'
+            reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
+            print(reason)
+            traceback.print_exc()
+            ids = extractFWJRids(data)
+            status = 'WriteError'
         except Exception as exp:
-            print(tstamp("WMArchiveManager::write"), "exception: %s" % str(exp))
+            reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
+            print(reason)
             traceback.print_exc()
             status = 'fail'
-            ids = []
+            ids = extractFWJRids(data)
         result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
+        if  reason:
+            result['reason'] = reason
         return result
 
     def read(self, spec, fields):
@@ -189,14 +203,17 @@ class WMArchiveManager(object):
             # request data from back-end
             data = mgr.read(spec, fields)
         except ReadError as exp:
-            print(exp)
+            print(tstamp("WMArchiveManager::read"), "exception: %s" % str(exp))
+            traceback.print_exc()
             data = []
-            status = 'read error'
+            status = 'ReadError'
+            reason = error
         except Exception as exp:
+            print(tstamp("WMArchiveManager::read"), "exception: %s" % str(exp))
+            traceback.print_exc()
             data = []
-            print(tstamp("WMArchiveManager::read"), "fail with %s" % str(exp))
-            reason = str(exp)
             status = 'fail'
+            reason = str(exp)
         result['data'] = data
         result['status'] = status
         if  reason:
