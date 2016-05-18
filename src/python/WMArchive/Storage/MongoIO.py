@@ -62,6 +62,15 @@ class MongoStorage(Storage):
         "convert input spec/fields into ones suitable for MognoDB QL"
         return spec, fields
 
+    def find_duplicates(self, wmaids):
+        "Find duplicate FWJR ids from collection of docs"
+        spec = {'wmaid':{'$in':wmaids}}
+        fields = ['meta_data']
+        fwjr_ids = []
+        for doc in self.coll.find(spec, fields):
+            fwjr_ids.append(doc['meta_data']['fwjr_id'])
+        return fwjr_ids
+
     def write(self, data, safe=None):
         "Write API, return ids of stored documents"
         if  not isinstance(data, list):
@@ -90,6 +99,8 @@ class MongoStorage(Storage):
             msg = 'unable to insert all records, given %s, inserted %s, duplicates %s, invalid %s' \
                     % (len(wmaids), total, count_dup, count_inv)
             self.log('WARNING %s' % msg)
+            if  count_dup:
+                self.log("DUPLICATES %s" % find_duplicates(wmaids))
         return wmaids
 
     def read(self, spec, fields=None):
