@@ -152,14 +152,14 @@ class WMArchiveManager(object):
             print(reason)
             traceback.print_exc()
             ids = extractFWJRids(data)
-            raise HTTPError(400, 'WMArhchive WriteError, ids=%s, exception=%s'\
+            raise HTTPError(500, 'WMArhchive WriteError, ids=%s, exception=%s'\
                     % (ids, str(exp))
         except Exception as exp:
             reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
             print(reason)
             traceback.print_exc()
             ids = extractFWJRids(data)
-            raise HTTPError(400, 'WMArhchive WriteError, ids=%s, exception=%s'\
+            raise HTTPError(500, 'WMArhchive exception, ids=%s, exception=%s'\
                     % (ids, str(exp))
         result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
         if  reason:
