@@ -11,6 +11,7 @@ Description: WMArchive Mongo storage client
 from __future__ import print_function, division
 
 # system modules
+import json
 import traceback
 
 # Mongo modules
@@ -23,6 +24,18 @@ from bson.son import SON
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+
+def set_duplicates(docs):
+    "Return duplicates FWJR ids within given set of docs"
+    fwjrids = []
+    for rec in docs:
+        if  isinstance(rec, dict):
+            fid = rec.get('meta_data', {}).get('fwjr_id', -1)
+        else:
+            fid = -1
+        fwjrids.append(fid)
+    dups = set([x for x in fwjrids if fwjrids.count(x) > 1])
+    return list(dups)
 
 class WMASONManipulator(SONManipulator):
     """WMArchive MongoDB SON manipulator"""
@@ -79,28 +92,27 @@ class MongoStorage(Storage):
         if  isinstance(data[0], dict) and data[0].get('dtype', None) == 'job':
             coll = self.jobs
         wmaids = self.getids(data)
-        total = nres = count_dup = count_inv = 0
+        uniqids = set(wmaids)
+        sts_dup = self.find_duplicates(wmaids)
+        if  len(wmaids) != len(uniqids):
+            set_dup = set_duplicates(data)
+            self.log("WARNING, found %s duplicates in given docs, FWJR ids %s, given %s, unique %s" \
+                    % ( len(wmaids)-len(uniqids), json.dumps(set_dup), len(wmaids), len(set(wmaids)) ) )
+        if  sts_dup:
+            self.log("WARNING, found %s duplicates in STS, FWJR ids %s" \
+                    % (len(sts_dup), json.dumps(sts_dup)))
         for idx in range(0, len(data), self.chunk_size):
             docs = data[idx:idx+self.chunk_size]
             try:
-                nres = self.coll.insert(docs, continue_on_error=True)
+                self.coll.insert(docs, continue_on_error=True)
             except InvalidDocument as exp:
-                count_inv += 1
                 self.log('WARNING InvalidDocument: %s' % str(exp))
             except InvalidOperation as exp:
                 self.log('WARNING InvalidOperation: %s' % str(exp))
             except DuplicateKeyError as exp:
-                count_dup += 1
+                pass
             except Exception as exp:
                 raise WriteError(str(exp))
-        if  nres and isinstance(nres, list):
-            total += len(nres)
-        if  total != len(wmaids) or count_dup or count_inv:
-            msg = 'unable to insert all records, given %s, inserted %s, duplicates %s, invalid %s' \
-                    % (len(wmaids), total, count_dup, count_inv)
-            self.log('WARNING %s' % msg)
-            if  count_dup:
-                self.log("DUPLICATES %s" % self.find_duplicates(wmaids))
         return wmaids
 
     def read(self, spec, fields=None):
