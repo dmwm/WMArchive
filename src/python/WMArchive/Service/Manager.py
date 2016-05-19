@@ -50,11 +50,13 @@ def use_lts(trange, thr):
 
 def extractFWJRids(docs):
     "Extract from given list of docs FWJR ids"
-    ids = []
-    for row in docs:
-        meta = row.get('meta_data', {})
-        ids.append(meta.get('fwjr_id', -1))
-    return ids
+    if  isinstance(docs, list):
+        ids = []
+        for row in docs:
+            meta = row.get('meta_data', {})
+            ids.append(meta.get('fwjr_id', -1))
+        return ids
+    return docs
 
 class WMArchiveManager(object):
     """
@@ -142,7 +144,7 @@ class WMArchiveManager(object):
             data = [data]
         try:
             if  not isinstance(data, list):
-                raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
+                raise HTTPError(500, "WMArchive exception, invalid data format: %s" % type(data))
             docs = [r for r in self.encode(data)]
             ids = self.sts.write(docs)
             if  not ids and len(data): # somehow we got empty list for given data
@@ -153,14 +155,14 @@ class WMArchiveManager(object):
             traceback.print_exc()
             ids = extractFWJRids(data)
             raise HTTPError(500, 'WMArhchive WriteError, ids=%s, exception=%s'\
-                    % (ids, str(exp))
+                    % (ids, str(exp)))
         except Exception as exp:
             reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
             print(reason)
             traceback.print_exc()
             ids = extractFWJRids(data)
             raise HTTPError(500, 'WMArhchive exception, ids=%s, exception=%s'\
-                    % (ids, str(exp))
+                    % (ids, str(exp)))
         result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
         if  reason:
             result['reason'] = reason
