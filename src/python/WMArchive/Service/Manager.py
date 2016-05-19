@@ -19,6 +19,9 @@ import os
 import time
 import traceback
 
+# cherrypy modules
+from cherrypy import HTTPError
+
 # WMArchive modules
 from WMArchive.Service.STS import STSManager
 try:
@@ -47,11 +50,16 @@ def use_lts(trange, thr):
 
 def extractFWJRids(docs):
     "Extract from given list of docs FWJR ids"
-    ids = []
-    for row in docs:
-        meta = row.get('meta_data', {})
-        ids.append(meta.get('fwjr_id', -1))
-    return ids
+    if  isinstance(docs, list):
+        ids = []
+        for row in docs:
+            if  isinstance(row, dict):
+                meta = row.get('meta_data', {})
+                ids.append(meta.get('fwjr_id', -1))
+            else:
+                ids.append(row)
+        return ids
+    return docs
 
 class WMArchiveManager(object):
     """
@@ -139,7 +147,7 @@ class WMArchiveManager(object):
             data = [data]
         try:
             if  not isinstance(data, list):
-                raise Exception("WMArchiveManager::write, Invalid data format: %s" % type(data))
+                raise HTTPError(500, "WMArchive exception, invalid data format: %s" % type(data))
             docs = [r for r in self.encode(data)]
             ids = self.sts.write(docs)
             if  not ids and len(data): # somehow we got empty list for given data
@@ -149,13 +157,15 @@ class WMArchiveManager(object):
             print(reason)
             traceback.print_exc()
             ids = extractFWJRids(data)
-            status = 'WriteError'
+            raise HTTPError(500, 'WMArhchive WriteError, ids=%s, exception=%s'\
+                    % (ids, str(exp)))
         except Exception as exp:
             reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
             print(reason)
             traceback.print_exc()
-            status = 'fail'
             ids = extractFWJRids(data)
+            raise HTTPError(500, 'WMArhchive exception, ids=%s, exception=%s'\
+                    % (ids, str(exp)))
         result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
         if  reason:
             result['reason'] = reason
@@ -173,16 +183,12 @@ class WMArchiveManager(object):
             try:
                 trange = spec.pop('timerange')
             except KeyError:
-                print(tstamp("WMArchiveManager::read"), "timerange is not provided")
-                result['reason'] = 'No timerange is provided, please adjust your query spec'
-                result['status'] = 'fail'
-                return result
+                print(tstamp("WMArchiveManager::read"), "timerange is not provided in spec", spec)
+                raise HTTPError(400, 'WMArhchive no timerange, spec=%s' % spec)
 
             if  trange_check(trange):
                 print(tstamp("WMArchiveManager::read"), "bad timerange: %s" % trange)
-                result['reason'] = 'Unable to parse timerange, should be [YYYYMMDD, YYYYMMDD]'
-                result['status'] = 'fail'
-                return result
+                raise HTTPError(400, 'WMArhchive unable to parse timerange, spec=%s' % spec)
 
             # based on given time range define which manager
             # we'll use for data look-up
@@ -205,15 +211,11 @@ class WMArchiveManager(object):
         except ReadError as exp:
             print(tstamp("WMArchiveManager::read"), "exception: %s" % str(exp))
             traceback.print_exc()
-            data = []
-            status = 'ReadError'
-            reason = error
+            raise HTTPError(400, 'WMArhchive ReadError, exception %s' % str(exp))
         except Exception as exp:
             print(tstamp("WMArchiveManager::read"), "exception: %s" % str(exp))
             traceback.print_exc()
-            data = []
-            status = 'fail'
-            reason = str(exp)
+            raise HTTPError(400, 'WMArhchive exception %s' % str(exp))
         result['data'] = data
         result['status'] = status
         if  reason:

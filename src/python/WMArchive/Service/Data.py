@@ -114,9 +114,11 @@ class WMAData(RESTEntity):
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
             return results(result)
+        except cherrypy.HTTPError:
+            raise
         except Exception as exp:
             traceback.print_exc()
-            raise cherrypy.HTTPError(str(exp))
+            raise cherrypy.HTTPError()
 
     @restcall(formats=[('application/json', JSONFormat())])
     @tools.expires(secs=-1)
@@ -137,6 +139,8 @@ class WMAData(RESTEntity):
             if  isinstance(result, GeneratorType):
                 result = [r for r in result]
             return results(result)
+        except cherrypy.HTTPError:
+            raise
         except Exception as exp:
             traceback.print_exc()
-            raise cherrypy.HTTPError(str(exp))
+            raise cherrypy.HTTPError()
