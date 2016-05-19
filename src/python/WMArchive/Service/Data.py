@@ -118,7 +118,7 @@ class WMAData(RESTEntity):
             raise
         except Exception as exp:
             traceback.print_exc()
-            raise cherrypy.HTTPError(500, str(exp))
+            raise cherrypy.HTTPError()
 
     @restcall(formats=[('application/json', JSONFormat())])
     @tools.expires(secs=-1)
@@ -143,4 +143,4 @@ class WMAData(RESTEntity):
             raise
         except Exception as exp:
             traceback.print_exc()
-            raise cherrypy.HTTPError(500, str(exp))
+            raise cherrypy.HTTPError()
