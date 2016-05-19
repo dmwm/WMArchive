@@ -100,7 +100,7 @@ class MongoStorage(Storage):
                     % (len(wmaids), total, count_dup, count_inv)
             self.log('WARNING %s' % msg)
             if  count_dup:
-                self.log("DUPLICATES %s" % find_duplicates(wmaids))
+                self.log("DUPLICATES %s" % self.find_duplicates(wmaids))
         return wmaids
 
     def read(self, spec, fields=None):
