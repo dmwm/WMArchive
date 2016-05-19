@@ -81,7 +81,7 @@ class MongoStorage(Storage):
         fields = ['meta_data']
         fwjr_ids = []
         for doc in self.coll.find(spec, fields):
-            fwjr_ids.append(doc['meta_data']['fwjr_id'])
+            fwjr_ids.append(doc['meta_data'])
         return fwjr_ids
 
     def write(self, data, safe=None):
@@ -99,8 +99,9 @@ class MongoStorage(Storage):
             self.log("WARNING, found %s duplicates in given docs, FWJR ids %s, given %s, unique %s" \
                     % ( len(wmaids)-len(uniqids), json.dumps(set_dup), len(wmaids), len(set(wmaids)) ) )
         if  sts_dup:
-            self.log("WARNING, found %s duplicates in STS, FWJR ids %s" \
-                    % (len(sts_dup), json.dumps(sts_dup)))
+            self.log("WARNING, found %s duplicates in STS:" % len(sts_dup))
+            for rec in sts_dup:
+                self.log('WARNING, duplicate record %s' % json.dumps(rec))
         for idx in range(0, len(data), self.chunk_size):
             docs = data[idx:idx+self.chunk_size]
             try:
