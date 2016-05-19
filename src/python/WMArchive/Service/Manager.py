@@ -53,8 +53,11 @@ def extractFWJRids(docs):
     if  isinstance(docs, list):
         ids = []
         for row in docs:
-            meta = row.get('meta_data', {})
-            ids.append(meta.get('fwjr_id', -1))
+            if  isinstance(row, dict):
+                meta = row.get('meta_data', {})
+                ids.append(meta.get('fwjr_id', -1))
+            else:
+                ids.append(row)
         return ids
     return docs
 
