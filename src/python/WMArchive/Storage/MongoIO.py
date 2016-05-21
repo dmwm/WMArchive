@@ -28,14 +28,18 @@ from WMArchive.Utils.Exceptions import WriteError, ReadError
 def set_duplicates(docs):
     "Return duplicates FWJR ids within given set of docs"
     fwjrids = []
+    wmaids = []
     for rec in docs:
+        wid = -1
+        fid = -1
         if  isinstance(rec, dict):
             fid = rec.get('meta_data', {}).get('fwjr_id', -1)
-        else:
-            fid = -1
+            wid = rec.get('wmaid', -1)
         fwjrids.append(fid)
-    dups = set([x for x in fwjrids if fwjrids.count(x) > 1])
-    return list(dups)
+        wmaids.append(wid)
+    fdups = set([x for x in fwjrids if fwjrids.count(x) > 1])
+    wdups = set([x for x in wmaids if wmaids.count(x) > 1])
+    return list(fdups), list(wdups)
 
 class WMASONManipulator(SONManipulator):
     """WMArchive MongoDB SON manipulator"""
@@ -95,9 +99,13 @@ class MongoStorage(Storage):
         uniqids = set(wmaids)
         sts_dup = self.find_duplicates(wmaids)
         if  len(wmaids) != len(uniqids):
-            set_dup = set_duplicates(data)
-            self.log("WARNING, found %s duplicates in given docs, FWJR ids %s, given %s, unique %s" \
-                    % ( len(wmaids)-len(uniqids), json.dumps(set_dup), len(wmaids), len(set(wmaids)) ) )
+            fdup, wdup = set_duplicates(data)
+            self.log("WARNING, found %s duplicates in given docs, FWJR ids %s, WMA ids %s, given %s, unique %s" \
+                    % ( len(wmaids)-len(uniqids), json.dumps(fdup), json.dumps(wdup), len(wmaids), len(set(wmaids)) ) )
+            for wid in wdup:
+                for rec in data:
+                    if rec['wmaid'] == wid:
+                       self.log(json.dumps(rec))
         if  sts_dup:
             self.log("WARNING, found %s duplicates in STS:" % len(sts_dup))
             for rec in sts_dup:
