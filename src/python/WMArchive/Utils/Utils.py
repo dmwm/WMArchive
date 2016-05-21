@@ -54,8 +54,7 @@ def tstamp(msg='WMA'):
 def wmaHash(data):
     "Return md5 hash of given data"
     if  isinstance(data, dict) or isinstance(data, list):
-        data = json.dumps(data)
-    data = ''.join(sorted(data)) # to insure that all keys are in order
+        data = json.dumps(data, sort_keys=True)
     rec = json.JSONEncoder(sort_keys=True).encode(data)
     keyhash = hashlib.md5()
     keyhash.update(rec)
