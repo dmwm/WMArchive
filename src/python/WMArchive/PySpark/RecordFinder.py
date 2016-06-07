@@ -48,9 +48,9 @@ class MapReduce(object):
                 spec = ispec['spec']
             if  'fields' in ispec:
                 self.fields = ispec['fields']
-            if  'timerange' in spec:
-                del spec['timerange'] # this is not used for record search
-            self.spec = parse_spec(spec)
+            if  'timerange' in ispec:
+                del ispec['timerange'] # this is not used for record search
+            self.spec = parse_spec(ispec)
         else:
             self.spec = {}
 
