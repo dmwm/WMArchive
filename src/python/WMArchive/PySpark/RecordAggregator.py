@@ -67,12 +67,13 @@ class MapReduce(object):
                     _rsize = _sdict['rsize'] + sdict['rsize']
                     _wsize = _sdict['wsize'] + sdict['wsize']
                     ndict = {'cpu':_cpu, 'time':_time, 'rsize':_rsize, 'wsize':_wsize}
-                    out[host][site].update(ndict)
+                    out[host][site] = ndict
             count += 1
 	# simple printout of summary info
         for host, hdict in out.items():
             print(host)
             for site, sdict in hdict.items():
+                print('')
                 print(site)
                 for key, val in sdict.items():
                     print('%s: %s' % (key, val))
