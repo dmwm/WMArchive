@@ -22,6 +22,8 @@ class MapReduce(object):
                 continue
             meta = rec['meta_data']
             if  meta['jobstate'] != 'success':
+#             if  meta['jobstate'] != 'jobfailed':
+#             if  meta['jobstate'] != 'submitfailed':
                 continue
             host = meta['host']
             if  host not in hdict.keys():
@@ -31,7 +33,7 @@ class MapReduce(object):
                 if  not site:
                     continue
                 if  site not in hdict[host].keys():
-                    hdict[host] = {site:{'cpu':0, 'time':0, 'rsize':0, 'wsize':0}}
+                    hdict[host] = {site:{'cpu':0, 'time':0, 'rsize':0, 'wsize':0, 'doc':0}}
                 perf = step['performance']
                 cpu = perf['cpu']
                 storage = perf['storage']
@@ -45,13 +47,14 @@ class MapReduce(object):
                         hdict[host][site]['rsize'] += storage.get('readTotalMB', 0)
                     if  storage.get('writeTotalMB', 0):
                         hdict[host][site]['wsize'] += storage.get('writeTotalMB', 0)
+                hdict[host][site]['doc'] += 1
         return hdict
 
     def reducer(self, records, init=0):
         "Simpler reducer which collects all results from RDD.collect() records"
         out = {}
         count = 0
-        mdict = {'cpu':0, 'time':0, 'rsize':0, 'wsize':0}
+        mdict = {'cpu':0, 'time':0, 'rsize':0, 'wsize':0, 'doc':0}
         for rec in records:
             for host, hdict in rec.items():
                 if  host not in out.keys():
@@ -66,12 +69,13 @@ class MapReduce(object):
                     _time = _sdict['time'] + sdict['time']
                     _rsize = _sdict['rsize'] + sdict['rsize']
                     _wsize = _sdict['wsize'] + sdict['wsize']
-                    ndict = {'cpu':_cpu, 'time':_time, 'rsize':_rsize, 'wsize':_wsize}
+                    _doc = _sdict['doc'] + sdict['doc']
+                    ndict = {'cpu':_cpu, 'time':_time, 'rsize':_rsize, 'wsize':_wsize, 'doc':_doc}
                     out[host][site] = ndict
             count += 1
 	# simple printout of summary info
         for host, hdict in out.items():
-            print(host)
+            print('\n### %s' % host)
             for site, sdict in hdict.items():
                 print('')
                 print(site)
