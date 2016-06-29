@@ -71,7 +71,7 @@ class MongoStorage(Storage):
         self.collname = collname
         self.coll = self.mdb[collname]
         self.jobs = self.mdb['jobs'] # separate collection for job results
-        self.acol = self.mdb['acol'] # separate collection for aggregated results
+        self.performance = self.client.performance # separate database for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
 
@@ -187,23 +187,12 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-#     def adocs(self):
-#         "Return aggregated statistics documents"
-#         return [d for d in self.acol.find()]
-
-# Below is an example of how we can extract aggregated docs, convert them
-# to Charts.js data format and return the data. This data can be used
-# by WMArchive web interface, see ajaxRequestAdocsExample() Javascript
-# function which feeds a data to a bar plot on web interface, see stats.tmpl
-    def adocs(self):
-        "Return aggregated documents in chart.js representation"
-        docs = {}
-        for row in self.acol.find():
-            docs.update(row)
-        out = {"labels":docs.keys(), "datasets":[]}
-        values = []
-        for key in out['labels']:
-            site_stats = docs[key]
-            values.append(site_stats['storage']['writeTotalMB'])
-        out['datasets'].append(dict(data=values))
-        return out
+    def site_count(self):
+        """
+        An example of how we can aggregate performance metrics over specific scopes in MongoDB.
+        """
+        return list(self.performance.daily.aggregate([
+            #{ '$match': { '_id': document['_id'] } },
+            { '$unwind': '$stats' },
+            { '$group': { '_id': '$stats.scope.site', 'count': { '$sum': '$stats.count' } } }
+        ]))

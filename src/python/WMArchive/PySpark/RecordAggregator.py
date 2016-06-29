@@ -4,6 +4,18 @@ WMArchive/Tools/myspark.py tool. It collects information about cpu/time/read/wri
 sizes of successfull FWJR jobs. Information is structured by agent host/site.
 """
 
+import json
+from datetime import datetime
+from pymongo import MongoClient
+
+
+def get_scope_hash(scope):
+    """
+    Hashes the scope dictionary to provide a key for the mapper and reducer.
+    """
+    return str(hash(frozenset(scope.items())))
+
+
 class MapReduce(object):
     def __init__(self, spec=None):
         # spec here is redundant since our mapper and reducer does not use it
@@ -14,71 +26,115 @@ class MapReduce(object):
         Function to extract necessary information from records during spark
         collect process. It will be called by RDD.collect() object within spark.
         """
-        out = []
-        sdict = {}
-        hdict = {}
-        for rec in records:
-            if  not rec:
+        document = {
+            'stats': {}
+        }
+        for record in records:
+            if not record:
+                # FIXME: This happens many times
                 continue
-            meta = rec['meta_data']
-            if  meta['jobstate'] != 'success':
-#             if  meta['jobstate'] != 'jobfailed':
-#             if  meta['jobstate'] != 'submitfailed':
-                continue
-            host = meta['host']
-            if  host not in hdict.keys():
-                hdict[host] = {}
-            for step in rec['steps']:
-                site = step.get('site', None)
-                if  not site:
-                    continue
-                if  site not in hdict[host].keys():
-                    hdict[host] = {site:{'cpu':0, 'time':0, 'rsize':0, 'wsize':0, 'doc':0}}
-                perf = step['performance']
-                cpu = perf['cpu']
-                storage = perf['storage']
-                if  cpu:
-                    if  cpu.get('TotalJobCPU', 0):
-                        hdict[host][site]['cpu'] += cpu.get('TotalJobCPU', 0)
-                    if  cpu.get('TotalJobTime', 0):
-                        hdict[host][site]['time'] += cpu.get('TotalJobTime', 0)
-                if  storage:
-                    if  storage.get('readTotalMB', 0):
-                        hdict[host][site]['rsize'] += storage.get('readTotalMB', 0)
-                    if  storage.get('writeTotalMB', 0):
-                        hdict[host][site]['wsize'] += storage.get('writeTotalMB', 0)
-                hdict[host][site]['doc'] += 1
-        return hdict
+
+            meta_data = record['meta_data']
+
+            # Determine timeframe of aggregation
+            # TODO: Assuming daily aggregation here, extend to arbitrary timeframes
+            if not 'date' in document:
+                timestamp = meta_data['ts']
+                document['date'] = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d')
+                # FIXME: This is not unique for a daily folder in HDFS: e.g. for 2016/06/28 there are 28.6. and 29.6. timestamps
+
+            # Treat every step as a separate job(?)
+            for step in record['steps']:
+
+                # Define scope
+                scope = {
+                    "host": meta_data['host'],
+                    "site": step['site'],
+                    "jobtype": meta_data['jobtype'],
+                    "jobstate": meta_data['jobstate'],
+                }
+                scope_hash = get_scope_hash(scope)
+
+                # Retrieve existing stats for this scope
+                stats = document['stats'].get(scope_hash)
+                if not stats:
+                    stats = {
+                        'scope': scope,
+                    }
+
+
+                # Aggregate metrics
+
+                # Count
+                if not stats.get('count'):
+                    stats['count'] = 0
+                stats['count'] += 1
+
+                # Performance
+                if not stats.get('performance'):
+                    stats['performance'] = {
+                        "cpu": {
+                            "TotalJobCPU": 0,
+                            "TotalJobTime": 0,
+                        },
+                        "storage": {
+                            "readTotalMB": 0,
+                            "writeTotalMB": 0,
+                        }
+                    }
+                performance_cpu = step['performance']['cpu']
+                if performance_cpu.get('TotalJobCPU', 0):
+                    stats['performance']['cpu']['TotalJobCPU'] += performance_cpu.get('TotalJobCPU', 0)
+                if performance_cpu.get('TotalJobTime', 0):
+                    stats['performance']['cpu']['TotalJobTime'] += performance_cpu.get('TotalJobTime', 0)
+                performance_storage = step['performance']['storage']
+                if performance_storage.get('readTotalMB', 0):
+                    stats['performance']['storage']['readTotalMB'] += performance_storage.get('readTotalMB', 0)
+                if performance_storage.get('writeTotalMB', 0):
+                    stats['performance']['storage']['writeTotalMB'] += performance_storage.get('writeTotalMB', 0)
+
+                # Store stats in document
+                document['stats'][scope_hash] = stats
+
+        return document
 
     def reducer(self, records, init=0):
         "Simpler reducer which collects all results from RDD.collect() records"
-        out = {}
-        count = 0
-        mdict = {'cpu':0, 'time':0, 'rsize':0, 'wsize':0, 'doc':0}
-        for rec in records:
-            for host, hdict in rec.items():
-                if  host not in out.keys():
-                    out[host] = {}
-                _hdict = out[host]
-                for site, sdict in hdict.items():
-                    if  site not in _hdict.keys():
-                        _hdict = {site:mdict}
-                        out[host][site] = mdict
-                    _sdict = _hdict[site]
-                    _cpu = _sdict['cpu'] + sdict['cpu']
-                    _time = _sdict['time'] + sdict['time']
-                    _rsize = _sdict['rsize'] + sdict['rsize']
-                    _wsize = _sdict['wsize'] + sdict['wsize']
-                    _doc = _sdict['doc'] + sdict['doc']
-                    ndict = {'cpu':_cpu, 'time':_time, 'rsize':_rsize, 'wsize':_wsize, 'doc':_doc}
-                    out[host][site] = ndict
-            count += 1
-	# simple printout of summary info
-        for host, hdict in out.items():
-            print('\n### %s' % host)
-            for site, sdict in hdict.items():
-                print('')
-                print(site)
-                for key, val in sdict.items():
-                    print('%s: %s' % (key, val))
-        return out
+        document = {
+            'stats': {},
+        }
+        for existing_document in records:
+            if not document.get('date'):
+                document['date'] = existing_document['date']
+                print("Using document date {}".format(document['date']))
+
+            for scope_hash, existing_stats in existing_document['stats'].items():
+
+                stats = document['stats'].get(scope_hash)
+                if not stats:
+                    stats = existing_stats
+                else:
+                    stats['count'] += existing_stats['count']
+                    stats['performance']['cpu']['TotalJobCPU'] += existing_stats['performance']['cpu']['TotalJobCPU']
+                    stats['performance']['cpu']['TotalJobTime'] += existing_stats['performance']['cpu']['TotalJobTime']
+                    stats['performance']['storage']['readTotalMB'] += existing_stats['performance']['storage']['readTotalMB']
+                    stats['performance']['storage']['writeTotalMB'] += existing_stats['performance']['storage']['writeTotalMB']
+
+                document['stats'][scope_hash] = stats
+
+        # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
+        # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
+        document['stats'] = document['stats'].values()
+
+        # Also dump results to json file
+        with open('RecordAggregator_result.json', 'w') as outfile:
+            json.dump(document, outfile)
+
+        # Store in MongoDB
+        mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
+        daily_collection = mongo_client['performance']['daily']
+        daily_collection.insert(document)
+
+        print("Aggregated performance metrics for {} stored in MongoDB database {}.".format(document['date'], daily_collection))
+
+        return document

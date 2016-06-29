@@ -50,9 +50,9 @@ class STSManager(object):
         "Return statistics about underlying storage"
         return self.mgr.stats()
 
-    def adocs(self):
+    def site_count(self):
         "Return aggregated documents from underlying storage"
-        return self.mgr.adocs()
+        return self.mgr.site_count()
 
     def status(self):
         "Return status api"
