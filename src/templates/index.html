@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WMArchive data-service</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- do not include http in src for jquery since it leads to mixing content, http://bit.ly/1VOjhSu -->
+    <link rel="stylesheet" type="text/css" href="/wmarchive/web/static/css/kube.min.css" />
+    <link rel="stylesheet" type="text/css" href="/wmarchive/web/static/css/main.css" />
+    <link rel="icon" href="data:;base64,=">
+</head>
+<body>
+
+  <nav class="tabs" data-component="tabs">
+    <ul id="nav-main-container"><!-- nav-main.js --></ul>
+  </nav>
+
+  <div class="row centered"><div class="col col-11"><section id="main"></section></div></div>
+
+  <hr>
+  <footer id="site-footer"><!-- footer.js --></footer>
+
+  <script type="text/javascript" src="//code.jquery.com/jquery-3.0.0.min.js"></script>
+  <script type="text/javascript" src="//underscorejs.org/underscore-min.js"></script>
+  <script type="text/javascript" src="//backbonejs.org/backbone-min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.min.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/utils.js"></script>
+
+  <script src="/wmarchive/web/static/js/views/nav-main.js"></script>
+  <script src="/wmarchive/web/static/js/views/footer.js"></script>
+  <script src="/wmarchive/web/static/js/views/status.js"></script>
+  <script src="/wmarchive/web/static/js/views/jobs.js"></script>
+  <script src="/wmarchive/web/static/js/views/performance.js"></script>
+  <script src="/wmarchive/web/static/js/views/info.js"></script>
+  <script src="/wmarchive/web/static/js/routers/router.js"></script>
+
+  <script type="text/javascript">
+    new app.NavMainView({ el: $('#nav-main-container') }).render();
+    new app.FooterView({ el: $('#site-footer') }).render();
+    app.router = new app.Router();
+    Backbone.history.start({ pushState: true, root: "/wmarchive/web/" });
+  </script>
+
+</body>
+</html>

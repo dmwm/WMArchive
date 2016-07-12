@@ -1,4 +1,5 @@
-<h4>APIs description</h4>
+<h1>WMArchive APIs</h4>
+
 WMArchive is a RESTful service, therefore clients can use any tool/language
 to contact the service and use GET/POST HTTP requests to retrive or post their data.
 Below we provide examples for curl and python clients.
@@ -47,3 +48,207 @@ print("STATUS", response.status, "REASON", response.reason)
 res = response.read()
 data = json.loads(res)
 </pre></div>
+
+
+
+<h2>Map-Reduce</h2>
+
+Map-reduce jobs are supported by WMArchive service.
+<div class="alert alert-warning">Please note there is no yet web UI interface for MR jobs</div>
+Users require to write two functions: mapper and reducer for their task, see example below.
+To run MR jobs someone will need to get account on
+<span class="label label-primary">analytix.cern.ch</span> node, login over there, setup
+WMArchive environment and run
+<span class="label label-black">mrjob</span> script.
+
+<div><pre class="alert-success alert">
+mrjob --hdir=hdfs://host:port/path/data
+      --odir=hdfs://host:port/path/out
+      --schema=hdfs://host:port/path/schema.avsc
+      --mrpy=mr.py --pydoop=/path/pydoop.tgz --avro=/path/avro.tgz
+</pre></div>
+
+<div><h5>Example of mapper/reducer functions</h5>
+<pre class="alert-success alert">
+def mapper(ctx):
+    "Read given context and yield key (job-id) and values (task)"
+    rec = ctx.value
+    jid = rec["jobid"]
+    if jid is not None:
+        ctx.emit(jid, rec["fwjr"]["task"])
+def reducer(ctx):
+    "Emit empty key and some data structure via given context"
+    ctx.emit("", {"jobid": ctx.key, "task": ctx.values})
+</pre></div>
+
+
+
+<h2>Queries</h3>
+
+The queries in WMArchive should be placed via POST request in a form of Query
+Language (QL). The QL should specify condition keys and document fields to be
+retrieved. We end-up using JSON format as QL data-format similar to MongoDB QL.
+For example:
+
+<pre class="allert-success alert">
+{"spec": {"lfn":"bla*123.root", "task": "bla", "run":[1,2,3]}, "fields":["logs"]}
+</pre>
+
+here we define that our conditions spec is a dictionary where we define actual
+conditions such as lfn pattern, task name and run list. The output fields would
+be logs key in FWJR documents stored in WMArchive.
+
+The WMArchive will support three attributes which user may provide:
+
+spec defines condition dictionary each spec must have a timerange key-value
+pair which points to specific timerange user want to look-up the data, e.g.
+<pre>"timerange":[20160101, 20160102]</pre>, the values in timerange list should be in
+YYYYMMDD format fields defines list of attributes to be retrieved from FWJR and
+returned back to user aggregate define list of attributes we need to aggregate
+
+<h3>Query Language</h3>
+
+The QL should be flexible enough to accommodate user queries, see next section.
+For that we can use JSON document to define our queries, see example in
+previous section. Since we're going to use nested structure in our FWJR
+documents we need to refer them via dot notations, e.g. output.inputDataset,
+meta_data.agent_ver, etc. Usage of JSON for queries can be easily translated
+into MongoDB QL. Here is simplest QL rule definitions (mostly aligned with
+MongoDB QL):
+
+<ul>
+<li>input query should be in form of JSON</li>
+<li>the query JSON should contain only key-value pairs, no nested structures</li>
+<li>the supported data types for values would be int, float, string and list of those</li>
+<li>user can send multiple set of conditions which translates into AND set</li>
+<li>user can send alternative conditions via <pre>{"$or": [JSON1, JSON2]}</pre> structure.</li>
+<li>user can specify $gt, $lt operators for greater than, less than use cases</li>
+</ul>
+
+The WMArchive code will translate user query either into Mongo DB one or the
+one suitable for querying documents on HDFS. Here are few examples of QL syntax
+
+<pre class="allert-success alert">
+# use multiple keys
+{"task":"abc", "run":1}
+
+# use patterns
+{"lfn":"/a/v/b*/123.root"}
+
+# use or conditions
+{"$or": [{"task":"abc", "lfn":"/a/v/b*/123.root"}, {"run":[1,2,3]}]}
+
+# use array values, i.e. find docs with all given run numbers
+{"run":[1,2,3]}
+
+# usage of $gt, $lt operators
+{"run":{"$gt":1})
+</pre>
+
+<h3>Example of user queries</h3>
+
+<pre class="allert-success alert">
+# User query
+{"spec":{"task": "/AbcCde_Task_Data_test_6735909/RECO"}, "fields":["wmaid"]}
+
+# client call and output
+wma_client.py --spec=query.json
+{"result": [{"status": "ok",
+             "input": {"fields": ["wmaid"],
+             "spec": {"task": "/AbcCde_Task_Data_test_6735909/RECO"}},
+             "storage": "mongodb",
+             "results": [{"wmaid": "6b0bace20fc732563316198d1ed2b94e"}]}]}
+</pre>
+
+
+
+
+<h2>Tools</h3>
+
+Here we outline useful tools available in WMArchive. All tools are written in python
+and associative bash wrapper script is provided for each of them (this is
+mostly for convenience, e.g. setup proper PYTHONPATH). Majority of the users
+will only need to use wma_client tool, while advanced users can use either
+myspark (to place Spark jobs) or mrjob (to place MapReduce jobs) tools.
+<br/>
+<br/>
+
+<hr />
+
+<span class="label label-black">wma_client.py</span> tool to query data in WMArchive.
+
+<pre class="alert-success alert">
+Usage: wma_client.py [options]
+For more help please visit https://github.com/dmwm/WMArchive/wiki
+
+Options:
+  -h, --help         show this help message and exit
+  --verbose=VERBOSE  verbosity level
+  --spec=SPEC        specify query spec file, defalt query.json
+  --host=HOST        host name of WMArchive server, default is
+                     https://vocms013.cern.ch
+  --key=CKEY         specify private key file name, default $X509_USER_PROXY
+  --cert=CERT        specify private certificate file name, default
+                     $X509_USER_PROXY
+</pre>
+
+<hr />
+
+<span class="label label-black">myspark</span>
+tools can be used to execute python code on Spark platform. End-user is responsible to write his/her own executor (mapper) function.
+
+<pre class="alert-success alert">
+myspark --help
+usage: PROG [-h] [--hdir HDIR] [--schema SCHEMA] [--script SCRIPT]
+            [--spec SPEC] [--yarn] [--store STORE] [--wmaid WMAID]
+            [--ckey CKEY] [--cert CERT] [--verbose]
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --hdir HDIR      Input data location on HDFS, e.g. hdfs:///path/data
+  --schema SCHEMA  Input schema, e.g. hdfs:///path/fwjr.avsc
+  --script SCRIPT  python script with custom mapper/reducer functions
+  --spec SPEC      json file with query spec
+  --yarn           run job on analytics cluster via yarn resource manager
+  --store STORE    store results into WMArchive, provide WMArchvie url
+  --wmaid WMAID    provide wmaid for store submission
+  --ckey CKEY      specify private key file name, default $X509_USER_PROXY
+  --cert CERT      specify private certificate file name, default
+                   $X509_USER_PROXY
+  --verbose        verbose output
+
+Example: executes Spark job on HDFS with provided script and query JSON file
+myspark --hdir=hdfs:///hdfspath/data
+        --schema=hdfs:///hdfspath/schema.avsc
+        --script=/path/WMArchive/Tools/RecordFinder.py
+        --spec=query.json
+</pre>
+
+<hr />
+
+<span class="label label-black">mrjob</span>
+generates (and optionally executes) MR bash script for end-user.
+
+<pre class="alert-success alert">
+mrjob --help
+usage: mrjob [-h] [--hdir HDIR] [--odir ODIR] [--schema SCHEMA] [--mrpy MRPY]
+             [--pydoop PYDOOP] [--avro AVRO] [--execute] [--verbose]
+
+Tool to generate and/or execute MapReduce (MR) script. The code is generated
+from MR skeleton provided by WMArchive and user based MR file. The later must
+contain two functions: mapper(ctx) and reducer(ctx) for given context. Their
+simplest implementation can be found here WMArchive/MapReduce/mruser.py
+Based on this code please create your own mapper/reducer functions and use this
+tool to generate final MR script.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --hdir HDIR      HDFS input data directory
+  --odir ODIR      HDFS output directory for MR jobs
+  --schema SCHEMA  Data schema file on HDFS
+  --mrpy MRPY      MapReduce python script
+  --pydoop PYDOOP  pydoop archive file, e.g. /path/pydoop.tgz
+  --avro AVRO      avro archive file, e.g. /path/avro.tgz
+  --execute        Execute generate mr job script
+  --verbose        Verbose output
+</pre>

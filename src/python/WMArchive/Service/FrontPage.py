@@ -56,5 +56,5 @@ class FrontPage(RESTFrontPage):
         roots = {mainroot: mdict, "templates": tdict, \
                 "js": jdict, "css": cdict, "images": idict}
         # location of frontpage in the root, e.g. wmarchive
-        frontpage = "%s/templates/wma.html" % mainroot
+        frontpage = "%s/templates/index.html" % mainroot
         RESTFrontPage.__init__(self, app, config, mount, frontpage, roots)
