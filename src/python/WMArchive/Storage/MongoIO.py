@@ -192,7 +192,22 @@ class MongoStorage(Storage):
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
         return list(self.performance.daily.aggregate([
-            #{ '$match': { '_id': document['_id'] } },
             { '$unwind': '$stats' },
-            { '$group': { '_id': '$stats.scope.site', 'count': { '$sum': '$stats.count' } } }
+            {
+                '$group': {
+                    '_id': { 'site': '$stats.scope.site', 'jobstate': '$stats.scope.jobstate' },
+                    'count': { '$sum': '$stats.count' }
+                }
+            },
+            {
+                '$group': {
+                    '_id': '$_id.site',
+                    'jobstates': {
+                        '$push': {
+                            'jobstate': '$_id.jobstate',
+                            'count': '$count'
+                        }
+                    }
+                }
+            }
         ]))

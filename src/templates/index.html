@@ -1,39 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>WMArchive data-service</title>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- do not include http in src for jquery since it leads to mixing content, http://bit.ly/1VOjhSu -->
-    <link rel="stylesheet" type="text/css" href="/wmarchive/web/static/css/kube.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <link rel="stylesheet" type="text/css" href="/wmarchive/web/static/css/main.css" />
-    <link rel="icon" href="data:;base64,=">
 </head>
 <body>
 
-  <nav class="tabs" data-component="tabs">
-    <ul id="nav-main-container"><!-- nav-main.js --></ul>
-  </nav>
+  <header id="site-header">
+    <div class="container">
+      <nav class="navbar navbar-dark">
+        <a class="navbar-brand" href="/wmarchive/web"><img id="logo-header" src="/wmarchive/web/static/images/cms-logo.png"></a>
+        <a class="navbar-brand" href="/wmarchive/web">CMS WMArchive Data Service</a>
+        <ul class="nav navbar-nav nav-pills pull-xs-right" id="nav-main-container">
+          <!-- nav-main.js -->
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-  <div class="row centered"><div class="col col-11"><section id="main"></section></div></div>
+  <section id="main">
+    <!-- Main Content -->
+  </section>
 
-  <hr>
-  <footer id="site-footer"><!-- footer.js --></footer>
+  <footer id="site-footer" class="container"><!-- footer.js --></footer>
 
-  <script type="text/javascript" src="//code.jquery.com/jquery-3.0.0.min.js"></script>
+
+  <!-- Dependencies -->
+
+  <!-- jQuery -->
+  <script type="text/javascript" src="//code.jquery.com/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s=" crossorigin="anonymous"></script>
+
+  <!-- [Backbone.js](http://backbonejs.org) -->
   <script type="text/javascript" src="//underscorejs.org/underscore-min.js"></script>
   <script type="text/javascript" src="//backbonejs.org/backbone-min.js"></script>
-  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.6/Chart.min.js"></script>
-  <script type="text/javascript" src="/wmarchive/web/static/js/utils.js"></script>
 
-  <script src="/wmarchive/web/static/js/views/nav-main.js"></script>
-  <script src="/wmarchive/web/static/js/views/footer.js"></script>
-  <script src="/wmarchive/web/static/js/views/status.js"></script>
-  <script src="/wmarchive/web/static/js/views/jobs.js"></script>
-  <script src="/wmarchive/web/static/js/views/performance.js"></script>
-  <script src="/wmarchive/web/static/js/views/info.js"></script>
-  <script src="/wmarchive/web/static/js/routers/router.js"></script>
+  <!-- [Bootstrap DateRangePicker](https://github.com/dangrossman/bootstrap-daterangepicker) -->
+  <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+  <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+  <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
+  <!-- [D3.js](https://d3js.org) -->
+  <script type="text/javascript" src="//d3js.org/d3.v4.min.js"></script>
+
+
+  <!-- Application -->
+
+  <!-- Models -->
+  <script type="text/javascript" src="/wmarchive/web/static/js/models/scope.js"></script>
+
+  <!-- Views -->
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/nav-main.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/filter.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/add-filter-button.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/timeframe-selector.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/scope.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/metrics.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/metric-selector.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/footer.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/status.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/jobs.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/performance.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/views/info.js"></script>
+
+  <!-- Router -->
+  <script type="text/javascript" src="/wmarchive/web/static/js/routers/router.js"></script>
+
+  <!-- Entry Point -->
   <script type="text/javascript">
     new app.NavMainView({ el: $('#nav-main-container') }).render();
     new app.FooterView({ el: $('#site-footer') }).render();

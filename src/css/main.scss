@@ -1,0 +1,158 @@
+// Colors
+$highlight: #DB392E;
+$structure: #77C8E5;
+$background: white;
+$subtle: #FDF8EE;
+$text: black;
+$light: #DAE1E1;
+
+// Bootstrap Overrides
+$brand-primary: $highlight;
+$font-family-base: -apple-system, BlinkMacSystemFont,
+  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+  "Fira Sans", "Droid Sans", "Helvetica Neue",
+  sans-serif;
+$body-bg: $background;
+$body-color: $text;
+$link-color: $highlight;
+$headings-color: $structure;
+$input-border-focus: $highlight;
+$input-border-color: $light;
+$input-color-placeholder: $light;
+$btn-secondary-border: $light;
+
+// Bootstrap
+@import "../dependencies/bootstrap/scss/bootstrap-flex.scss";
+
+
+// Header
+#site-header {
+  background-color: $brand-primary;
+
+  .navbar {
+    line-height: 4rem;
+  }
+}
+
+// Main
+#scope-container {
+  padding-top: $spacer;
+  padding-bottom: $spacer;
+  border-bottom: 1px solid $light;
+}
+#metrics {
+  padding-top: $spacer;
+  border-right: 1px solid $light;
+}
+
+
+// Footer
+#site-footer {
+  margin-top: 2rem;
+  font-size: small;
+}
+
+// Format
+
+.highlight {
+  color: $highlight;
+}
+.structure {
+  color: $structure;
+}
+.light {
+  color: $light;
+}
+.subtle {
+  color: $subtle;
+}
+
+
+// Components
+
+#logo-header {
+  max-height: 4rem;
+}
+
+#filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-container {
+  max-width: 15rem;
+  margin: 0;
+  + .filter-container {
+    margin-left: $spacer;
+  }
+
+  label {
+    @extend strong;
+    color: $highlight;
+  }
+}
+
+#metrics {
+  .structure {
+    display: block;
+    margin-bottom: 1rem;
+  }
+}
+
+.metric-selector {
+  + .metric-selector {
+    margin-top: 0.5rem;
+  }
+}
+.btn-secondary {
+  color: $light;
+  &.active {
+    background-color: $highlight;
+    border-color: $highlight;
+    color: $background;
+  }
+  &:hover {
+    color: $highlight;
+    border-color: $highlight;
+    background-color: $background;
+    &.active {
+      background-color: $highlight;
+      border-color: $highlight;
+      color: $background;
+    }
+  }
+}
+
+.metric-section-title {
+  display: block;
+  @extend strong;
+  color: $light;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+
+// Canvas
+
+#visualizations {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-count-container {
+  margin: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .chart {
+    height: 200px;
+  }
+  .chart-label {
+    font-size: small;
+  }
+}

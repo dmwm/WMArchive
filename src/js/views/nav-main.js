@@ -9,7 +9,6 @@ app.NavMainView = Backbone.View.extend({
     },
 
     titles: {
-        "home": "Home",
         "performance": "Performance",
         "apis": "APIs",
     },
@@ -24,7 +23,7 @@ app.NavMainView = Backbone.View.extend({
 
     render: function(route) {
       this.$el.empty();
-      var template = _.template("<li class='<%=active%>'><a href='<%=url%>'><%=title%></a></li>");
+      var template = _.template('<li class="nav-item <%=active%>"><a class="nav-link" href="<%=url%>"><%=title%></a></li>');
       for (var key in this.titles) {
         this.$el.append(template({ url: key == 'home' ? '' : key, title: this.titles[key], active: route === key ? 'active' : '' }));
       }

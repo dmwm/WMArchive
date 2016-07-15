@@ -1,6 +1,10 @@
 # Local configuration
 etc/wmarch_config_local.py
 
+# Sass
+**/.sass-cache
+*.css.map
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
