@@ -12,6 +12,7 @@ from __future__ import print_function, division
 
 # system modules
 import json
+import datetime
 import traceback
 
 # Mongo modules
@@ -71,7 +72,7 @@ class MongoStorage(Storage):
         self.collname = collname
         self.coll = self.mdb[collname]
         self.jobs = self.mdb['jobs'] # separate collection for job results
-        self.performance = self.client.performance # separate database for aggregated results
+        self.performance_data = self.client.performance # separate database for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
 
@@ -187,27 +188,45 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-    def site_count(self):
+    def performance(self, metric, start_date=None, end_date=None, host=None, site=None, **kwargs):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
-        return list(self.performance.daily.aggregate([
-            { '$unwind': '$stats' },
-            {
-                '$group': {
-                    '_id': { 'site': '$stats.scope.site', 'jobstate': '$stats.scope.jobstate' },
-                    'count': { '$sum': '$stats.count' }
+        scope = []
+
+        # Timeframe
+        # TODO: build more robust date parsing
+        if start_date is not None:
+            scope.append({
+                '$match': {
+                    'start_date': { '$gte': datetime.datetime(int(start_date[0:4]), int(start_date[4:6]), int(start_date[6:8]), 0, 0, 0) },
                 }
-            },
-            {
-                '$group': {
-                    '_id': '$_id.site',
-                    'jobstates': {
-                        '$push': {
-                            'jobstate': '$_id.jobstate',
-                            'count': '$count'
+            })
+        if end_date is not None:
+            scope.append({
+                '$match': {
+                    'end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
+                }
+            })
+
+        if metric == 'jobstate':
+            return list(self.performance_data.daily.aggregate(scope + [
+                { '$unwind': '$stats' },
+                {
+                    '$group': {
+                        '_id': { 'site': '$stats.scope.site', 'jobstate': '$stats.scope.jobstate' },
+                        'count': { '$sum': '$stats.count' }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$_id.site',
+                        'jobstates': {
+                            '$push': {
+                                'jobstate': '$_id.jobstate',
+                                'count': '$count'
+                            }
                         }
                     }
                 }
-            }
-        ]))
+            ]))

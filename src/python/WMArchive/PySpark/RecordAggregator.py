@@ -7,6 +7,7 @@ sizes of successfull FWJR jobs. Information is structured by agent host/site.
 import json
 from datetime import datetime
 from pymongo import MongoClient
+from bson import json_util
 
 
 def get_scope_hash(scope):
@@ -37,11 +38,11 @@ class MapReduce(object):
             meta_data = record['meta_data']
 
             # Determine timeframe of aggregation
-            # TODO: Assuming daily aggregation here, extend to arbitrary timeframes
-            if not 'date' in document:
-                timestamp = meta_data['ts']
-                document['date'] = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d')
-                # FIXME: This is not unique for a daily folder in HDFS: e.g. for 2016/06/28 there are 28.6. and 29.6. timestamps
+            timestamp = datetime.fromtimestamp(meta_data['ts'])
+            if not 'start_date' in document or timestamp < document['start_date']:
+                document['start_date'] = timestamp
+            if not 'end_date' in document or timestamp > document['end_date']:
+                document['end_date'] = timestamp
 
             # Treat every step as a separate job(?)
             for step in record['steps']:
@@ -104,9 +105,10 @@ class MapReduce(object):
             'stats': {},
         }
         for existing_document in records:
-            if not document.get('date'):
-                document['date'] = existing_document['date']
-                print("Using document date {}".format(document['date']))
+            if not 'start_date' in document or existing_document['start_date'] < document['start_date']:
+                document['start_date'] = existing_document['start_date']
+            if not 'end_date' in document or existing_document['end_date'] > document['end_date']:
+                document['end_date'] = existing_document['end_date']
 
             for scope_hash, existing_stats in existing_document['stats'].items():
 
@@ -128,13 +130,13 @@ class MapReduce(object):
 
         # Also dump results to json file
         with open('RecordAggregator_result.json', 'w') as outfile:
-            json.dump(document, outfile)
+            json.dump(document, outfile, default=json_util.default)
 
         # Store in MongoDB
         mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
         daily_collection = mongo_client['performance']['daily']
         daily_collection.insert(document)
 
-        print("Aggregated performance metrics for {} stored in MongoDB database {}.".format(document['date'], daily_collection))
+        print("Aggregated performance metrics stored in MongoDB database {}.".format(daily_collection))
 
         return document

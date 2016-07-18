@@ -125,12 +125,12 @@ app.PerformanceView = Backbone.View.extend({
 
     var self = this;
     $.ajax({
-        url: '/wmarchive/data?site_count=1',
+        url: '/wmarchive/data/performance?metric=jobstate',
         contentType: "application/json",
         type: 'GET',
         cache: false,
     }).done(function(data, msg, xhr) {
-        self.siteCount = data.result[0].site_count;
+        self.siteCount = data.result[0].performance;
         self.render();
     });
   },
