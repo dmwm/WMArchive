@@ -92,6 +92,20 @@ $btn-secondary-border: $light;
     @extend strong;
     color: $highlight;
   }
+
+  &.filter-active {
+    input, button {
+      border-color: $highlight;
+      background-color: $highlight;
+      color: $background;
+    }
+  }
+
+  .dropdown-menu {
+    max-height: 10rem;
+    overflow-y: auto;
+  }
+
 }
 
 #metrics {
@@ -154,5 +168,12 @@ $btn-secondary-border: $light;
   }
   .chart-label {
     font-size: small;
+  }
+}
+
+.dropdown {
+  .dropdown-cursor {
+    background-color: $highlight;
+    color: $background;
   }
 }

@@ -3,7 +3,7 @@ var app = app || {};
 app.MetricSelector = Backbone.View.extend({
 
   tagName: 'button',
-  className: 'btn btn-secondary metric-selector',
+  className: 'btn btn-secondary btn-block metric-selector',
   attributes: {
     type: "button",
   },

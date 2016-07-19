@@ -14,6 +14,8 @@ app.MetricsView = Backbone.View.extend({
       new app.MetricSelector({ id: "readTotal", label: "Read Total" }),
       new app.MetricSelector({ id: "writeTotal", label: "Write Total" }),
     ];
+    this.model = app.scope;
+    this.model.on('change:metric', this.metricChanged, this);
   },
 
   render: function(){
@@ -23,6 +25,7 @@ app.MetricsView = Backbone.View.extend({
       this.$('#metric-selectors').append(metricSelector.$el);
       metricSelector.render();
     }
+    this.metricChanged();
   },
 
   events: {
@@ -30,10 +33,13 @@ app.MetricsView = Backbone.View.extend({
   },
 
   setActive: function(event) {
-    this.$('.active').removeClass('active');
-    $(event.target).addClass('active');
     app.scope.set({ metric: event.target.id });
   },
+
+  metricChanged: function() {
+    this.$('.active').removeClass('active');
+    this.$('#' + app.scope.get('metric')).addClass('active');
+  }
 
 });
 

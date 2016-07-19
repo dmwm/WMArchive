@@ -7,17 +7,20 @@ app.PerformanceView = Backbone.View.extend({
   initialize: function() {
     this.scopeView = new app.ScopeView();
     this.metricsView = new app.MetricsView();
-    this.requestPerformance();
+    this.model = app.scope;
+    this.model.on('change:metrics', this.render, this);
   },
 
-  render: function(){
+  render: function() {
     this.$el.html(this.template());
     this.scopeView.setElement(this.$('#scope')).render();
     this.metricsView.setElement(this.$('#metrics')).render();
 
     var self = this;
-    if (self.siteCount != null) {
-      var siteCount = self.siteCount;
+    var metrics = self.model.get('metrics');
+
+    if (metrics != null) {
+      var siteCount = metrics.jobstatePerSite;
       var sites = siteCount.map(function(site) { return site['_id'] })
       var counts = siteCount.map(function(site) { return d3.sum(site['jobstates'].map(function(stateData) { return stateData['count'] })) });
       var maxCount = d3.max(counts);
@@ -25,13 +28,13 @@ app.PerformanceView = Backbone.View.extend({
       var canvas = d3.select('#visualizations');
 
       var container = canvas.selectAll('.site-count-container')
-        .data(self.siteCount)
+        .data(siteCount)
         .enter()
           .append('div').attr('class', 'site-count-container')
       var pie = container.append('svg')
         .attr('class', 'chart')
         .attr('width', function(site) {
-          return d3.sum(site['jobstates'].map(function(stateData) { return stateData['count'] })) / maxCount * 200 + 'px';
+          return Math.sqrt(d3.sum(site['jobstates'].map(function(stateData) { return stateData['count'] })) / maxCount) * 200 + 'px';
         })
         .attr('viewBox', '0 0 100 100')
         .append("g")
@@ -116,23 +119,6 @@ app.PerformanceView = Backbone.View.extend({
       // });
       // canvas.show();
     }
-  },
-
-  requestPerformance: function() {
-
-    this.status = 'Loading performance...';
-    this.render();
-
-    var self = this;
-    $.ajax({
-        url: '/wmarchive/data/performance?metric=jobstate',
-        contentType: "application/json",
-        type: 'GET',
-        cache: false,
-    }).done(function(data, msg, xhr) {
-        self.siteCount = data.result[0].performance;
-        self.render();
-    });
   },
 
 });

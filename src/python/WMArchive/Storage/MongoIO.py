@@ -192,6 +192,8 @@ class MongoStorage(Storage):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
+
+        # Construct scope
         scope = []
 
         # Timeframe
@@ -209,9 +211,34 @@ class MongoStorage(Storage):
                 }
             })
 
+        # Unwind `stats`
+        scope.append({ '$unwind': '$stats' })
+
+        # Scope
+        if host is not None:
+            scope.append({
+                '$match': {
+                    'stats.scope.host': host,
+                }
+            })
+
+        if site is not None:
+            scope.append({
+                '$match': {
+                    'stats.scope.site': site,
+                }
+            })
+
+
+        # Collect hosts
+        hosts = list(self.performance_data.daily.distinct('stats.scope.host'))
+        # Collect sites
+        sites = list(self.performance_data.daily.distinct('stats.scope.site'))
+
+        # Collect metrics
+        metrics = {}
         if metric == 'jobstate':
-            return list(self.performance_data.daily.aggregate(scope + [
-                { '$unwind': '$stats' },
+            metrics['jobstatePerSite'] = list(self.performance_data.daily.aggregate(scope + [
                 {
                     '$group': {
                         '_id': { 'site': '$stats.scope.site', 'jobstate': '$stats.scope.jobstate' },
@@ -230,3 +257,9 @@ class MongoStorage(Storage):
                     }
                 }
             ]))
+
+        return {
+            "hosts": hosts,
+            "sites": sites,
+            "metrics": metrics,
+        }

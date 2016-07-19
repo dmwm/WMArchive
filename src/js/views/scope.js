@@ -13,12 +13,11 @@ app.ScopeView = Backbone.View.extend({
     this.timeframeSelector = new app.TimeframeSelector();
   },
 
-  render: function(){
+  render: function() {
     this.$el.html(this.template());
     for (var i in this.filterViews) {
       var filterView = this.filterViews[i];
-      this.$('#filters').append(filterView.$el);
-      filterView.render();
+      this.$('#filters').append(filterView.render().$el);
     }
     this.timeframeSelector.setElement(this.$('#timeframe')).render();
   },

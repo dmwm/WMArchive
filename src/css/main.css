@@ -4774,6 +4774,13 @@ a.bg-danger:focus, a.bg-danger:hover {
     margin-left: 1rem; }
   .filter-container label {
     color: #DB392E; }
+  .filter-container.filter-active input, .filter-container.filter-active button {
+    border-color: #DB392E;
+    background-color: #DB392E;
+    color: white; }
+  .filter-container .dropdown-menu {
+    max-height: 10rem;
+    overflow-y: auto; }
 
 #metrics .structure {
   display: block;
@@ -4819,5 +4826,9 @@ a.bg-danger:focus, a.bg-danger:hover {
     height: 200px; }
   .site-count-container .chart-label {
     font-size: small; }
+
+.dropdown .dropdown-cursor {
+  background-color: #DB392E;
+  color: white; }
 
 /*# sourceMappingURL=main.css.map */
