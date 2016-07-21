@@ -151,6 +151,9 @@ $btn-secondary-border: $light;
 // Canvas
 
 #visualizations {
+}
+
+.canvas-flex {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -159,16 +162,35 @@ $btn-secondary-border: $light;
 }
 
 .site-count-container {
-  margin: 1rem;
+  margin: $spacer;
   display: flex;
   flex-direction: column;
   align-items: center;
   .chart {
     height: 200px;
   }
-  .chart-label {
-    font-size: small;
+}
+
+.full-width-container {
+  margin: $spacer;
+  display: flex;
+  flex-direction: row;;
+  align-items: center;
+  .chart {
+    height: 2rem;
+    flex: 1;
   }
+  text {
+    width: 12rem;
+  }
+}
+
+rect {
+  fill: $structure;
+}
+
+.chart-label {
+  font-size: small;
 }
 
 .dropdown {

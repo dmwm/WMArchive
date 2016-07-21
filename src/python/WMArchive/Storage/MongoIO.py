@@ -235,8 +235,10 @@ class MongoStorage(Storage):
         # Collect sites
         sites = list(self.performance_data.daily.distinct('stats.scope.site'))
 
+
         # Collect metrics
         metrics = {}
+
         if metric == 'jobstate':
             metrics['jobstatePerSite'] = list(self.performance_data.daily.aggregate(scope + [
                 {
@@ -257,6 +259,25 @@ class MongoStorage(Storage):
                     }
                 }
             ]))
+
+        if metric == 'totalJobTime':
+            metrics['jobtimePerSite'] = list(self.performance_data.daily.aggregate(scope + [
+                {
+                    '$group': {
+                        '_id': '$stats.scope.site',
+                        'count': { '$sum': '$stats.count' },
+                        'totalJobTime': { '$sum': '$stats.performance.cpu.TotalJobTime' },
+                    }
+                },
+                {
+                    '$project': {
+                        '_id': False,
+                        'site': '$_id',
+                        'averageJobTime': { '$divide': [ '$totalJobTime', '$count' ] },
+                    }
+                }
+            ]))
+
 
         return {
             "hosts": hosts,

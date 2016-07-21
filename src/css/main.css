@@ -4810,7 +4810,7 @@ a.bg-danger:focus, a.bg-danger:hover {
   margin-bottom: 0.5rem;
   margin-top: 1rem; }
 
-#visualizations {
+.canvas-flex {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -4824,8 +4824,23 @@ a.bg-danger:focus, a.bg-danger:hover {
   align-items: center; }
   .site-count-container .chart {
     height: 200px; }
-  .site-count-container .chart-label {
-    font-size: small; }
+
+.full-width-container {
+  margin: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center; }
+  .full-width-container .chart {
+    height: 2rem;
+    flex: 1; }
+  .full-width-container text {
+    width: 12rem; }
+
+rect {
+  fill: #77C8E5; }
+
+.chart-label {
+  font-size: small; }
 
 .dropdown .dropdown-cursor {
   background-color: #DB392E;
