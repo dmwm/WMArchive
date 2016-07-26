@@ -22,9 +22,23 @@ app.PerformanceView = Backbone.View.extend({
     var canvas = this.$('#visualizations');
 
     for (var metric in metrics) {
-      var visualization = new app.visualizations[metric]({ data: metrics[metric] });
-      canvas.append(visualization.render().$el);
+      var V = app.visualizations[metric];
+      if (V != null) {
+        var visualization = new V({ data: metrics[metric] });
+        var section = new app.VisualizationView().render();
+        section.$el.append('<h5>' + visualization.title + '</h5>');
+        section.$el.append(visualization.render().$el);
+        canvas.append(section.$el);
+        $('[data-toggle="tooltip"]').tooltip(); // FIXME: Move this to an appropriate place
+      }
     }
   },
+
+});
+
+app.VisualizationView = Backbone.View.extend({
+
+  tagName: 'section',
+  className: 'visualization-container',
 
 });

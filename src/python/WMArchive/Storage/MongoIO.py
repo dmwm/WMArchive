@@ -240,6 +240,32 @@ class MongoStorage(Storage):
         metrics = {}
 
         if metric == 'jobstate':
+            metrics['jobstatePerHost'] = list(self.performance_data.daily.aggregate(scope + [
+                {
+                    '$group': {
+                        '_id': { 'site': '$stats.scope.host', 'jobstate': '$stats.scope.jobstate' },
+                        'count': { '$sum': '$stats.count' }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$_id.site',
+                        'jobstates': {
+                            '$push': {
+                                'jobstate': '$_id.jobstate',
+                                'count': '$count'
+                            }
+                        }
+                    }
+                },
+                {
+                    '$project': {
+                        '_id': False,
+                        'host': '$_id',
+                        'jobstates': '$jobstates',
+                    }
+                }
+            ]))
             metrics['jobstatePerSite'] = list(self.performance_data.daily.aggregate(scope + [
                 {
                     '$group': {

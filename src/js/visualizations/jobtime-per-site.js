@@ -4,6 +4,7 @@ app.visualizations = app.visualizations || {};
 app.visualizations['jobtimePerSite'] = Backbone.View.extend({
 
   id: 'jobtimePerSite',
+  title: 'Average Job Time per Site',
 
   initialize: function(options) {
     _.extend(this, _.pick(options, 'data'));

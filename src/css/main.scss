@@ -150,7 +150,8 @@ $btn-secondary-border: $light;
 
 // Canvas
 
-#visualizations {
+.visualization-container {
+  margin-top: 2*$spacer;
 }
 
 .canvas-flex {
@@ -183,10 +184,6 @@ $btn-secondary-border: $light;
   text {
     width: 12rem;
   }
-}
-
-rect {
-  fill: $structure;
 }
 
 .chart-label {

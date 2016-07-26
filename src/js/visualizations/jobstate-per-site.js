@@ -4,6 +4,7 @@ app.visualizations = app.visualizations || {};
 app.visualizations['jobstatePerSite'] = Backbone.View.extend({
 
   id: 'jobstatePerSite',
+  title: 'Jobstate per Site',
   className: 'canvas-flex',
 
   initialize: function(options) {

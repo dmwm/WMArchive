@@ -4810,6 +4810,9 @@ a.bg-danger:focus, a.bg-danger:hover {
   margin-bottom: 0.5rem;
   margin-top: 1rem; }
 
+.visualization-container {
+  margin-top: 2rem; }
+
 .canvas-flex {
   display: flex;
   flex-direction: row;
@@ -4835,9 +4838,6 @@ a.bg-danger:focus, a.bg-danger:hover {
     flex: 1; }
   .full-width-container text {
     width: 12rem; }
-
-rect {
-  fill: #77C8E5; }
 
 .chart-label {
   font-size: small; }
