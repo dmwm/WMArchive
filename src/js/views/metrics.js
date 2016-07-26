@@ -15,7 +15,7 @@ app.MetricsView = Backbone.View.extend({
       new app.MetricSelector({ id: "writeTotal", label: "Write Total" }),
     ];
     this.model = app.scope;
-    this.model.on('change:metric', this.metricChanged, this);
+    this.model.on('change:metrics', this.metricsChanged, this);
   },
 
   render: function(){
@@ -25,20 +25,30 @@ app.MetricsView = Backbone.View.extend({
       this.$('#metric-selectors').append(metricSelector.$el);
       metricSelector.render();
     }
-    this.metricChanged();
+    this.metricsChanged();
   },
 
   events: {
-    'click .metric-selector': 'setActive',
+    'click .metric-selector': 'toggleActive',
   },
 
-  setActive: function(event) {
-    app.scope.set({ metric: event.target.id });
+  toggleActive: function(event) {
+    var metrics = _.clone(app.scope.get('metrics'));
+    var metric = event.target.id;
+    var i = metrics.indexOf(metric)
+    if (i >= 0) {
+      metrics.splice(i, 1);
+    } else {
+      metrics.push(metric);
+    }
+    app.scope.set({ metrics: metrics });
   },
 
-  metricChanged: function() {
+  metricsChanged: function() {
     this.$('.active').removeClass('active');
-    this.$('#' + app.scope.get('metric')).addClass('active');
+    for (var metric of this.model.get('metrics')) {
+      this.$('#' + metric).addClass('active');
+    }
   }
 
 });

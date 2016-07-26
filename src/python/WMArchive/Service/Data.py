@@ -23,7 +23,7 @@ import cherrypy
 # WMCore modules
 from WMCore.REST.Server import RESTEntity, restcall
 from WMCore.REST.Tools import tools
-from WMCore.REST.Validation import validate_str
+from WMCore.REST.Validation import validate_str, validate_strlist
 from WMCore.REST.Format import JSONFormat
 
 # WMArchive modules
@@ -61,7 +61,7 @@ class WMAData(RESTEntity):
                 param.args.remove(param.args[0])
 
                 # Validate arguments
-                validate_str('metric', param, safe, re.compile(r'^[a-zA-Z]+'), optional=False)
+                validate_strlist('metrics[]', param, safe, re.compile(r'^[a-zA-Z]+'))
                 date_pattern = PAT_YYYYMMDD
                 validate_str('start_date', param, safe, date_pattern, optional=True)
                 validate_str('end_date', param, safe, date_pattern, optional=True)
@@ -94,6 +94,7 @@ class WMAData(RESTEntity):
         All work is done by WMArchiveManager
         """
         if 'performance' in args:
+            kwds['metrics'] = kwds.pop('metrics[]', None)
             return results(dict(performance=self.mgr.performance(**kwds)))
         if  kwds.get('status', ''):
             return results(dict(status=self.mgr.status()))

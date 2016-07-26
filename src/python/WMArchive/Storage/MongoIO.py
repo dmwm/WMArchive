@@ -188,7 +188,7 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-    def performance(self, metric, start_date=None, end_date=None, host=None, site=None, **kwargs):
+    def performance(self, metrics, start_date=None, end_date=None, host=None, site=None, **kwargs):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
@@ -196,7 +196,7 @@ class MongoStorage(Storage):
         # Construct scope
         scope = []
 
-        # Timeframe
+        # Timeframes
         # TODO: build more robust date parsing
         if start_date is not None:
             scope.append({
@@ -236,11 +236,11 @@ class MongoStorage(Storage):
         sites = list(self.performance_data.daily.distinct('stats.scope.site'))
 
 
-        # Collect metrics
-        metrics = {}
+        # Collect visualizations
+        visualizations = {}
 
-        if metric == 'jobstate':
-            metrics['jobstatePerHost'] = list(self.performance_data.daily.aggregate(scope + [
+        if 'jobstate' in metrics:
+            visualizations['jobstatePerHost'] = list(self.performance_data.daily.aggregate(scope + [
                 {
                     '$group': {
                         '_id': { 'site': '$stats.scope.host', 'jobstate': '$stats.scope.jobstate' },
@@ -266,7 +266,7 @@ class MongoStorage(Storage):
                     }
                 }
             ]))
-            metrics['jobstatePerSite'] = list(self.performance_data.daily.aggregate(scope + [
+            visualizations['jobstatePerSite'] = list(self.performance_data.daily.aggregate(scope + [
                 {
                     '$group': {
                         '_id': { 'site': '$stats.scope.site', 'jobstate': '$stats.scope.jobstate' },
@@ -286,8 +286,8 @@ class MongoStorage(Storage):
                 }
             ]))
 
-        if metric == 'totalJobTime':
-            metrics['jobtimePerSite'] = list(self.performance_data.daily.aggregate(scope + [
+        if 'totalJobTime' in metrics:
+            visualizations['jobtimePerSite'] = list(self.performance_data.daily.aggregate(scope + [
                 {
                     '$group': {
                         '_id': '$stats.scope.site',
@@ -308,5 +308,5 @@ class MongoStorage(Storage):
         return {
             "hosts": hosts,
             "sites": sites,
-            "metrics": metrics,
+            "visualizations": visualizations,
         }

@@ -5,7 +5,7 @@ app.Scope = Backbone.Model.extend({
   urlRoot: '/wmarchive/data/performance',
 
   defaults: {
-    metric: 'jobstate',
+    metrics: [ 'jobstate' ],
     start_date: moment('2016-06-28'),
     end_date: moment(),
     host: null,
@@ -14,7 +14,7 @@ app.Scope = Backbone.Model.extend({
 
   initialize: function() {
     this.fetch();
-    for (var key of [ 'metric', 'start_date', 'end_date', 'host', 'site' ]) {
+    for (var key of [ 'metrics', 'start_date', 'end_date', 'host', 'site' ]) {
       this.on('change:' + key, function(self) {
         this.fetch();
       });
@@ -24,7 +24,7 @@ app.Scope = Backbone.Model.extend({
   sync: function (method, model, options) {
     options = options || {};
     options.data = {};
-    for (var key of [ 'metric', 'start_date', 'end_date', 'host', 'site' ]) {
+    for (var key of [ 'metrics', 'start_date', 'end_date', 'host', 'site' ]) {
       var value = this.get(key);
       if (value != null && value != '') {
         switch (key) {

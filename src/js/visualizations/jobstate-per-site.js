@@ -1,7 +1,7 @@
 var app = app || {};
-app.visualizations = app.visualizations || {};
+app.visualizationViews = app.visualizationViews || {};
 
-app.visualizations['jobstatePerSite'] = Backbone.View.extend({
+app.visualizationViews['jobstatePerSite'] = Backbone.View.extend({
 
   id: 'jobstatePerSite',
   title: 'Jobstate per Site',

@@ -1,7 +1,7 @@
 var app = app || {};
-app.visualizations = app.visualizations || {};
+app.visualizationViews = app.visualizationViews || {};
 
-app.visualizations['jobtimePerSite'] = Backbone.View.extend({
+app.visualizationViews['jobtimePerSite'] = Backbone.View.extend({
 
   id: 'jobtimePerSite',
   title: 'Average Job Time per Site',
