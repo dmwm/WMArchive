@@ -36,6 +36,7 @@ class MapReduce(object):
                 continue
 
             meta_data = record['meta_data']
+            taskname_components = record['task'].split('/')
 
             # Determine timeframe of aggregation
             timestamp = datetime.fromtimestamp(meta_data['ts'])
@@ -49,10 +50,13 @@ class MapReduce(object):
 
                 # Define scope
                 scope = {
-                    "host": meta_data['host'],
-                    "site": step['site'],
-                    "jobtype": meta_data['jobtype'],
-                    "jobstate": meta_data['jobstate'],
+                    'workflow': taskname_components[1],
+                    'task': taskname_components[-1],
+                    'host': meta_data['host'],
+                    'site': step['site'],
+                    'jobtype': meta_data['jobtype'],
+                    'jobstate': meta_data['jobstate'],
+                    'step': step['name'],
                 }
                 scope_hash = get_scope_hash(scope)
 

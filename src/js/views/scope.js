@@ -6,6 +6,8 @@ app.ScopeView = Backbone.View.extend({
 
   initialize: function() {
     this.filterViews = [
+      new app.FilterView({ input_id: "workflow", label: "Workflow" }),
+      new app.FilterView({ input_id: "task", label: "Task" }),
       new app.FilterView({ input_id: "host", label: "Host" }),
       new app.FilterView({ input_id: "site", label: "Site" }),
       new app.AddFilterButton(),

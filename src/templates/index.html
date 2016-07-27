@@ -82,6 +82,7 @@
 
   <!-- Entry Point -->
   <script type="text/javascript">
+    app.scope = new app.Scope();
     new app.NavMainView({ el: $('#nav-main-container') }).render();
     new app.FooterView({ el: $('#site-footer') }).render();
     app.router = new app.Router();

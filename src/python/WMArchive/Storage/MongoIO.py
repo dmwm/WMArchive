@@ -188,7 +188,7 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-    def performance(self, metrics, start_date=None, end_date=None, host=None, site=None, **kwargs):
+    def performance(self, metrics, start_date=None, end_date=None, workflow=None, task=None, host=None, site=None, **kwargs):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
@@ -215,6 +215,20 @@ class MongoStorage(Storage):
         scope.append({ '$unwind': '$stats' })
 
         # Scope
+        if workflow is not None:
+            scope.append({
+                '$match': {
+                    'stats.scope.workflow': workflow,
+                }
+            })
+
+        if task is not None:
+            scope.append({
+                '$match': {
+                    'stats.scope.task': task,
+                }
+            })
+
         if host is not None:
             scope.append({
                 '$match': {
@@ -230,9 +244,10 @@ class MongoStorage(Storage):
             })
 
 
-        # Collect hosts
+        # Collect suggestions
+        workflows = list(self.performance_data.daily.distinct('stats.scope.workflow'))
+        tasks = list(self.performance_data.daily.distinct('stats.scope.task'))
         hosts = list(self.performance_data.daily.distinct('stats.scope.host'))
-        # Collect sites
         sites = list(self.performance_data.daily.distinct('stats.scope.site'))
 
 
@@ -306,6 +321,8 @@ class MongoStorage(Storage):
 
 
         return {
+            "workflows": workflows,
+            "tasks": tasks,
             "hosts": hosts,
             "sites": sites,
             "visualizations": visualizations,
