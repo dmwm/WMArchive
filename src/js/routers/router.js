@@ -56,18 +56,15 @@ function parseQueryString(queryString) {
           return o;
         }),
         function(o){
-          console.log(o);
           for (var key of Object.keys(o)) {
             if (key.endsWith('[]')) {
               var new_key = key.substring(0, key.length-2);
-              console.log(new_key);
               var existing = params[new_key] || [];
               existing.push(o[key]);
               delete o[key];
               o[new_key] = existing;
             }
           }
-          console.log(o);
           _.extend(params,o);
         }
       );

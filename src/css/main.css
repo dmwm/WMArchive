@@ -4765,22 +4765,38 @@ a.bg-danger:focus, a.bg-danger:hover {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: center; }
+  align-items: center;
+  justify-content: flex-start; }
 
 .filter-container {
-  max-width: 15rem;
-  margin: 0; }
-  .filter-container + .filter-container {
-    margin-left: 1rem; }
+  max-width: 12em;
+  margin: 0.5rem; }
   .filter-container label {
-    color: #DB392E; }
+    color: #DB392E;
+    font-size: 0.8rem; }
   .filter-container.filter-active input, .filter-container.filter-active button {
     border-color: #DB392E;
-    background-color: #DB392E;
+    background-color: #DB392E !important;
     color: white; }
   .filter-container .dropdown-menu {
     max-height: 10rem;
     overflow-y: auto; }
+  .filter-container .form-group {
+    margin: 0; }
+  .filter-container .form-control[readonly] {
+    background-color: white; }
+  .filter-container .filter-text-container {
+    position: relative; }
+  .filter-container .filter-text {
+    padding-right: 2rem; }
+  .filter-container .clear-filter {
+    color: white;
+    position: absolute;
+    right: 0.7rem;
+    top: 0;
+    font-size: 0.8rem;
+    line-height: 2.4rem;
+    cursor: pointer; }
 
 #metrics .structure {
   display: block;
@@ -4836,7 +4852,7 @@ a.bg-danger:focus, a.bg-danger:hover {
   .full-width-container .chart {
     height: 2rem;
     flex: 1; }
-  .full-width-container text {
+  .full-width-container .chart-label {
     width: 12rem; }
 
 .chart-label {
@@ -4845,5 +4861,8 @@ a.bg-danger:focus, a.bg-danger:hover {
 .dropdown .dropdown-cursor {
   background-color: #DB392E;
   color: white; }
+
+a {
+  cursor: pointer; }
 
 /*# sourceMappingURL=main.css.map */

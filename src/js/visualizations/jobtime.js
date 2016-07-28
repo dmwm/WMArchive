@@ -1,10 +1,9 @@
 var app = app || {};
 app.visualizationViews = app.visualizationViews || {};
 
-app.visualizationViews['jobtimePerSite'] = Backbone.View.extend({
+app.visualizationViews['jobtime'] = Backbone.View.extend({
 
-  id: 'jobtimePerSite',
-  title: 'Average Job Time per Site',
+  title: 'Average Job Time',
 
   initialize: function(options) {
     _.extend(this, _.pick(options, 'data'));
@@ -30,7 +29,7 @@ app.visualizationViews['jobtimePerSite'] = Backbone.View.extend({
     var label = container.append('text')
       .attr('class', 'chart-label')
       .text(function(d) {
-        return d['site'];
+        return d['label'];
       });
 
     var length = d3.scaleLinear()

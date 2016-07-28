@@ -188,142 +188,111 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-    def performance(self, metrics, start_date=None, end_date=None, workflow=None, task=None, host=None, site=None, **kwargs):
+    def performance(self, metrics, axes, start_date=None, end_date=None, **kwargs):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
 
+        # Valid keys in `stats.scope`
+        scope_keys = [ 'workflow', 'task', 'host', 'site', 'jobtype' ]
+
         # Construct scope
-        scope = []
+        timeframe_scope = []
 
         # Timeframes
         # TODO: build more robust date parsing
         if start_date is not None:
-            scope.append({
+            timeframe_scope.append({
                 '$match': {
                     'start_date': { '$gte': datetime.datetime(int(start_date[0:4]), int(start_date[4:6]), int(start_date[6:8]), 0, 0, 0) },
                 }
             })
         if end_date is not None:
-            scope.append({
+            timeframe_scope.append({
                 '$match': {
                     'end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
                 }
             })
 
         # Unwind `stats`
-        scope.append({ '$unwind': '$stats' })
+        timeframe_scope.append({ '$unwind': '$stats' })
 
         # Scope
-        if workflow is not None:
-            scope.append({
+        filters = {}
+        for scope_key in kwargs:
+            if scope_key not in scope_keys or kwargs[scope_key] is None:
+                continue
+            filters[scope_key] = {
                 '$match': {
-                    'stats.scope.workflow': workflow,
+                    'stats.scope.' + scope_key: kwargs[scope_key],
                 }
-            })
-
-        if task is not None:
-            scope.append({
-                '$match': {
-                    'stats.scope.task': task,
-                }
-            })
-
-        if host is not None:
-            scope.append({
-                '$match': {
-                    'stats.scope.host': host,
-                }
-            })
-
-        if site is not None:
-            scope.append({
-                '$match': {
-                    'stats.scope.site': site,
-                }
-            })
-
+            }
+        scope = timeframe_scope + filters.values()
 
         # Collect suggestions
-        workflows = list(self.performance_data.daily.distinct('stats.scope.workflow'))
-        tasks = list(self.performance_data.daily.distinct('stats.scope.task'))
-        hosts = list(self.performance_data.daily.distinct('stats.scope.host'))
-        sites = list(self.performance_data.daily.distinct('stats.scope.site'))
-
+        suggestions = { scope_key: map(lambda d: d['_id'], list(self.performance_data.daily.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
+            {
+                '$group': {
+                    '_id': '$stats.scope.' + scope_key,
+                },
+            },
+        ]))) for scope_key in scope_keys }
 
         # Collect visualizations
         visualizations = {}
 
-        if 'jobstate' in metrics:
-            visualizations['jobstatePerHost'] = list(self.performance_data.daily.aggregate(scope + [
-                {
-                    '$group': {
-                        '_id': { 'site': '$stats.scope.host', 'jobstate': '$stats.scope.jobstate' },
-                        'count': { '$sum': '$stats.count' }
-                    }
-                },
-                {
-                    '$group': {
-                        '_id': '$_id.site',
-                        'jobstates': {
-                            '$push': {
-                                'jobstate': '$_id.jobstate',
-                                'count': '$count'
+        for metric in metrics:
+            visualizations[metric] = {}
+
+            for axis in axes:
+
+                if metric == 'jobstate':
+                    visualizations[metric][axis] = list(self.performance_data.daily.aggregate(scope + [
+                        {
+                            '$group': {
+                                '_id': { 'axis': '$stats.scope.' + axis, 'jobstate': '$stats.scope.jobstate' },
+                                'count': { '$sum': '$stats.count' }
+                            }
+                        },
+                        {
+                            '$group': {
+                                '_id': '$_id.axis',
+                                'jobstates': {
+                                    '$push': {
+                                        'jobstate': '$_id.jobstate',
+                                        'count': '$count'
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            '$project': {
+                                '_id': False,
+                                'label': '$_id',
+                                'jobstates': '$jobstates',
                             }
                         }
-                    }
-                },
-                {
-                    '$project': {
-                        '_id': False,
-                        'host': '$_id',
-                        'jobstates': '$jobstates',
-                    }
-                }
-            ]))
-            visualizations['jobstatePerSite'] = list(self.performance_data.daily.aggregate(scope + [
-                {
-                    '$group': {
-                        '_id': { 'site': '$stats.scope.site', 'jobstate': '$stats.scope.jobstate' },
-                        'count': { '$sum': '$stats.count' }
-                    }
-                },
-                {
-                    '$group': {
-                        '_id': '$_id.site',
-                        'jobstates': {
-                            '$push': {
-                                'jobstate': '$_id.jobstate',
-                                'count': '$count'
+                    ]))
+
+                if metric == 'jobtime':
+                    visualizations[metric][axis] = list(self.performance_data.daily.aggregate(scope + [
+                        {
+                            '$group': {
+                                '_id': '$stats.scope.' + axis,
+                                'count': { '$sum': '$stats.count' },
+                                'totalJobTime': { '$sum': '$stats.performance.cpu.TotalJobTime' },
+                            }
+                        },
+                        {
+                            '$project': {
+                                '_id': False,
+                                'label': '$_id',
+                                'averageJobTime': { '$divide': [ '$totalJobTime', '$count' ] },
                             }
                         }
-                    }
-                }
-            ]))
-
-        if 'totalJobTime' in metrics:
-            visualizations['jobtimePerSite'] = list(self.performance_data.daily.aggregate(scope + [
-                {
-                    '$group': {
-                        '_id': '$stats.scope.site',
-                        'count': { '$sum': '$stats.count' },
-                        'totalJobTime': { '$sum': '$stats.performance.cpu.TotalJobTime' },
-                    }
-                },
-                {
-                    '$project': {
-                        '_id': False,
-                        'site': '$_id',
-                        'averageJobTime': { '$divide': [ '$totalJobTime', '$count' ] },
-                    }
-                }
-            ]))
-
+                    ]))
 
         return {
-            "workflows": workflows,
-            "tasks": tasks,
-            "hosts": hosts,
-            "sites": sites,
+            "suggestions": suggestions,
             "visualizations": visualizations,
         }

@@ -4,6 +4,14 @@ app.Scope = Backbone.Model.extend({
 
   urlRoot: '/wmarchive/data/performance',
 
+  filters: {
+    'workflow': "Workflow",
+    'task': "Task",
+    'host': "Host",
+    'site': "Site",
+    'jobtype': "Job Type"
+  },
+
   defaults: {
     metrics: [ 'jobstate' ],
     start_date: moment('2016-06-28'),
@@ -12,6 +20,8 @@ app.Scope = Backbone.Model.extend({
     task: null,
     host: null,
     site: null,
+    jobtype: null,
+    axes: [ 'workflow', 'host', 'site' ],
   },
 
   initialize: function() {
@@ -58,7 +68,7 @@ app.Scope = Backbone.Model.extend({
     var params = this.queryParameters();
     app.router.navigate('/performance?' + Object.keys(params).map(function(key) {
       var value = params[key];
-      if (key == 'metrics') {
+      if (key == 'metrics' || key == 'axes') {
         return value.map(function(element) {
           return key + '[]=' + element;
         }).join('&');
@@ -69,7 +79,6 @@ app.Scope = Backbone.Model.extend({
   },
 
   setQuery: function(query) {
-    console.log(query);
     for (var key in query) {
       if (!(_.contains(Object.keys(this.defaults), key))) {
         delete query[key];
@@ -84,7 +93,6 @@ app.Scope = Backbone.Model.extend({
           break;
       }
     }
-    console.log(query);
     this.set(query);
   },
 

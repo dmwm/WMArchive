@@ -79,24 +79,23 @@ $btn-secondary-border: $light;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .filter-container {
-  max-width: 15rem;
-  margin: 0;
-  + .filter-container {
-    margin-left: $spacer;
-  }
+  max-width: 12em;
+  margin: 0.5rem;
 
   label {
     @extend strong;
     color: $highlight;
+    font-size: 0.8rem;
   }
 
   &.filter-active {
     input, button {
       border-color: $highlight;
-      background-color: $highlight;
+      background-color: $highlight !important;
       color: $background;
     }
   }
@@ -104,6 +103,30 @@ $btn-secondary-border: $light;
   .dropdown-menu {
     max-height: 10rem;
     overflow-y: auto;
+  }
+
+  .form-group {
+    margin: 0;
+  }
+
+  .form-control[readonly] {
+    background-color: $background;
+  }
+
+  .filter-text-container {
+    position: relative;
+  }
+  .filter-text {
+    padding-right: 2rem;
+  }
+  .clear-filter {
+    color: $background;
+    position: absolute;
+    right: 0.7rem;
+    top: 0;
+    font-size: 0.8rem;
+    line-height: 2.4rem;
+    cursor: pointer;
   }
 
 }
@@ -181,7 +204,7 @@ $btn-secondary-border: $light;
     height: 2rem;
     flex: 1;
   }
-  text {
+  .chart-label {
     width: 12rem;
   }
 }
@@ -195,4 +218,8 @@ $btn-secondary-border: $light;
     background-color: $highlight;
     color: $background;
   }
+}
+
+a {
+  cursor: pointer;
 }

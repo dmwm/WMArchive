@@ -5,7 +5,7 @@ app.FilterView = Backbone.View.extend({
   tagName: 'fieldset',
   className: 'filter-container form-group',
 
-  template: _.template('<label for="<%=input_id%>"><%=label%></label><div class="input-group dropdown"><input type="text" class="form-control filter-text" id="<%=input_id%>" placeholder="<%=placeholder%>"><span class="input-group-btn"><button class="btn btn-secondary clear-filter" type="button">✕</button></span></div>'),
+  template: _.template('<div class="dropdown form-group"><label class="form-control-label" for="<%=input_id%>"><%=label%></label><div class="filter-text-container"><input type="search" class="form-control filter-text" id="<%=input_id%>" placeholder="<%=placeholder%>"><span class="clear-filter">✕</span></div></div>'),
 
   initialize: function(params) {
     this.label = params.label;
@@ -23,7 +23,7 @@ app.FilterView = Backbone.View.extend({
     var all_selection_options = new Bloodhound({
       datumTokenizer: Bloodhound.tokenizers.whitespace,
       queryTokenizer: Bloodhound.tokenizers.whitespace,
-      local: this.model.get(scope_key + 's') || [],
+      local: (this.model.get('suggestions') || {})[scope_key] || [],
     });
     function selection_options(q, sync) {
       if (q === '') {
