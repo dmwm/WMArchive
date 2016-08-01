@@ -36,6 +36,7 @@ class FrontPage(RESTFrontPage):
         :arg str mount: URL mount point."""
         mainroot = 'wmarchive' # entry point in access URL
         wpath = os.getenv('WMA_STATIC_ROOT', '')
+        print(wpath)
         if  not wpath:
             content = os.path.abspath(__file__).rsplit('/', 5)[0]
             xlib = (__file__.find("/xlib/") >= 0 and "x") or ""

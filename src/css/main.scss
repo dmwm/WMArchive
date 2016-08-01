@@ -190,22 +190,23 @@ $btn-secondary-border: $light;
   display: flex;
   flex-direction: column;
   align-items: center;
-  .chart {
-    height: 200px;
+  .chart-label {
+    text-align: center;
   }
 }
 
 .full-width-container {
   margin: $spacer;
-  display: flex;
-  flex-direction: row;;
-  align-items: center;
   .chart {
+    width: 100%;
     height: 2rem;
-    flex: 1;
   }
   .chart-label {
-    width: 12rem;
+    width: 100%;
+    margin-top: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 }
 

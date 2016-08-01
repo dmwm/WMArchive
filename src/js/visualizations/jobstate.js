@@ -14,39 +14,43 @@ app.visualizationViews['jobstate'] = Backbone.View.extend({
 
     var self = this;
     var data = this.data;
+    data.sort(function(lhs, rhs) { return (lhs.label || "").localeCompare(rhs.label || ""); });
+
+    // Preprocess data
+    var all_jobstates = new Set();
+    for (var d of data) {
+      for (var dd of d.jobstates) {
+        all_jobstates.add(dd.jobstate);
+      }
+    }
+    all_jobstates = Array.from(all_jobstates);
+    var axis_counts = data.map(function(d) { return d3.sum(d.jobstates, function(dd) { return dd.count; }) });
+    var max_count = d3.max(axis_counts);
+    var total_count = d3.sum(axis_counts);
+
+    var color = d3.scaleOrdinal()
+      .range(all_jobstates.map(function(d) {
+        switch (d) {
+          case 'success':
+            return '#31AD64';
+          case 'jobfailed':
+            return '#E54E42';
+          case 'submitfailed':
+            return '#3081B8';
+          default:
+            return 'black';
+        }
+      }))
+      .domain(all_jobstates);
+
+    var canvas = d3.select(this.el);
 
     if (data.length <= 5) {
-
-      // Preprocess data
-      var all_jobstates = new Set();
-      for (var d of data) {
-        for (var dd of d.jobstates) {
-          all_jobstates.add(dd.jobstate);
-        }
-      }
-      all_jobstates = Array.from(all_jobstates);
-      var max_count = d3.max(data, function(d) { return d3.sum(d.jobstates, function(dd) { return dd.count; }) });
 
       // Setup scales
       var length = d3.scaleLinear()
         .range([ 0, 100 ])
         .domain([ 0, max_count ]);
-      var color = d3.scaleOrdinal()
-        .range(all_jobstates.map(function(d) {
-          switch (d) {
-            case 'success':
-              return '#31AD64';
-            case 'jobfailed':
-              return '#E54E42';
-            case 'submitfailed':
-              return '#3081B8';
-            default:
-              return 'black';
-          }
-        }))
-        .domain(all_jobstates);
-
-      var canvas = d3.select(this.el);
 
       var stack = d3.stack()
           .keys(all_jobstates)
@@ -64,24 +68,20 @@ app.visualizationViews['jobstate'] = Backbone.View.extend({
         }
         return r;
       }));
+      stack_data = stack_data[0].map(function(col, i) {
+        var new_row = stack_data.map(function(row) {
+          var new_col = row[i];
+          new_col.jobstate = row.key;
+          return new_col;
+        });
+        new_row.label = col.data.label;
+        return new_row;
+      });
+
       var container = canvas.selectAll('.full-width-container')
-        .data(stack_data[0].map(function(col, i) {
-          var new_row = stack_data.map(function(row) {
-            var new_col = row[i];
-            new_col.jobstate = row.key;
-            return new_col;
-          });
-          new_row.label = col.data.label;
-          return new_row;
-        }))
+        .data(stack_data)
         .enter()
           .append('div').attr('class', 'full-width-container');
-
-      container.append('a')
-        .attr('class', 'chart-label')
-        .text(function(d) {
-          return d.label;
-        });
 
       var bar = container.append('svg')
         .attr('class', 'chart')
@@ -104,16 +104,32 @@ app.visualizationViews['jobstate'] = Backbone.View.extend({
           })
           .attr('data-toggle', 'tooltip')
           .attr('title', function(d) {
-            return d.jobstate + ': ' + (d[1] - d[0]) + ' jobs (' + numeral((d[1] - d[0]) / d3.sum(all_jobstates.map(function(jobstate) {
+            var job_count = d[1] - d[0];
+            return d.jobstate + ': ' + format_jobs(job_count) + ' (' + numeral(job_count / d3.sum(all_jobstates.map(function(jobstate) {
               return d.data[jobstate];
             }))).format('0.0%') + ')';
-          })
+          });
+
+        var label = container.append('div')
+          .attr('class', 'chart-label')
+
+        label.append('a')
+          .text(function(d) {
+            return d.label;
+          });
+        label.append('text')
+          .text(function(d) {
+            var job_count = d[d.length - 1][1];
+            return format_jobs(job_count) + ' (' + numeral(job_count / total_count).format('0.0%') + ')';
+          });
 
     } else {
 
       var labels = data.map(function(d) { return d['label'] })
       var counts = data.map(function(d) { return d3.sum(d['jobstates'].map(function(dd) { return dd['count'] })) });
       var maxCount = d3.max(counts);
+
+      var chart_size = 200; // py
 
       var canvas = d3.select(this.el)
         .attr('class', 'canvas-flex');
@@ -122,10 +138,12 @@ app.visualizationViews['jobstate'] = Backbone.View.extend({
         .data(data)
         .enter()
           .append('div').attr('class', 'site-count-container')
+          .attr('style', 'max-width: ' + chart_size + 'px')
       var pie = container.append('svg')
         .attr('class', 'chart')
+        .attr('height', chart_size + 'px')
         .attr('width', function(d) {
-          return Math.sqrt(d3.sum(d['jobstates'].map(function(dd) { return dd['count'] })) / maxCount) * 200 + 'px';
+          return Math.sqrt(d3.sum(d['jobstates'].map(function(dd) { return dd['count'] })) / maxCount) * chart_size + 'px';
         })
         .attr('viewBox', '0 0 100 100')
         .append("g")
@@ -137,7 +155,8 @@ app.visualizationViews['jobstate'] = Backbone.View.extend({
         .sort(null);
       var path = pie.selectAll('path')
         .data(function(d) {
-          return pieLayout(d.jobstates);
+          var dd = pieLayout(d.jobstates);
+          return dd;
         })
         .enter()
           .append('path')
@@ -155,13 +174,27 @@ app.visualizationViews['jobstate'] = Backbone.View.extend({
               default:
                 return 'black';
             }
+          })
+          .attr('data-toggle', 'tooltip')
+          .attr('title', function(d) {
+            var job_count = d.data.count;
+            var job_percentage = (d.endAngle - d.startAngle) / (2 * Math.PI);
+            return d.data.jobstate + ': ' + format_jobs(job_count) + ' (' + numeral(job_percentage).format('0.0%') + ')';
           });
 
-      var label = container.append('a')
+      container.append('a')
         .attr('class', 'chart-label')
+        .attr('style', 'max-width: ' + chart_size * 0.7 + 'px')
         .text(function(d) {
           return d['label'];
         })
+      container.append('text')
+        .attr('class', 'chart-label')
+        .text(function(d) {
+          var job_count = d3.sum(d['jobstates'].map(function(dd) { return dd['count'] }));
+          return format_jobs(job_count) + ' (' + numeral(job_count / total_count).format('0.0%') + ')';
+        });
+
 
     }
 
