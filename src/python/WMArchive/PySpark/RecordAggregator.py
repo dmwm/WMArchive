@@ -130,16 +130,21 @@ class MapReduce(object):
 
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
         # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
-        document['stats'] = document['stats'].values()
+        # document['stats'] = document['stats'].values()
+        stats = document['stats'].values()
+        for stat in stats:
+            stat['start_date'] = document['start_date']
+            stat['end_date'] = document['end_date']
 
         # Also dump results to json file
         with open('RecordAggregator_result.json', 'w') as outfile:
-            json.dump(document, outfile, default=json_util.default)
+            # json.dump(document, outfile, default=json_util.default)
+            json.dump(stats, outfile, default=json_util.default)
 
         # Store in MongoDB
         mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
         daily_collection = mongo_client['performance']['daily']
-        daily_collection.insert(document)
+        daily_collection.insert(stats)
 
         print("Aggregated performance metrics stored in MongoDB database {}.".format(daily_collection))
 

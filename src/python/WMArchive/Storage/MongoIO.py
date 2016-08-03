@@ -223,7 +223,7 @@ class MongoStorage(Storage):
             })
 
         # Unwind `stats`
-        timeframe_scope.append({ '$unwind': '$stats' })
+        # timeframe_scope.append({ '$unwind': '$stats' })
 
         # Scope
         filters = {}
@@ -232,7 +232,7 @@ class MongoStorage(Storage):
                 continue
             filters[scope_key] = {
                 '$match': {
-                    'stats.scope.' + scope_key: kwargs[scope_key],
+                    'scope.' + scope_key: kwargs[scope_key],
                 }
             }
         scope = timeframe_scope + filters.values()
@@ -241,7 +241,7 @@ class MongoStorage(Storage):
         suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(self.performance_data.daily.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
             {
                 '$group': {
-                    '_id': '$stats.scope.' + scope_key,
+                    '_id': '$scope.' + scope_key,
                 },
             },
         ]))) for scope_key in scope_keys }
@@ -258,8 +258,8 @@ class MongoStorage(Storage):
                     visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
-                                '_id': { 'axis': '$stats.scope.' + axis, 'jobstate': '$stats.scope.jobstate' },
-                                'count': { '$sum': '$stats.count' }
+                                '_id': { 'axis': '$scope.' + axis, 'jobstate': '$scope.jobstate' },
+                                'count': { '$sum': '$count' }
                             }
                         },
                         {
@@ -286,9 +286,9 @@ class MongoStorage(Storage):
                     visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
-                                '_id': '$stats.scope.' + axis,
-                                'count': { '$sum': '$stats.count' },
-                                'totalJobTime': { '$sum': '$stats.performance.cpu.TotalJobTime' },
+                                '_id': '$scope.' + axis,
+                                'count': { '$sum': '$count' },
+                                'totalJobTime': { '$sum': '$performance.cpu.TotalJobTime' },
                             }
                         },
                         {
