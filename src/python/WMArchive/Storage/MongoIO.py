@@ -193,6 +193,14 @@ class MongoStorage(Storage):
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
 
+        def get_aggregation_result(cursor_or_dict):
+            """
+            Fallback for pymongo<3.0
+            """
+            if type(cursor_or_dict) is dict:
+                return cursor_or_dict['result']
+            return list(cursor_or_dict)
+
         # Valid keys in `stats.scope`
         scope_keys = [ 'workflow', 'task', 'host', 'site', 'jobtype' ]
 
@@ -230,7 +238,7 @@ class MongoStorage(Storage):
         scope = timeframe_scope + filters.values()
 
         # Collect suggestions
-        suggestions = { scope_key: map(lambda d: d['_id'], list(self.performance_data.daily.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
+        suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(self.performance_data.daily.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
             {
                 '$group': {
                     '_id': '$stats.scope.' + scope_key,
@@ -247,7 +255,7 @@ class MongoStorage(Storage):
             for axis in axes:
 
                 if metric == 'jobstate':
-                    visualizations[metric][axis] = list(self.performance_data.daily.aggregate(scope + [
+                    visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': { 'axis': '$stats.scope.' + axis, 'jobstate': '$stats.scope.jobstate' },
@@ -275,7 +283,7 @@ class MongoStorage(Storage):
                     ]))
 
                 if metric == 'jobtime':
-                    visualizations[metric][axis] = list(self.performance_data.daily.aggregate(scope + [
+                    visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': '$stats.scope.' + axis,
