@@ -175,6 +175,13 @@ $btn-secondary-border: $light;
 
 .visualization-container {
   margin-top: 2*$spacer;
+  .chart-label {
+    font-size: small;
+  }
+  a.chart-label, a {
+    color: $link-color !important;
+    cursor: pointer;
+  }
 }
 
 .canvas-flex {
@@ -207,14 +214,6 @@ $btn-secondary-border: $light;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-  }
-}
-
-.chart-label {
-  font-size: small;
-  @at-root a#{&}, a {
-    color: $link-color !important;
-    cursor: pointer;
   }
 }
 

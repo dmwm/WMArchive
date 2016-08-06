@@ -5095,6 +5095,11 @@ a.text-danger:focus, a.text-danger:hover {
 
 .visualization-container {
   margin-top: 2rem; }
+  .visualization-container .chart-label {
+    font-size: small; }
+  .visualization-container a.chart-label, .visualization-container a {
+    color: #DB392E !important;
+    cursor: pointer; }
 
 .canvas-flex {
   display: flex;
@@ -5122,12 +5127,6 @@ a.text-danger:focus, a.text-danger:hover {
     display: flex;
     flex-direction: row;
     justify-content: space-between; }
-
-.chart-label {
-  font-size: small; }
-  a.chart-label, a {
-    color: #DB392E !important;
-    cursor: pointer; }
 
 .dropdown .dropdown-cursor {
   background-color: #DB392E;
