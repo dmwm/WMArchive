@@ -9,7 +9,22 @@ app.Scope = Backbone.Model.extend({
     'task': "Task",
     'host': "Host",
     'site': "Site",
-    'jobtype': "Job Type"
+    'jobtype': "Job Type",
+    'jobstate': "Job State",
+  },
+
+  all_metrics: {
+    'jobstate': "Job State",
+    'cpu': {
+      '_title': 'CPU',
+      'jobTime': "Job Time",
+      'jobCPU': "Job CPU",
+    },
+    'storage': {
+      '_title': "Storage",
+      'read': "Read",
+      'write': "Write",
+    }
   },
 
   defaults: {
@@ -21,7 +36,8 @@ app.Scope = Backbone.Model.extend({
     host: null,
     site: null,
     jobtype: null,
-    axes: [ 'workflow', 'host', 'site' ],
+    jobstate: null,
+    axes: [ 'host', 'site' ],
   },
 
   initialize: function() {
@@ -94,6 +110,14 @@ app.Scope = Backbone.Model.extend({
       }
     }
     this.set(query);
+  },
+
+  titleForMetric: function(metric_path) {
+    var title = this.all_metrics;
+    for (var metric_key of metric_path.split(".")) {
+      title = title[metric_key];
+    }
+    return title;
   },
 
 });

@@ -10,12 +10,13 @@ app.MetricSelector = Backbone.View.extend({
 
   template: _.template('<%=label%>'),
 
-  initialize: function(params) {
-    this.label = params.label;
+  initialize: function(options) {
+    _.extend(this, _.pick(options, 'label', 'name'));
   },
 
   render: function() {
     this.$el.html(this.template({ label: this.label }));
+    this.$el.attr('name', this.name.replace(".", "__"));
   },
 
 });

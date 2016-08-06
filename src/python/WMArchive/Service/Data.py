@@ -61,7 +61,7 @@ class WMAData(RESTEntity):
                 param.args.remove(param.args[0])
 
                 # Validate arguments
-                validate_strlist('metrics[]', param, safe, re.compile(r'^[a-zA-Z]+'))
+                validate_strlist('metrics[]', param, safe, re.compile(r'^[a-zA-Z.]+'))
                 validate_strlist('axes[]', param, safe, re.compile(r'^[a-zA-Z]+'))
                 date_pattern = PAT_YYYYMMDD
                 validate_str('start_date', param, safe, date_pattern, optional=True)
@@ -71,6 +71,7 @@ class WMAData(RESTEntity):
                 validate_str('host', param, safe, re.compile(r'^[a-zA-Z0-9]+.[a-zA-Z0-9]+.[a-zA-Z0-9]+'), optional=True)
                 validate_str('site', param, safe, re.compile(r'^T[0-3]_[A-Z][A-Z]_[a-zA-Z0-9]+'), optional=True)
                 validate_str('jobtype', param, safe, re.compile(r'^[a-zA-Z0-9]+'), optional=True)
+                validate_str('jobstate', param, safe, re.compile(r'^[a-zA-Z0-9]+'), optional=True)
                 validate_str('_', param, safe, PAT_INFO, optional=True)
 
                 return True

@@ -3,8 +3,6 @@ app.visualizationViews = app.visualizationViews || {};
 
 app.visualizationViews['jobstate'] = Backbone.View.extend({
 
-  title: 'Jobstate',
-
   initialize: function(options) {
     _.extend(this, _.pick(options, 'data', 'axis'));
   },

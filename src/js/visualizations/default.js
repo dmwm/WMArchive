@@ -1,12 +1,12 @@
 var app = app || {};
 app.visualizationViews = app.visualizationViews || {};
 
-app.visualizationViews['jobtime'] = Backbone.View.extend({
+app.visualizationViews['default'] = Backbone.View.extend({
 
-  title: 'Average Job Time',
+  title: '',
 
   initialize: function(options) {
-    _.extend(this, _.pick(options, 'data'));
+    _.extend(this, _.pick(options, 'data', 'title'));
   },
 
   render: function() {
@@ -15,9 +15,6 @@ app.visualizationViews['jobtime'] = Backbone.View.extend({
     var self = this;
 
     var data = this.data;
-    // var sites = data.map(function(site) { return site['_id'] })
-    // var counts = data.map(function(site) { return d3.sum(site['jobstates'].map(function(stateData) { return stateData['count'] })) });
-    // var max = d3.max(counts);
 
     var canvas = d3.select(this.el);
 
@@ -34,7 +31,7 @@ app.visualizationViews['jobtime'] = Backbone.View.extend({
 
     var length = d3.scaleLinear()
       .range([ 0, 100 ])
-      .domain([ 0, d3.max(data, function(d) { return d.averageJobTime; }) ]);
+      .domain([ 0, d3.max(data, function(d) { return d.average; }) ]);
 
     var bar = container.append('svg')
       .attr('class', 'chart')
@@ -43,7 +40,7 @@ app.visualizationViews['jobtime'] = Backbone.View.extend({
         .attr('x', 0)
         .attr('y', 0)
         .attr('width', function(d) {
-          return length(d.averageJobTime) + '%';
+          return length(d.average) + '%';
         })
 
     return this;

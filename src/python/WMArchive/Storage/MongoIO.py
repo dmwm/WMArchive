@@ -202,7 +202,7 @@ class MongoStorage(Storage):
             return list(cursor_or_dict)
 
         # Valid keys in `stats.scope`
-        scope_keys = [ 'workflow', 'task', 'host', 'site', 'jobtype' ]
+        scope_keys = [ 'workflow', 'task', 'host', 'site', 'jobtype', 'jobstate' ]
 
         # Construct scope
         timeframe_scope = []
@@ -282,20 +282,21 @@ class MongoStorage(Storage):
                         }
                     ]))
 
-                if metric == 'jobtime':
+                else:
                     visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': '$scope.' + axis,
-                                'count': { '$sum': '$count' },
-                                'totalJobTime': { '$sum': '$performance.cpu.TotalJobTime' },
+                                'average': { '$avg': '$performance.' + metric },
+                                'std': { '$stdDevPop': '$performance.' + metric },
                             }
                         },
                         {
                             '$project': {
                                 '_id': False,
                                 'label': '$_id',
-                                'averageJobTime': { '$divide': [ '$totalJobTime', '$count' ] },
+                                'average': '$average',
+                                'std': '$std',
                             }
                         }
                     ]))

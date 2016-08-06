@@ -5,17 +5,21 @@ app.MetricsView = Backbone.View.extend({
   template: _.template('<strong class="structure">Metrics</strong><fieldset id="metric-selectors" class="form-group"></fieldset><strong class="structure">Axes</strong><fieldset id="axis-selectors" class="form-group"></fieldset>'),
 
   initialize: function() {
-    this.metricSelectors = [
-      new app.MetricSelector({ id: "jobstate", label: "Job State" }),
-      new app.MetricSectionTitle({ title: "CPU" }),
-      new app.MetricSelector({ id: "jobtime", label: "Job Time" }),
-      new app.MetricSelector({ id: "jobcpu", label: "Job CPU" }),
-      new app.MetricSectionTitle({ title: "Storage" }),
-      new app.MetricSelector({ id: "readTotal", label: "Read Total" }),
-      new app.MetricSelector({ id: "writeTotal", label: "Write Total" }),
-    ];
+    this.metricSelectors = [].concat.apply([], Object.keys(app.scope.all_metrics).map(function(metric_key) {
+      var value = app.scope.all_metrics[metric_key];
+      if (typeof value === 'string') {
+        return [ new app.MetricSelector({ name: metric_key, label: value }) ];
+      } else {
+        return Object.keys(value).map(function(nested_metric_key) {
+          if (nested_metric_key == '_title') {
+            return new app.MetricSectionTitle({ title: value._title });
+          }
+          return new app.MetricSelector({ name: metric_key + '.' + nested_metric_key, label: value[nested_metric_key] });
+        });
+      }
+    }));
     this.axisSelectors = Object.keys(app.scope.filters).map(function(scope_key) {
-      return new app.MetricSelector({ id: scope_key, label: app.scope.filters[scope_key] });
+      return new app.MetricSelector({ name: scope_key, label: app.scope.filters[scope_key] });
     });
     this.model = app.scope;
     this.model.on('change:metrics', this.metricsChanged, this);
@@ -40,7 +44,7 @@ app.MetricsView = Backbone.View.extend({
   },
 
   toggleActive: function(event) {
-    var element = event.target.id;
+    var element = event.target.name.replace("__", ".");
     switch (event.target.parentElement.id) {
       case 'metric-selectors':
         var key = 'metrics';
@@ -62,10 +66,10 @@ app.MetricsView = Backbone.View.extend({
   metricsChanged: function() {
     this.$('.active').removeClass('active');
     for (var activeElement of this.model.get('metrics')) {
-      this.$('#' + activeElement).addClass('active');
+      this.$('#metric-selectors button[name=' + activeElement.replace(".", "__") + ']').addClass('active');
     }
     for (var activeElement of this.model.get('axes')) {
-      this.$('#' + activeElement).addClass('active');
+      this.$('#axis-selectors button[name=' + activeElement.replace(".", "__") + ']').addClass('active');
     }
   }
 
