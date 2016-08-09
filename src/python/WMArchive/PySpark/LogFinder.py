@@ -38,8 +38,8 @@ def match_value(keyval, value):
             return True
     return False
 
-def match_targz(rec, ifile):
-    "Find if record match given tar.gz file"
+def match_log(rec, ifile):
+    "Find if record match given log file"
     meta = rec.get('meta_data', {})
     if  meta.get('jobtype', None) != 'LogCollect':
         return False
@@ -48,10 +48,13 @@ def match_targz(rec, ifile):
             return True
     return False
 
-def match_root(rec, lfn):
+def match_lfn(rec, lfn):
     "Find if record match given lfn/pfn"
-    meta = rec.get('meta_data', {})
-    for idx, val in enumerate(rec.get('LFNArray', [])):
+    if  lfn.startswith('/'): # LFN
+        file_array = rec.get('LFNArray', [])
+    else: # PFN
+        file_array = rec.get('PFNArray', [])
+    for idx, val in enumerate(file_array):
         if  match_value(val, lfn):
             # check that steps part has cmsRun
             for step in rec.get('steps', []):
@@ -59,8 +62,12 @@ def match_root(rec, lfn):
                 if  step.get('name', '').startswith('cmsRun'):
                     # check that given LFN index is present in outputLFNs
                     for item in step.get('output', []):
-                        outputLFNs = item.get('outputLFNs', [])
-                        if  idx in outputLFNs:
+                        # check if given lfn is LFN or PFN
+                        if  lfn.startswith('/'): # LFN
+                            outputs = item.get('outputLFNs', [])
+                        else: # PFN
+                            outputs = item.get('outputPFNs', [])
+                        if  idx in outputs:
                             return True
     return False
 
@@ -78,12 +85,16 @@ def extract_tarball(rec, step_name):
 
 class MapReduce(object):
     def __init__(self, ispec=None):
-        self.lfn = None
+        self.lfn = ''
+        self.log = ''
         if  ispec:
             spec = ispec['spec']
-            self.lfn = spec.get('lfn', None)
-        if  not self.lfn:
-            raise Exception("No input LFN in a spec")
+            self.lfn = spec.get('lfn', '')
+            if  not self.lfn: # try out PFN
+                self.lfn = spec.get('pfn', '')
+            self.log = spec.get('log', '') # user may provide tar.gz log file
+        if  not self.lfn and not self.log:
+            raise Exception("No input lfn or log is provided in a spec")
 
     def mapper(self, records):
         """
@@ -95,10 +106,10 @@ class MapReduce(object):
             if  not rec:
                 continue
             if  self.lfn.endswith('.root'):
-                if  match_root(rec, self.lfn):
+                if  match_lfn(rec, self.lfn):
                     return rec
-            elif self.lfn.endswith('.tar.gz'):
-                if  match_targz(rec, self.lfn):
+            elif self.log.endswith('.tar.gz'):
+                if  match_log(rec, self.log):
                     return rec
         return {}
 
