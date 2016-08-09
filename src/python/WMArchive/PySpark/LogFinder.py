@@ -106,20 +106,23 @@ def is_ext(uinput, ext):
 
 class MapReduce(object):
     def __init__(self, ispec=None):
-        self.lfn = ''
-        self.log = ''
+        self.query = ''
         if  ispec:
             spec = ispec['spec']
-            self.lfn = spec.get('lfn', '')
-            self.log = spec.get('log', '') # user may provide tar.gz log file
-        if  not self.lfn and not self.log:
-            raise Exception("No input lfn or log is provided in a spec")
-        self.is_lfn = False
-        if  self.lfn: # check if given LFN(s) is(are) root file(s)
-            self.is_lfn = is_ext(self.lfn, 'root')
-        self.is_log = False
-        if  self.log: # check if given log(s) is(are) log file(s)
-            self.is_log = is_ext(self.log, 'tar.gz')
+            self.fields = ispec.get('fields', [])
+            self.timerange = spec.get('timerange', [])
+            self.query = spec.get('lfn', '')
+            if  not self.query:
+                self.query = spec.get('log', '') # user may provide tar.gz log file
+            if  not self.query:
+                self.query = spec.get('query', '')
+        else:
+            raise Exception("No spec is provided")
+        if  not self.query:
+            raise Exception("No input query is provided in a spec")
+        self.is_lfn = is_ext(self.query, 'root')
+        self.is_log = is_ext(self.query, 'tar.gz')
+        self.step_name = 'logArch' if self.is_lfn else 'logCollect'
 
     def mapper(self, records):
         """
@@ -131,29 +134,33 @@ class MapReduce(object):
             if  not rec:
                 continue
             if  self.is_lfn:
-                if  match_lfn(rec, self.lfn):
+                if  match_lfn(rec, self.query):
                     return rec
             elif self.is_log:
-                if  match_log(rec, self.log):
+                if  match_log(rec, self.query):
                     return rec
 
     def reducer(self, records, init=0):
         "Simpler reducer which collects all results from RDD.collect() records"
         out = []
         nrec = 0
-        if  self.is_lfn:
-            step_name = 'logArch'
-        elif self.is_log:
-            step_name = 'logCollect'
         for rec in records:
             if  not rec:
                 continue
             nrec += 1
-            data = extract_output(rec, step_name)
+            data = extract_output(rec, self.step_name)
             for item in data:
                 out.append(item)
+        if  self.step_name == 'logCollect': # final step we'll return results
+            return out
         exts = [r.split('.')[-1] for r in out]
-        if  len(set(exts)) > 1: # multiple extensions
-            logs = [r for r in out if not r.endswith('root')]
-            return logs
-        return {"nrecords": nrec, "data": out}
+        if  len(set(exts)) > 1: # multiple extensions, we'll return non-root entries
+            out = [r for r in out if not r.endswith('root')]
+        if  not out:
+            return out
+        return self.make_spec(out)
+
+    def make_spec(self, data):
+        "Make WMArchive spec from provided data"
+        spec = {'query': data, 'timerange':self.timerange}
+        return dict(spec=spec, fields=self.fields)
