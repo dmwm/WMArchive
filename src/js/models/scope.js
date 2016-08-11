@@ -7,10 +7,12 @@ app.Scope = Backbone.Model.extend({
   filters: {
     'workflow': "Workflow",
     'task': "Task",
+    'step': "Step",
     'host': "Host",
     'site': "Site",
     'jobtype': "Job Type",
     'jobstate': "Job State",
+    'acquisitionEra': "Acquisition Era",
   },
 
   all_metrics: {
@@ -33,8 +35,10 @@ app.Scope = Backbone.Model.extend({
     end_date: moment(),
     workflow: null,
     task: null,
+    step: null,
     host: null,
     site: null,
+    acquisitionEra: null,
     jobtype: null,
     jobstate: null,
     axes: [ 'host', 'site' ],

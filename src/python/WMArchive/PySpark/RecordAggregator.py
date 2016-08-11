@@ -9,6 +9,7 @@ from datetime import datetime
 from pymongo import MongoClient
 from bson import json_util
 import time
+from string import digits
 
 
 def get_scope_hash(scope):
@@ -38,7 +39,7 @@ def extract_stats(record):
             'site': step['site'],
             'jobtype': meta_data['jobtype'],
             'jobstate': meta_data['jobstate'],
-            'step': step['name'],
+            'step': step['name'].rstrip(digits),
             'acquisitionEra': acquisitionEra,
         } }
 
