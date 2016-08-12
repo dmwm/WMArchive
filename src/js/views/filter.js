@@ -75,11 +75,13 @@ app.FilterView = Backbone.View.extend({
     }
 
     this.model.set(scope_key, scope_value);
+    this.model.fetch();
   },
 
   clearFilter: function(event, selection) {
     var scope_key = this.input_id;
     this.model.set(scope_key, null);
+    this.model.fetch();
   },
 
 });

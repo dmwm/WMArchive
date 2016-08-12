@@ -13,6 +13,7 @@ app.Scope = Backbone.Model.extend({
     'jobtype': "Job Type",
     'jobstate': "Job State",
     'acquisitionEra': "Acquisition Era",
+    // 'time' is handled separately
   },
 
   all_metrics: {
@@ -45,16 +46,11 @@ app.Scope = Backbone.Model.extend({
   },
 
   initialize: function() {
-    this.fetch();
-    for (var key in this.defaults) {
-      this.on('change:' + key, function(self) {
-        this.updateURL();
-        this.fetch();
-      });
-    }
   },
 
   sync: function (method, model, options) {
+    this.updateURL();
+
     options = options || {};
     options.data = this.queryParameters();
     return Backbone.sync.apply(this, [method, model, options]);
@@ -114,6 +110,7 @@ app.Scope = Backbone.Model.extend({
       }
     }
     this.set(query);
+    this.fetch();
   },
 
   titleForMetric: function(metric_path) {
