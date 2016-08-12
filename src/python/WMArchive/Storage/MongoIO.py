@@ -254,11 +254,18 @@ class MongoStorage(Storage):
 
             for axis in axes:
 
+                if axis == 'time':
+                    group_id = { 'start_date': '$start_date', 'end_date': '$end_date' }
+                    label = { 'start_date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': '$_id.start_date' } }, 'end_date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': '$_id.end_date' } }, }
+                else:
+                    group_id = '$scope.' + axis
+                    label = '$_id'
+
                 if metric == 'jobstate':
                     visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
-                                '_id': { 'axis': '$scope.' + axis, 'jobstate': '$scope.jobstate' },
+                                '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
                                 'count': { '$sum': '$count' }
                             }
                         },
@@ -276,7 +283,7 @@ class MongoStorage(Storage):
                         {
                             '$project': {
                                 '_id': False,
-                                'label': '$_id',
+                                'label': label,
                                 'jobstates': '$jobstates',
                             }
                         }
@@ -286,7 +293,7 @@ class MongoStorage(Storage):
                     visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
                         {
                             '$group': {
-                                '_id': '$scope.' + axis,
+                                '_id': group_id,
                                 'average': { '$avg': '$performance.' + metric },
                                 'std': { '$stdDevPop': '$performance.' + metric },
                             }
@@ -294,7 +301,7 @@ class MongoStorage(Storage):
                         {
                             '$project': {
                                 '_id': False,
-                                'label': '$_id',
+                                'label': label,
                                 'average': '$average',
                                 'std': '$std',
                             }
