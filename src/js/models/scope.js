@@ -46,10 +46,13 @@ app.Scope = Backbone.Model.extend({
   },
 
   initialize: function() {
+    this.set('isLoading', false);
   },
 
   sync: function (method, model, options) {
     this.updateURL();
+    this.set('isLoading', true);
+    console.log("loading",this);
 
     options = options || {};
     options.data = this.queryParameters();
@@ -57,6 +60,8 @@ app.Scope = Backbone.Model.extend({
   },
 
   parse: function(data) {
+    this.set('isLoading', false);
+    console.log("done",this);
     return data.result[0].performance;
   },
 

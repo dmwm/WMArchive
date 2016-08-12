@@ -74,6 +74,14 @@ $btn-secondary-border: $light;
   max-height: 4rem;
 }
 
+.loading-indicator {
+  margin: 2*$spacer auto;
+  text-align: center;
+  img {
+    max-width: 200px;
+  }
+}
+
 #filters {
   display: flex;
   flex-direction: row;

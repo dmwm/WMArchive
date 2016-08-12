@@ -5028,6 +5028,12 @@ a.text-danger:focus, a.text-danger:hover {
 #logo-header {
   max-height: 4rem; }
 
+.loading-indicator {
+  margin: 2rem auto;
+  text-align: center; }
+  .loading-indicator img {
+    max-width: 200px; }
+
 #filters {
   display: flex;
   flex-direction: row;
