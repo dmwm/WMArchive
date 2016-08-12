@@ -80,11 +80,14 @@ $btn-secondary-border: $light;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
+
+  .filter-container {
+    max-width: 12em;
+    margin: 0.5rem;
+  }
 }
 
 .filter-container {
-  max-width: 12em;
-  margin: 0.5rem;
 
   label {
     @extend strong;
@@ -221,5 +224,39 @@ $btn-secondary-border: $light;
   .dropdown-cursor {
     background-color: $highlight;
     color: $background;
+  }
+}
+
+.axis {
+  font-family: inherit;
+  .domain {
+    stroke: $light;
+  }
+  .tick line {
+    stroke: $light;
+  }
+  .label text {
+    fill: $light;
+  }
+}
+
+svg {
+  circle {
+    fill: $structure;
+    &.dot {
+      fill: $background;
+      stroke: $structure;
+      stroke-width: 1.5;
+    }
+  }
+  .area {
+    fill: lighten($structure, 20%);
+    stroke: none;
+  }
+  .line {
+    fill: none;
+    stroke: $structure;
+    stroke-width: 2;
+    stroke-linecap: round;
   }
 }

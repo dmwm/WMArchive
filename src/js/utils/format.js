@@ -58,7 +58,7 @@ app.format_tick = function(metric) {
 app.format_ticks_label = function(metric) {
   switch (metric) {
     case 'jobstate':
-      return "jobs";
+      return "Jobs";
     case 'cpu.jobTime':
       return "Job Time"
     case 'storage.read':

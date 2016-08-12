@@ -22,16 +22,20 @@ app.PerformanceView = Backbone.View.extend({
     var canvas = this.$('#visualizations');
 
     for (var metric in visualizations) {
-      var VisualizationView = app.visualizationViews[metric];
-      if (VisualizationView == null) {
-        VisualizationView = app.visualizationViews['default'];
-      }
       for (var axis in visualizations[metric]) {
-        var visualizationView = new VisualizationView({ data: visualizations[metric][axis], axis: axis });
+        var VisualizationView = app.visualizationViews[metric];
+        if (axis === 'time') {
+          VisualizationView = app.visualizationViews['time'];
+        }
+        if (VisualizationView == null) {
+          VisualizationView = app.visualizationViews['default'];
+        }
+        var visualizationView = new VisualizationView({ data: visualizations[metric][axis], metric: metric, axis: axis });
         var section = new app.VisualizationSectionView().render();
-        section.$el.append('<h5>' + self.model.titleForMetric(metric) + ' per ' + axis.charAt(0).toUpperCase() + axis.slice(1) + '</h5>');
-        section.$el.append(visualizationView.render().$el);
         canvas.append(section.$el);
+        section.$el.append('<h5>' + self.model.titleForMetric(metric) + ' per ' + axis.charAt(0).toUpperCase() + axis.slice(1) + '</h5>');
+        section.$el.append(visualizationView.$el);
+        visualizationView.render();
       }
     }
     $('[data-toggle="tooltip"]').tooltip(); // FIXME: Move this to an appropriate place

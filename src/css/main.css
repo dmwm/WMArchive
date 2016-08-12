@@ -5034,36 +5034,36 @@ a.text-danger:focus, a.text-danger:hover {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start; }
+  #filters .filter-container {
+    max-width: 12em;
+    margin: 0.5rem; }
 
-.filter-container {
-  max-width: 12em;
-  margin: 0.5rem; }
-  .filter-container label {
-    color: #DB392E;
-    font-size: 0.8rem; }
-  .filter-container.filter-active input, .filter-container.filter-active button {
-    border-color: #DB392E;
-    background-color: #DB392E !important;
-    color: white; }
-  .filter-container .dropdown-menu {
-    max-height: 10rem;
-    overflow-y: auto; }
-  .filter-container .form-group {
-    margin: 0; }
-  .filter-container .form-control[readonly] {
-    background-color: white; }
-  .filter-container .filter-text-container {
-    position: relative; }
-  .filter-container .filter-text {
-    padding-right: 2rem; }
-  .filter-container .clear-filter {
-    color: white;
-    position: absolute;
-    right: 0.7rem;
-    top: 0;
-    font-size: 0.8rem;
-    line-height: 2.4rem;
-    cursor: pointer; }
+.filter-container label {
+  color: #DB392E;
+  font-size: 0.8rem; }
+.filter-container.filter-active input, .filter-container.filter-active button {
+  border-color: #DB392E;
+  background-color: #DB392E !important;
+  color: white; }
+.filter-container .dropdown-menu {
+  max-height: 10rem;
+  overflow-y: auto; }
+.filter-container .form-group {
+  margin: 0; }
+.filter-container .form-control[readonly] {
+  background-color: white; }
+.filter-container .filter-text-container {
+  position: relative; }
+.filter-container .filter-text {
+  padding-right: 2rem; }
+.filter-container .clear-filter {
+  color: white;
+  position: absolute;
+  right: 0.7rem;
+  top: 0;
+  font-size: 0.8rem;
+  line-height: 2.4rem;
+  cursor: pointer; }
 
 #metrics .structure {
   display: block;
@@ -5131,5 +5131,29 @@ a.text-danger:focus, a.text-danger:hover {
 .dropdown .dropdown-cursor {
   background-color: #DB392E;
   color: white; }
+
+.axis {
+  font-family: inherit; }
+  .axis .domain {
+    stroke: #DAE1E1; }
+  .axis .tick line {
+    stroke: #DAE1E1; }
+  .axis .label text {
+    fill: #DAE1E1; }
+
+svg circle {
+  fill: #77C8E5; }
+  svg circle.dot {
+    fill: white;
+    stroke: #77C8E5;
+    stroke-width: 1.5; }
+svg .area {
+  fill: #cdebf5;
+  stroke: none; }
+svg .line {
+  fill: none;
+  stroke: #77C8E5;
+  stroke-width: 2;
+  stroke-linecap: round; }
 
 /*# sourceMappingURL=main.css.map */
