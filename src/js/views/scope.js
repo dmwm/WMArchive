@@ -17,7 +17,8 @@ app.ScopeView = Backbone.View.extend({
       var filterView = this.filterViews[i];
       this.$('#filters').append(filterView.render().$el);
     }
-    this.timeframeSelector.setElement(this.$('#timeframe')).render();
+    this.$('#timeframe').append(this.timeframeSelector.render().$el);
+    this.timeframeSelector.renderPicker();
   },
 
 });
