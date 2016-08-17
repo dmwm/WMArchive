@@ -151,12 +151,12 @@ def find_packages(relativedir):
         packages.append(package)
     return packages
 
-def datafiles(dir, pattern=None):
+def datafiles(idir, pattern=None):
     """Return list of data files in provided relative dir"""
     files = []
-    for dirname, dirnames, filenames in os.walk(dir):
-        for subdirname in dirnames:
-            files.append(os.path.join(dirname, subdirname))
+    for dirname, dirnames, filenames in os.walk(idir):
+#         for subdirname in dirnames:
+#             files.append(os.path.join(dirname, subdirname))
         for filename in filenames:
             if  filename[-1] == '~':
                 continue
