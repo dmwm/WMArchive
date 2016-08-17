@@ -7,9 +7,8 @@ app.PerformanceView = Backbone.View.extend({
   initialize: function() {
     this.scopeView = new app.ScopeView();
     this.metricsView = new app.MetricsView();
-    this.model = app.scope;
-    this.model.on('change:visualizations', this.render, this);
-    this.model.on('change:isLoading', this.render, this);
+    this.model = app.visualizations;
+    this.listenTo(this.model, 'add', this.addVisualization);
   },
 
   render: function() {
@@ -19,37 +18,15 @@ app.PerformanceView = Backbone.View.extend({
 
     var self = this;
 
-    if (this.model.get('isLoading')) {
-
-      this.$('#visualizations').append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
-
-    } else {
-
-      var visualizations = self.model.get('visualizations');
-
-      var canvas = this.$('#visualizations');
-
-      for (var metric in visualizations) {
-        for (var axis in visualizations[metric]) {
-          var VisualizationView = app.visualizationViews[metric];
-          if (axis === 'time') {
-            VisualizationView = app.visualizationViews['time'];
-          }
-          if (VisualizationView == null) {
-            VisualizationView = app.visualizationViews['default'];
-          }
-          var visualizationView = new VisualizationView({ data: visualizations[metric][axis], metric: metric, axis: axis });
-          var section = new app.VisualizationSectionView().render();
-          canvas.append(section.$el);
-          section.$el.append('<h5>' + self.model.titleForMetric(metric) + ' per ' + axis.charAt(0).toUpperCase() + axis.slice(1) + '</h5>');
-          section.$el.append(visualizationView.$el);
-          visualizationView.render();
-        }
-      }
-
-    }
-    $('[data-toggle="tooltip"]').tooltip(); // FIXME: Move this to an appropriate place
+    self.model.each(function(visualization) {
+      self.addVisualization(visualization);
+    });
   },
+
+  addVisualization: function(visualization) {
+    var visualizationsView = this.$('#visualizations');
+    visualizationsView.append(new app.VisualizationSectionView({ model: visualization }).render().$el);
+  }
 
 });
 
@@ -57,5 +34,41 @@ app.VisualizationSectionView = Backbone.View.extend({
 
   tagName: 'section',
   className: 'visualization-container',
+
+  initialize: function(options) {
+    this.listenTo(this.model, 'change:data', this.render, this);
+    this.listenTo(this.model, 'destroy', function(a,b,c) {
+      this.remove();
+    }, this);
+  },
+
+  render: function() {
+    var metric = this.model.get('metric');
+    var axis = this.model.get('axis');
+    var data = this.model.get('data');
+
+    this.$el.empty();
+
+    this.$el.append('<h5>' + app.scope.titleForMetric(metric) + ' per ' + axis.charAt(0).toUpperCase() + axis.slice(1) + '</h5>');
+
+    if (data == null) {
+      this.$el.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
+
+    } else {
+      var VisualizationView = app.visualizationViews[metric];
+      if (axis === 'time') {
+        VisualizationView = app.visualizationViews['time'];
+      }
+      if (VisualizationView == null) {
+        VisualizationView = app.visualizationViews['default'];
+      }
+      var visualizationView = new VisualizationView({ data: data, metric: metric, axis: axis });
+      this.$el.append(visualizationView.$el);
+      visualizationView.render();
+      $('[data-toggle="tooltip"]').tooltip(); // FIXME: Move this to an appropriate place
+    }
+
+    return this;
+  },
 
 });

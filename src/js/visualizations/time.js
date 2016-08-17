@@ -201,7 +201,6 @@ app.visualizationViews['time'] = Backbone.View.extend({
 
   refineFilter: function(event) {
     app.scope.set(this.axis, event.target.text);
-    app.scope.fetch();
   },
 
 });

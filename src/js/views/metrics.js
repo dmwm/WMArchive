@@ -23,8 +23,8 @@ app.MetricsView = Backbone.View.extend({
     });
     this.axisSelectors.push(new app.MetricSelector({ name: 'time', label: "Time" }));
     this.model = app.scope;
-    this.model.on('change:metrics', this.metricsChanged, this);
-    this.model.on('change:axes', this.metricsChanged, this);
+    this.listenTo(this.model, 'change:metrics', this.metricsChanged);
+    this.listenTo(this.model, 'change:axes', this.metricsChanged);
   },
 
   render: function(){
@@ -62,7 +62,6 @@ app.MetricsView = Backbone.View.extend({
       activeElements.push(element);
     }
     app.scope.set(key, activeElements);
-    app.scope.fetch();
   },
 
   metricsChanged: function() {

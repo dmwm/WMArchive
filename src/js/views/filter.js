@@ -11,7 +11,8 @@ app.FilterView = Backbone.View.extend({
     this.label = params.label;
     this.input_id = params.input_id;
     this.model = app.scope;
-    this.model.on('change:' + this.input_id, this.render, this);
+    this.listenTo(this.model, 'change:' + this.input_id, this.render);
+    this.listenTo(this.model, 'change:suggestions', this.render);
   },
 
   render: function() {
@@ -75,13 +76,11 @@ app.FilterView = Backbone.View.extend({
     }
 
     this.model.set(scope_key, scope_value);
-    this.model.fetch();
   },
 
   clearFilter: function(event, selection) {
     var scope_key = this.input_id;
     this.model.set(scope_key, null);
-    this.model.fetch();
   },
 
 });

@@ -5057,7 +5057,7 @@ a.text-danger:focus, a.text-danger:hover {
 .filter-container .form-group {
   margin: 0; }
 .filter-container .form-control[readonly] {
-  background-color: white; }
+  background-color: white !important; }
 .filter-container .filter-text-container {
   position: relative; }
 .filter-container .filter-text {
@@ -5161,5 +5161,7 @@ svg .line {
   stroke: #77C8E5;
   stroke-width: 2;
   stroke-linecap: round; }
+svg .filled {
+  fill: #77C8E5; }
 
 /*# sourceMappingURL=main.css.map */

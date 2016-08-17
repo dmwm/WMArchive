@@ -32,6 +32,8 @@ app.Scope = Backbone.Model.extend({
 
   defaults: {
     metrics: [ 'jobstate' ],
+    axes: [ 'host', 'site' ],
+
     start_date: moment('2016-06-28'),
     end_date: moment(),
     workflow: null,
@@ -42,27 +44,35 @@ app.Scope = Backbone.Model.extend({
     acquisitionEra: null,
     jobtype: null,
     jobstate: null,
-    axes: [ 'host', 'site' ],
   },
 
   initialize: function() {
-    this.set('isLoading', false);
+    this.fetch();
+    this.on('change:scope change:metrics change:axes', this.updateURL, this);
+    this.on('change:scope', this.fetch, this);
+    this.on(Object.keys(this.defaults).map(function(key) {
+      if (_.contains([ 'metrics', 'axes' ], key)) {
+        return '';
+      }
+      return 'change:' + key;
+    }).join(' '), function(event) {
+      this.trigger("change:scope");
+    }, this);
   },
 
-  sync: function (method, model, options) {
-    this.updateURL();
-    this.set('isLoading', true);
-    console.log("loading",this);
-
-    options = options || {};
-    options.data = this.queryParameters();
-    return Backbone.sync.apply(this, [method, model, options]);
-  },
-
-  parse: function(data) {
-    this.set('isLoading', false);
-    console.log("done",this);
-    return data.result[0].performance;
+  updateURL: function(a, b, c) {
+    var self = this;
+    var params = this.queryParameters();
+    app.router.navigate('/performance?' + Object.keys(params).map(function(key) {
+      var value = params[key];
+      if (key == 'metrics' || key == 'axes') {
+        return value.map(function(element) {
+          return key + '[]=' + element;
+        }).join('&');
+      } else {
+        return key + '=' + params[key];
+      }
+    }).join('&'), { replace: true });
   },
 
   queryParameters: function() {
@@ -84,21 +94,6 @@ app.Scope = Backbone.Model.extend({
     return params;
   },
 
-  updateURL: function() {
-    var self = this;
-    var params = this.queryParameters();
-    app.router.navigate('/performance?' + Object.keys(params).map(function(key) {
-      var value = params[key];
-      if (key == 'metrics' || key == 'axes') {
-        return value.map(function(element) {
-          return key + '[]=' + element;
-        }).join('&');
-      } else {
-        return key + '=' + params[key];
-      }
-    }).join('&'), { replace: true });
-  },
-
   setQuery: function(query) {
     for (var key in query) {
       if (!(_.contains(Object.keys(this.defaults), key))) {
@@ -115,7 +110,6 @@ app.Scope = Backbone.Model.extend({
       }
     }
     this.set(query);
-    this.fetch();
   },
 
   titleForMetric: function(metric_path) {
@@ -124,6 +118,18 @@ app.Scope = Backbone.Model.extend({
       title = title[metric_key];
     }
     return title;
+  },
+
+  sync: function (method, model, options) {
+    var params = this.queryParameters();
+    params['metrics'] = [];
+    params['axes'] = [];
+    options.data = this.queryParameters();
+    return Backbone.sync.apply(this, [method, model, options]);
+  },
+
+  parse: function(data) {
+    return { suggestions: data.result[0].performance.suggestions };
   },
 
 });

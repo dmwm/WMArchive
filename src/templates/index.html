@@ -60,6 +60,8 @@
 
   <!-- Models -->
   <script type="text/javascript" src="/wmarchive/web/static/js/models/scope.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/models/visualization.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/models/visualizations.js"></script>
 
   <!-- Utils -->
   <script type="text/javascript" src="/wmarchive/web/static/js/utils/format.js"></script>
@@ -86,6 +88,7 @@
   <!-- Entry Point -->
   <script type="text/javascript">
     app.scope = new app.Scope();
+    app.visualizations = new app.Visualizations();
     new app.NavMainView({ el: $('#nav-main-container') }).render();
     new app.FooterView({ el: $('#site-footer') }).render();
     app.router = new app.Router();

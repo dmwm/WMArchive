@@ -9,7 +9,7 @@ app.TimeframeSelector = Backbone.View.extend({
   render: function() {
     this.$el.html(this.template());
     this.model = app.scope;
-    var self = this;
+    this.renderPicker();
     return this;
   },
 

@@ -121,7 +121,7 @@ $btn-secondary-border: $light;
   }
 
   .form-control[readonly] {
-    background-color: $background;
+    background-color: $background !important;
   }
 
   .filter-text-container {
@@ -266,5 +266,8 @@ svg {
     stroke: $structure;
     stroke-width: 2;
     stroke-linecap: round;
+  }
+  .filled {
+    fill: $structure;
   }
 }
