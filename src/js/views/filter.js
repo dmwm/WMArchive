@@ -24,7 +24,7 @@ app.FilterView = Backbone.View.extend({
     var all_selection_options = new Bloodhound({
       datumTokenizer: Bloodhound.tokenizers.whitespace,
       queryTokenizer: Bloodhound.tokenizers.whitespace,
-      local: (this.model.get('suggestions') || {})[scope_key] || [],
+      local: ((this.model.get('suggestions') || {})[scope_key] || []).sort(),
     });
     function selection_options(q, sync) {
       if (q === '') {
