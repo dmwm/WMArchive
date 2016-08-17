@@ -12,6 +12,7 @@ from __future__ import print_function, division
 
 # system modules
 import json
+import datetime
 import traceback
 
 # Mongo modules
@@ -71,7 +72,7 @@ class MongoStorage(Storage):
         self.collname = collname
         self.coll = self.mdb[collname]
         self.jobs = self.mdb['jobs'] # separate collection for job results
-        self.acol = self.mdb['acol'] # separate collection for aggregated results
+        self.performance_data = self.client.performance # separate database for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
 
@@ -187,23 +188,134 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-#     def adocs(self):
-#         "Return aggregated statistics documents"
-#         return [d for d in self.acol.find()]
+    def performance(self, metrics, axes, start_date=None, end_date=None, **kwargs):
+        """
+        An example of how we can aggregate performance metrics over specific scopes in MongoDB.
+        """
 
-# Below is an example of how we can extract aggregated docs, convert them
-# to Charts.js data format and return the data. This data can be used
-# by WMArchive web interface, see ajaxRequestAdocsExample() Javascript
-# function which feeds a data to a bar plot on web interface, see stats.tmpl
-    def adocs(self):
-        "Return aggregated documents in chart.js representation"
-        docs = {}
-        for row in self.acol.find():
-            docs.update(row)
-        out = {"labels":docs.keys(), "datasets":[]}
-        values = []
-        for key in out['labels']:
-            site_stats = docs[key]
-            values.append(site_stats['storage']['writeTotalMB'])
-        out['datasets'].append(dict(data=values))
-        return out
+        def get_aggregation_result(cursor_or_dict):
+            """
+            Fallback for pymongo<3.0
+            """
+            if type(cursor_or_dict) is dict:
+                return cursor_or_dict['result']
+            return list(cursor_or_dict)
+
+        # Valid keys in `stats.scope`
+        scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode' ]
+
+        # Construct scope
+        timeframe_scope = []
+
+        # Timeframes
+        # TODO: build more robust date parsing
+        if start_date is not None:
+            timeframe_scope.append({
+                '$match': {
+                    'start_date': { '$gte': datetime.datetime(int(start_date[0:4]), int(start_date[4:6]), int(start_date[6:8]), 0, 0, 0) },
+                }
+            })
+        if end_date is not None:
+            timeframe_scope.append({
+                '$match': {
+                    'end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
+                }
+            })
+
+        # Unwind `stats`
+        # timeframe_scope.append({ '$unwind': '$stats' })
+
+        # Scope
+        filters = {}
+        for scope_key in kwargs:
+            if scope_key not in scope_keys or kwargs[scope_key] is None:
+                continue
+            filters[scope_key] = {
+                '$match': {
+                    'scope.' + scope_key: kwargs[scope_key],
+                }
+            }
+        print(filters)
+        scope = timeframe_scope + filters.values()
+
+        # Collect suggestions
+        suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(self.performance_data.daily.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
+            {
+                '$group': {
+                    '_id': '$scope.' + scope_key,
+                },
+            },
+        ]))) for scope_key in scope_keys }
+
+        # Collect visualizations
+        visualizations = {}
+
+        for metric in metrics:
+            visualizations[metric] = {}
+
+            aggregation_key = 'performance.' + metric
+            if metric == 'data.events':
+                aggregation_key = 'events'
+            elif metric == 'jobstate':
+                aggregation_key = 'count'
+
+            for axis in axes:
+
+                if axis == 'time':
+                    group_id = { 'start_date': '$start_date', 'end_date': '$end_date' }
+                    label = { 'start_date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': '$_id.start_date' } }, 'end_date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': '$_id.end_date' } }, }
+                else:
+                    group_id = '$scope.' + axis
+                    label = '$_id'
+
+                if metric == 'jobstate':
+                    visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+                        {
+                            '$group': {
+                                '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
+                                'count': { '$sum': '$' + aggregation_key }
+                            }
+                        },
+                        {
+                            '$group': {
+                                '_id': '$_id.axis',
+                                'jobstates': {
+                                    '$push': {
+                                        'jobstate': '$_id.jobstate',
+                                        'count': '$count'
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            '$project': {
+                                '_id': False,
+                                'label': label,
+                                'jobstates': '$jobstates',
+                            }
+                        }
+                    ]))
+
+                else:
+                    visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+                        {
+                            '$group': {
+                                '_id': group_id,
+                                'average': { '$avg': '$' + aggregation_key },
+                                'count': { '$sum': '$' + aggregation_key + '_N' },
+                            }
+                        },
+                        {
+                            '$project': {
+                                '_id': False,
+                                'label': label,
+                                'average': '$average',
+                                'count': '$count',
+                            }
+                        }
+                    ]))
+
+        return {
+            "suggestions": suggestions,
+            "visualizations": visualizations,
+        }

@@ -1,0 +1,12 @@
+"""
+Local WMArchive configuration file modifications.
+
+Usage:
+1. Make sure the /etc directory is included in PYTHONPATH
+2. Pass /etc/wmarch_config_local.py to wmc-httpd when starting the server
+"""
+
+from wmarch_config import *
+
+# Modify configurations, e.g.:
+# main.port = 8248

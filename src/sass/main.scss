@@ -1,0 +1,282 @@
+// Colors
+$highlight: #DB392E;
+$structure: #77C8E5;
+$background: white;
+$subtle: #FDF8EE;
+$text: black;
+$light: #DAE1E1;
+
+// Bootstrap Overrides
+$brand-primary: $highlight;
+$font-family-base: -apple-system, BlinkMacSystemFont,
+  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+  "Fira Sans", "Droid Sans", "Helvetica Neue",
+  sans-serif;
+$body-bg: $background;
+$body-color: $text;
+$link-color: $highlight;
+$headings-color: $structure;
+$input-border-focus: $highlight;
+$input-border-color: $light;
+$input-color-placeholder: $light;
+$btn-secondary-border: $light;
+
+// Bootstrap
+@import "bootstrap/bootstrap-flex.scss";
+
+
+// Header
+#site-header {
+  background-color: $brand-primary;
+
+  .navbar {
+    line-height: 4rem;
+  }
+}
+
+// Main
+#scope-container {
+  padding-top: $spacer;
+  padding-bottom: $spacer;
+  border-bottom: 1px solid $light;
+}
+#metrics {
+  padding-top: $spacer;
+  border-right: 1px solid $light;
+}
+#visualizations, #metrics {
+  padding-bottom: $spacer;
+}
+#info {
+  margin-top: $spacer;
+  margin-bottom: $spacer;
+}
+
+
+// Footer
+#site-footer {
+  padding-top: 1 * $spacer;
+  font-size: small;
+  background-color: $subtle;
+  padding-bottom: $spacer;
+}
+
+// Format
+
+.highlight {
+  color: $highlight;
+}
+.structure {
+  color: $structure;
+}
+.light {
+  color: $light;
+}
+.subtle {
+  color: $subtle;
+}
+
+
+// Components
+
+#logo-header {
+  max-height: 4rem;
+}
+
+.loading-indicator {
+  margin: 2*$spacer auto;
+  text-align: center;
+  img {
+    max-width: 200px;
+  }
+}
+
+#filters {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+
+  .filter-container {
+    max-width: 12em;
+    margin: 0.5rem;
+  }
+}
+
+.filter-container {
+
+  label {
+    @extend strong;
+    color: $highlight;
+    font-size: 0.8rem;
+  }
+
+  &.filter-active {
+    input, button {
+      border-color: $highlight;
+      background-color: $highlight !important;
+      color: $background;
+    }
+  }
+
+  .dropdown-menu {
+    max-height: 10rem;
+    overflow-y: auto;
+  }
+
+  .form-group {
+    margin: 0;
+  }
+
+  .form-control[readonly] {
+    background-color: $background !important;
+  }
+
+  .filter-text-container {
+    position: relative;
+  }
+  .filter-text {
+    padding-right: 2rem;
+  }
+  .clear-filter {
+    color: $background;
+    position: absolute;
+    right: 0.7rem;
+    top: 0;
+    font-size: 0.8rem;
+    line-height: 2.4rem;
+    cursor: pointer;
+  }
+
+}
+
+#metrics {
+  .structure {
+    display: block;
+    margin-bottom: 1rem;
+  }
+}
+
+.metric-selector {
+  + .metric-selector {
+    margin-top: 0.5rem;
+  }
+}
+.btn-secondary {
+  color: $light;
+  &.active {
+    background-color: $highlight;
+    border-color: $highlight;
+    color: $background;
+  }
+  &:hover {
+    color: $highlight;
+    border-color: $highlight;
+    background-color: $background;
+    &.active {
+      background-color: $highlight;
+      border-color: $highlight;
+      color: $background;
+    }
+  }
+}
+
+.metric-section-title {
+  display: block;
+  @extend strong;
+  color: $light;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+
+// Canvas
+
+.visualization-container {
+  margin-top: 2*$spacer;
+  .chart-label {
+    font-size: small;
+  }
+  a.chart-label, a {
+    color: $link-color !important;
+    cursor: pointer;
+  }
+}
+
+.canvas-flex {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.site-count-container {
+  margin: $spacer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .chart-label {
+    text-align: center;
+  }
+}
+
+.full-width-container {
+  margin: $spacer;
+  .chart {
+    width: 100%;
+    height: 2rem;
+  }
+  .chart-label {
+    width: 100%;
+    margin-top: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.dropdown {
+  .dropdown-cursor {
+    background-color: $highlight;
+    color: $background;
+  }
+}
+
+.axis {
+  font-family: inherit;
+  .domain {
+    stroke: $light;
+  }
+  .tick line {
+    stroke: $light;
+  }
+  .label text {
+    fill: $light;
+  }
+}
+
+svg {
+  circle {
+    fill: $structure;
+    &.dot {
+      fill: $background;
+      stroke: $structure;
+      stroke-width: 1.5;
+    }
+  }
+  .area {
+    fill: lighten($structure, 20%);
+    stroke: none;
+  }
+  .line {
+    fill: none;
+    stroke: $structure;
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .filled {
+    fill: $structure;
+  }
+}

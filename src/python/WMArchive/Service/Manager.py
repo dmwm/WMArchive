@@ -96,9 +96,9 @@ class WMArchiveManager(object):
         "Return jobs from WMArchive STS"
         return self.sts.jobs()
 
-    def adocs(self):
+    def performance(self, **kwargs):
         "Return stats docs from WMArchive STS"
-        return self.sts.adocs()
+        return self.sts.performance(**kwargs)
 
     def qmap(self, mgr, spec, fields):
         "Map user based spec into WMArhchive storage QL"
