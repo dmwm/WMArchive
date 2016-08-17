@@ -31,6 +31,11 @@ def extract_stats(record):
             acquisitionEra = output.get('acquisitionEra')
             if acquisitionEra is not None:
                 break
+        exitCode = None
+        for error in step['errors']:
+            exitCode = error.get('exitCode')
+            if exitCode is not None:
+                break
 
         stats = { 'scope': {
             'workflow': taskname_components[1],
@@ -41,20 +46,17 @@ def extract_stats(record):
             'jobstate': meta_data['jobstate'],
             'step': step['name'].rstrip(digits),
             'acquisitionEra': acquisitionEra,
+            'exitCode': exitCode,
         } }
 
         stats['count'] = 1
 
-        stats['performance'] = {
-            'cpu': {
-                'jobCPU': step.get('performance', {}).get('cpu', {}).get('TotalJobCPU'),
-                'jobTime': step.get('performance', {}).get('cpu', {}).get('TotalJobTime'),
-            },
-            'storage': {
-                'read': step.get('performance', {}).get('storage', {}).get('readTotalMB'),
-                'write': step.get('performance', {}).get('storage', {}).get('writeTotalMB'),
-            }
-        }
+        stats['performance'] = step['performance']
+
+        events = sum(map(lambda output: output.get('events', 0) or 0, step['output']))
+        if events == 0:
+            events = None
+        stats['events'] = events
 
         return stats
 
@@ -82,7 +84,7 @@ def aggregate_stats(stats, existing):
         nested[path[-1]] = value
 
     def aggregate_average(path):
-        path_N = path
+        path_N = list(path)
         path_N[-1] += "_N"
         value = get_nested(stats, path)
         N = get_nested(stats, path_N) or 1
@@ -94,13 +96,22 @@ def aggregate_stats(stats, existing):
         elif existing_value is not None:
             value = (value * N + existing_value * existing_N) / (N + existing_N)
             N = N + existing_N
-        set_nested(stats, path, existing_value)
-        set_nested(stats, path_N, existing_N)
+        set_nested(stats, path, value)
+        set_nested(stats, path_N, N)
 
-    aggregate_average([ 'performance', 'cpu', 'jobCPU' ])
-    aggregate_average([ 'performance', 'cpu', 'jobTime' ])
-    aggregate_average([ 'performance', 'storage', 'read' ])
-    aggregate_average([ 'performance', 'storage', 'write' ])
+    def get_paths(d, dd, key):
+        if type(d) is dict or type(dd) is dict:
+            paths = []
+            for subkey in set(map(lambda k: k.replace('_N', ''), (d or {}).keys()) + map(lambda k: k.replace('_N', ''), (dd or {}).keys())):
+                paths += map(lambda path: [ key ] + path, get_paths(d.get(subkey), dd.get(subkey), subkey))
+            return paths
+        else:
+            return [ [ key ] ]
+
+    for path in get_paths(stats['performance'], existing['performance'], 'performance'):
+        aggregate_average(path)
+
+    aggregate_average([ 'events' ])
 
     return stats
 
@@ -164,7 +175,6 @@ class MapReduce(object):
 
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
         # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
-        # document['stats'] = document['stats'].values()
         stats = document['stats'].values()
         for stat in stats:
             stat['start_date'] = document['start_date']

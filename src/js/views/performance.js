@@ -49,7 +49,7 @@ app.VisualizationSectionView = Backbone.View.extend({
 
     this.$el.empty();
 
-    this.$el.append('<h5>' + app.scope.titleForMetric(metric) + ' per ' + axis.charAt(0).toUpperCase() + axis.slice(1) + '</h5>');
+    this.$el.append('<h5>' + app.scope.titleForMetric(metric) + ' per ' + app.scope.filters[axis] + '</h5>');
 
     if (data == null) {
       this.$el.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');

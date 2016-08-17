@@ -14,7 +14,7 @@ app.visualizationViews['default'] = Backbone.View.extend({
 
     var self = this;
     var data = this.data;
-    data.sort(function(lhs, rhs) { return (lhs.label || "").localeCompare(rhs.label || ""); });
+    data.sort(function(lhs, rhs) { return (lhs.label || "").toString().localeCompare((rhs.label || "").toString()); });
 
     // Preprocess data
     var is_stacked = (data[0] || {})['jobstates'] != null;
@@ -142,7 +142,7 @@ app.visualizationViews['default'] = Backbone.View.extend({
           .text(function(d) {
             return d.label;
           });
-        label.append('text')
+        var label_text = label.append('text')
           .text(function(d) {
             var count = 0;
             if (is_stacked) {
@@ -153,6 +153,12 @@ app.visualizationViews['default'] = Backbone.View.extend({
               return app.format_value(self.metric)(count);
             }
           });
+        if (!is_stacked) {
+          label_text.attr('data-toggle', 'tooltip')
+            .attr('title', function(d) {
+              return "averaged over " + app.format_jobs(d.count);
+            });
+        }
 
     } else {
 

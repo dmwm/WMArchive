@@ -202,7 +202,7 @@ class MongoStorage(Storage):
             return list(cursor_or_dict)
 
         # Valid keys in `stats.scope`
-        scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra' ]
+        scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode' ]
 
         # Construct scope
         timeframe_scope = []
@@ -235,6 +235,7 @@ class MongoStorage(Storage):
                     'scope.' + scope_key: kwargs[scope_key],
                 }
             }
+        print(filters)
         scope = timeframe_scope + filters.values()
 
         # Collect suggestions
@@ -252,6 +253,12 @@ class MongoStorage(Storage):
         for metric in metrics:
             visualizations[metric] = {}
 
+            aggregation_key = 'performance.' + metric
+            if metric == 'data.events':
+                aggregation_key = 'events'
+            elif metric == 'jobstate':
+                aggregation_key = 'count'
+
             for axis in axes:
 
                 if axis == 'time':
@@ -266,7 +273,7 @@ class MongoStorage(Storage):
                         {
                             '$group': {
                                 '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
-                                'count': { '$sum': '$count' }
+                                'count': { '$sum': '$' + aggregation_key }
                             }
                         },
                         {
@@ -283,7 +290,7 @@ class MongoStorage(Storage):
                         {
                             '$project': {
                                 '_id': False,
-                                'label': label,
+                                'label': { '$substr': [ label, 0, -1 ] },
                                 'jobstates': '$jobstates',
                             }
                         }
@@ -294,16 +301,16 @@ class MongoStorage(Storage):
                         {
                             '$group': {
                                 '_id': group_id,
-                                'average': { '$avg': '$performance.' + metric },
-                                'std': { '$stdDevPop': '$performance.' + metric },
+                                'average': { '$avg': '$' + aggregation_key },
+                                'count': { '$sum': '$' + aggregation_key + '_N' },
                             }
                         },
                         {
                             '$project': {
                                 '_id': False,
-                                'label': label,
+                                'label': { '$substr': [ label, 0, -1 ] },
                                 'average': '$average',
-                                'std': '$std',
+                                'count': '$count',
                             }
                         }
                     ]))

@@ -19,12 +19,16 @@ app.format_value = function(metric) {
   switch (metric) {
     case 'jobstate':
       return app.format_jobs;
-    case 'cpu.jobTime':
+    case 'events':
+      return function(value) {
+        return numeral(value).format('0.0a') + " events";
+      };
+    case 'cpu.TotalJobTime':
       return function(value) {
         return numeral(value).format("00:00:00") + " (" + numeral(value).format("0.0") + "s" + ")";
       };
-    case 'storage.read':
-    case 'storage.write':
+    case 'storage.readTotalMB':
+    case 'storage.writeTotalMB':
       return function(value) {
         return numeral(value * 1e6).format("0.0 b");
       };
@@ -39,18 +43,18 @@ app.format_tick = function(metric) {
   switch (metric) {
     case 'jobstate':
       return app.format_jobs_tick;
-    case 'cpu.jobTime':
+    case 'cpu.TotalJobTime':
       return function(value) {
         return numeral(value).format("00:00:00");
       };
-    case 'storage.read':
-    case 'storage.write':
+    case 'storage.readTotalMB':
+    case 'storage.writeTotalMB':
       return function(value) {
         return numeral(value * 1e6).format("0.0 b");
       };
     default:
       return function(value) {
-        return numeral(value).format("0.0");
+        return numeral(value).format("0.0a");
       };
     }
 };
@@ -59,10 +63,12 @@ app.format_ticks_label = function(metric) {
   switch (metric) {
     case 'jobstate':
       return "Jobs";
-    case 'cpu.jobTime':
-      return "Job Time"
-    case 'storage.read':
-    case 'storage.write':
+    case 'events':
+      return "Events";
+    case 'cpu.TotalJobTime':
+      return "Processing Time"
+    case 'storage.readTotalMB':
+    case 'storage.writeTotalMB':
       return "Memory"
     default:
       return null;

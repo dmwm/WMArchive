@@ -13,21 +13,26 @@ app.Scope = Backbone.Model.extend({
     'jobtype': "Job Type",
     'jobstate': "Job State",
     'acquisitionEra': "Acquisition Era",
+    'exitCode': "Error Exit Code",
     // 'time' is handled separately
   },
 
   all_metrics: {
     'jobstate': "Job State",
     'cpu': {
-      '_title': 'CPU',
-      'jobTime': "Job Time",
-      'jobCPU': "Job CPU",
+      "_title": "CPU",
+      "TotalJobCPU": "CPU Consumption",
+      "TotalJobTime": "Processing Time",
     },
     'storage': {
       '_title': "Storage",
-      'read': "Read",
-      'write': "Write",
-    }
+      "writeTotalMB": "Write",
+      "readTotalMB": "Read",
+    },
+    'data': {
+      '_title': "Data",
+      'events': "Events",
+    },
   },
 
   defaults: {
@@ -44,6 +49,7 @@ app.Scope = Backbone.Model.extend({
     acquisitionEra: null,
     jobtype: null,
     jobstate: null,
+    exitCode: null,
   },
 
   initialize: function() {

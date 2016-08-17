@@ -23,7 +23,7 @@ import cherrypy
 # WMCore modules
 from WMCore.REST.Server import RESTEntity, restcall
 from WMCore.REST.Tools import tools
-from WMCore.REST.Validation import validate_str, validate_strlist
+from WMCore.REST.Validation import validate_str, validate_strlist, validate_num
 from WMCore.REST.Format import JSONFormat
 
 # WMArchive modules
@@ -74,6 +74,7 @@ class WMAData(RESTEntity):
                 validate_str('jobtype', param, safe, re.compile(r'^[a-zA-Z0-9]+'), optional=True)
                 validate_str('jobstate', param, safe, re.compile(r'^[a-zA-Z0-9]+'), optional=True)
                 validate_str('acquisitionEra', param, safe, re.compile(r'^[a-zA-Z0-9_]+'), optional=True)
+                validate_num('exitCode', param, safe, optional=True)
                 validate_str('_', param, safe, PAT_INFO, optional=True)
 
                 return True
