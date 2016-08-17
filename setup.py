@@ -181,6 +181,8 @@ data_files   = [
                 ('WMArchive/etc', ['etc/wmarch_config.py']),
                 ('WMArchive/data/js', datafiles('src/js')),
                 ('WMArchive/data/css', datafiles('src/css')),
+                ('WMArchive/data/maps', datafiles('src/maps')),
+                ('WMArchive/data/sass', datafiles('src/sass')),
                 ('WMArchive/data/images', datafiles('src/images')),
                 ('WMArchive/data/templates', datafiles('src/templates')),
                ]
@@ -199,7 +201,10 @@ classifiers  = [
 def setupEnv():
     "Fix environment for our needs"
     path = os.path.join(os.getcwd(), 'test/python')
-    os.environ['PYTHONPATH'] += ':%s' % path
+    if  'PYTHONPATH' in os.environ.keys():
+        os.environ['PYTHONPATH'] += ':%s' % path
+    else:
+        os.environ['PYTHONPATH'] = ':%s' % path
 
 def main():
     if sys.version < required_python_version:
