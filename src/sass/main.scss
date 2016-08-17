@@ -44,12 +44,21 @@ $btn-secondary-border: $light;
   padding-top: $spacer;
   border-right: 1px solid $light;
 }
+#visualizations, #metrics {
+  padding-bottom: $spacer;
+}
+#info {
+  margin-top: $spacer;
+  margin-bottom: $spacer;
+}
 
 
 // Footer
 #site-footer {
-  margin-top: 2rem;
+  padding-top: 1 * $spacer;
   font-size: small;
+  background-color: $subtle;
+  padding-bottom: $spacer;
 }
 
 // Format

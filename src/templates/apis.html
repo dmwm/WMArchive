@@ -1,14 +1,16 @@
 <h1>WMArchive APIs</h4>
 
-WMArchive is a RESTful service, therefore clients can use any tool/language
-to contact the service and use GET/POST HTTP requests to retrive or post their data.
-Below we provide examples for curl and python clients.
+<p>WMArchive is a RESTful service, therefore clients can use any tool/language
+to contact the service and use GET/POST HTTP requests to retrieve or post their data.
+Below we provide examples for curl and python clients.</p>
 
 <hr />
 
 <h5>Curl client</h5>
-POST requests can be used to query documents in WMArchive<br/>
-<div><pre class="alert alert-success">
+
+<p>POST requests can be used to query documents in WMArchive:</p>
+
+<pre class="alert alert-success">
 # define some parameters
 OUT=/dev/stdout
 HEADERS="Content-type: application/json"
@@ -23,16 +25,16 @@ curl -D $OUT -X POST -H $HEADERS -d query.json $URL
 # depending on provided timerange you'll either get results
 # or you'll be given UID of your request which can be used later
 # to locate your results
-</pre></div>
+</pre>
 
-GET requests can be used to fetch results from WMArchive placed previously via POST request<br/>
-<div><pre class="alert-success alert">
+<p>GET requests can be used to fetch results from WMArchive placed previously via POST request:</p>
+<pre class="alert-success alert">
 # single document retrieval, GET request for provided UID
 curl -D $OUT -H $HEADERS $URL/UID
-</pre></div>
+</pre>
 
 <h5>Python client</h5>
-<div><pre class="alert alert-success">
+<pre class="alert alert-success">
 import os, json, httplib
 
 # get connection to our service
@@ -47,28 +49,28 @@ print("STATUS", response.status, "REASON", response.reason)
 # read our results
 res = response.read()
 data = json.loads(res)
-</pre></div>
+</pre>
 
 
 
 <h2>Map-Reduce</h2>
 
-Map-reduce jobs are supported by WMArchive service.
+<p>Map-reduce jobs are supported by WMArchive service.</p>
 <div class="alert alert-warning">Please note there is no yet web UI interface for MR jobs</div>
-Users require to write two functions: mapper and reducer for their task, see example below.
+<p>Users require to write two functions: mapper and reducer for their task, see example below.
 To run MR jobs someone will need to get account on
 <span class="label label-primary">analytix.cern.ch</span> node, login over there, setup
 WMArchive environment and run
-<span class="label label-black">mrjob</span> script.
+<span class="label label-black">mrjob</span> script.</p>
 
-<div><pre class="alert-success alert">
+<pre class="alert-success alert">
 mrjob --hdir=hdfs://host:port/path/data
       --odir=hdfs://host:port/path/out
       --schema=hdfs://host:port/path/schema.avsc
       --mrpy=mr.py --pydoop=/path/pydoop.tgz --avro=/path/avro.tgz
-</pre></div>
+</pre>
 
-<div><h5>Example of mapper/reducer functions</h5>
+<h5>Example of mapper/reducer functions</h5>
 <pre class="alert-success alert">
 def mapper(ctx):
     "Read given context and yield key (job-id) and values (task)"
@@ -79,42 +81,42 @@ def mapper(ctx):
 def reducer(ctx):
     "Emit empty key and some data structure via given context"
     ctx.emit("", {"jobid": ctx.key, "task": ctx.values})
-</pre></div>
+</pre>
 
 
 
 <h2>Queries</h3>
 
-The queries in WMArchive should be placed via POST request in a form of Query
+<p>The queries in WMArchive should be placed via POST request in a form of Query
 Language (QL). The QL should specify condition keys and document fields to be
 retrieved. We end-up using JSON format as QL data-format similar to MongoDB QL.
-For example:
+For example:</p>
 
-<pre class="allert-success alert">
+<pre class="alert-success alert">
 {"spec": {"lfn":"bla*123.root", "task": "bla", "run":[1,2,3]}, "fields":["logs"]}
 </pre>
 
-here we define that our conditions spec is a dictionary where we define actual
+<p>here we define that our conditions spec is a dictionary where we define actual
 conditions such as lfn pattern, task name and run list. The output fields would
-be logs key in FWJR documents stored in WMArchive.
+be logs key in FWJR documents stored in WMArchive.</p>
 
-The WMArchive will support three attributes which user may provide:
+<p>The WMArchive will support three attributes which user may provide:</p>
 
-spec defines condition dictionary each spec must have a timerange key-value
+<p>spec defines condition dictionary each spec must have a timerange key-value
 pair which points to specific timerange user want to look-up the data, e.g.
 <pre>"timerange":[20160101, 20160102]</pre>, the values in timerange list should be in
 YYYYMMDD format fields defines list of attributes to be retrieved from FWJR and
-returned back to user aggregate define list of attributes we need to aggregate
+returned back to user aggregate define list of attributes we need to aggregate</p>
 
 <h3>Query Language</h3>
 
-The QL should be flexible enough to accommodate user queries, see next section.
+<p>The QL should be flexible enough to accommodate user queries, see next section.
 For that we can use JSON document to define our queries, see example in
 previous section. Since we're going to use nested structure in our FWJR
 documents we need to refer them via dot notations, e.g. output.inputDataset,
 meta_data.agent_ver, etc. Usage of JSON for queries can be easily translated
 into MongoDB QL. Here is simplest QL rule definitions (mostly aligned with
-MongoDB QL):
+MongoDB QL):</p>
 
 <ul>
 <li>input query should be in form of JSON</li>
@@ -125,10 +127,10 @@ MongoDB QL):
 <li>user can specify $gt, $lt operators for greater than, less than use cases</li>
 </ul>
 
-The WMArchive code will translate user query either into Mongo DB one or the
-one suitable for querying documents on HDFS. Here are few examples of QL syntax
+<p>The WMArchive code will translate user query either into Mongo DB one or the
+one suitable for querying documents on HDFS. Here are few examples of QL syntax</p>
 
-<pre class="allert-success alert">
+<pre class="alert-success alert">
 # use multiple keys
 {"task":"abc", "run":1}
 
@@ -147,7 +149,7 @@ one suitable for querying documents on HDFS. Here are few examples of QL syntax
 
 <h3>Example of user queries</h3>
 
-<pre class="allert-success alert">
+<pre class="alert-success alert">
 # User query
 {"spec":{"task": "/AbcCde_Task_Data_test_6735909/RECO"}, "fields":["wmaid"]}
 
@@ -165,17 +167,15 @@ wma_client.py --spec=query.json
 
 <h2>Tools</h3>
 
-Here we outline useful tools available in WMArchive. All tools are written in python
+<p>Here we outline useful tools available in WMArchive. All tools are written in python
 and associative bash wrapper script is provided for each of them (this is
 mostly for convenience, e.g. setup proper PYTHONPATH). Majority of the users
 will only need to use wma_client tool, while advanced users can use either
-myspark (to place Spark jobs) or mrjob (to place MapReduce jobs) tools.
-<br/>
-<br/>
+myspark (to place Spark jobs) or mrjob (to place MapReduce jobs) tools.</p>
 
 <hr />
 
-<span class="label label-black">wma_client.py</span> tool to query data in WMArchive.
+<p><span class="label label-black">wma_client.py</span> tool to query data in WMArchive.</p>
 
 <pre class="alert-success alert">
 Usage: wma_client.py [options]
@@ -194,8 +194,8 @@ Options:
 
 <hr />
 
-<span class="label label-black">myspark</span>
-tools can be used to execute python code on Spark platform. End-user is responsible to write his/her own executor (mapper) function.
+<p><span class="label label-black">myspark</span>
+tools can be used to execute python code on Spark platform. End-user is responsible to write his/her own executor (mapper) function.</p>
 
 <pre class="alert-success alert">
 myspark --help
@@ -226,8 +226,8 @@ myspark --hdir=hdfs:///hdfspath/data
 
 <hr />
 
-<span class="label label-black">mrjob</span>
-generates (and optionally executes) MR bash script for end-user.
+<p><span class="label label-black">mrjob</span>
+generates (and optionally executes) MR bash script for end-user.</p>
 
 <pre class="alert-success alert">
 mrjob --help

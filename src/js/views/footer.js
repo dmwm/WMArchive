@@ -2,17 +2,21 @@ var app = app || {};
 
 app.FooterView = Backbone.View.extend({
 
-  template: _.template('<div class="row"><div class="col-sm-6" id="statusView"></div><div class="col-sm-6" id="jobsView"></div></div><div class="row"><div class="col-sm-12" style="text-align: center">CMS Collaboration | <%=today%></div></div>'),
+  template: _.template(`
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-12" style="text-align: center">
+          <a href="http://cms.web.cern.ch" target="_blank">CMS Collaboration</a> | <a href="https://github.com/dmwm/WMArchive" target="_blank">WMArchive GitHub Repository</a>
+        </div>
+      </div>
+    <div>
+  `),
 
   initialize: function() {
-    this.statusView = new app.StatusView();
-    this.jobsView = new app.JobsView();
   },
 
   render: function(){
-    this.$el.html(this.template({ today: new Date() }));
-    this.statusView.setElement(this.$('#statusView')).render();
-    this.jobsView.setElement(this.$('#jobsView')).render();
+    this.$el.html(this.template());
   }
 
 });

@@ -5009,9 +5009,18 @@ a.text-danger:focus, a.text-danger:hover {
   padding-top: 1rem;
   border-right: 1px solid #DAE1E1; }
 
+#visualizations, #metrics {
+  padding-bottom: 1rem; }
+
+#info {
+  margin-top: 1rem;
+  margin-bottom: 1rem; }
+
 #site-footer {
-  margin-top: 2rem;
-  font-size: small; }
+  padding-top: 1rem;
+  font-size: small;
+  background-color: #FDF8EE;
+  padding-bottom: 1rem; }
 
 .highlight {
   color: #DB392E; }
