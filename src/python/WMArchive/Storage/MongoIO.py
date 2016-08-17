@@ -290,7 +290,7 @@ class MongoStorage(Storage):
                         {
                             '$project': {
                                 '_id': False,
-                                'label': { '$substr': [ label, 0, -1 ] },
+                                'label': label,
                                 'jobstates': '$jobstates',
                             }
                         }
@@ -308,7 +308,7 @@ class MongoStorage(Storage):
                         {
                             '$project': {
                                 '_id': False,
-                                'label': { '$substr': [ label, 0, -1 ] },
+                                'label': label,
                                 'average': '$average',
                                 'count': '$count',
                             }
