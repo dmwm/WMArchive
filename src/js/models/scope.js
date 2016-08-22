@@ -130,7 +130,8 @@ app.Scope = Backbone.Model.extend({
     var params = this.queryParameters();
     params['metrics'] = [];
     params['axes'] = [];
-    options.data = this.queryParameters();
+    params['suggestions'] = Object.keys(this.filters);
+    options.data = params;
     return Backbone.sync.apply(this, [method, model, options]);
   },
 

@@ -188,7 +188,7 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-    def performance(self, metrics, axes, start_date=None, end_date=None, **kwargs):
+    def performance(self, metrics, axes, start_date=None, end_date=None, suggestions=[], **kwargs):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
@@ -235,7 +235,6 @@ class MongoStorage(Storage):
                     'scope.' + scope_key: kwargs[scope_key],
                 }
             }
-        print(filters)
         scope = timeframe_scope + filters.values()
 
         # Collect suggestions
@@ -245,7 +244,7 @@ class MongoStorage(Storage):
                     '_id': '$scope.' + scope_key,
                 },
             },
-        ]))) for scope_key in scope_keys }
+        ]))) for scope_key in suggestions }
 
         # Collect visualizations
         visualizations = {}

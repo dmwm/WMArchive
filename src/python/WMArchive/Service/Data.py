@@ -63,6 +63,7 @@ class WMAData(RESTEntity):
                 # Validate arguments
                 validate_strlist('metrics[]', param, safe, re.compile(r'^[a-zA-Z.]+'))
                 validate_strlist('axes[]', param, safe, re.compile(r'^[a-zA-Z]+'))
+                validate_strlist('suggestions[]', param, safe, re.compile(r'^[a-zA-Z]+'))
                 date_pattern = PAT_YYYYMMDD
                 validate_str('start_date', param, safe, date_pattern, optional=True)
                 validate_str('end_date', param, safe, date_pattern, optional=True)
@@ -104,6 +105,7 @@ class WMAData(RESTEntity):
         if 'performance' in args:
             kwds['metrics'] = kwds.pop('metrics[]', None)
             kwds['axes'] = kwds.pop('axes[]', None)
+            kwds['suggestions'] = kwds.pop('suggestions[]', None)
             return results(dict(performance=self.mgr.performance(**kwds)))
         if  kwds.get('status', ''):
             return results(dict(status=self.mgr.status()))
