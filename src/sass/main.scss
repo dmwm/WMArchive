@@ -195,6 +195,16 @@ $btn-secondary-border: $light;
   margin-top: 1rem;
 }
 
+.daterangepicker i.fa {
+  font-style: normal;
+
+}
+.glyphicon-chevron-left:after {
+  content: "\2039";
+}
+.glyphicon-chevron-right:after {
+  content: "\203A";
+}
 
 // Canvas
 

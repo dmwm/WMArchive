@@ -6,8 +6,20 @@ app.Visualization = Backbone.Model.extend({
 
   initialize: function(options) {
     _.extend(this, _.pick(options, 'metric', 'axis'));
-    this.fetch();
-    this.listenTo(app.scope, "change:scope", this.fetch);
+    var self = this;
+
+    // Cancel pending fetches on changes
+    this.pendingFetch = this.fetch();
+    this.listenTo(app.scope, 'change:scope', function() {
+      if (self.pendingFetch != null) {
+        self.pendingFetch.abort();
+        self.pendingFetch = null;
+      }
+      this.pendingFetch = this.fetch().complete(function() {
+        self.pendingFetch = null;
+      });
+    });
+
   },
 
   sync: function (method, model, options) {

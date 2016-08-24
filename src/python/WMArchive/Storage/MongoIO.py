@@ -316,7 +316,7 @@ class MongoStorage(Storage):
                         }
                     ]))
 
-        status = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+        status = (get_aggregation_result(self.performance_data.daily.aggregate(scope + [
             {
                 '$group': {
                     '_id': None,
@@ -333,8 +333,24 @@ class MongoStorage(Storage):
                     'end_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$end_date' } },
                 }
             }
-        ]))[0]
+        ])) or [ {} ])[0]
         status["time"] = time.time() - start_time
+        status.update((get_aggregation_result(self.performance_data.daily.aggregate([
+            {
+                '$group': {
+                    '_id': None,
+                    'min_date': { '$min': '$start_date' },
+                    'max_date': { '$max': '$end_date' },
+                },
+            },
+            {
+                '$project': {
+                    '_id': False,
+                    'min_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$min_date' } },
+                    'max_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$max_date' } },
+                }
+            }
+        ])) or [ {} ])[0])
 
         return {
             "suggestions": suggestions,

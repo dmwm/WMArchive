@@ -5112,6 +5112,15 @@ a.text-danger:focus, a.text-danger:hover {
   margin-bottom: 0.5rem;
   margin-top: 1rem; }
 
+.daterangepicker i.fa {
+  font-style: normal; }
+
+.glyphicon-chevron-left:after {
+  content: "\2039"; }
+
+.glyphicon-chevron-right:after {
+  content: "\203A"; }
+
 .visualization-container {
   margin-top: 2rem; }
   .visualization-container .chart-label {
