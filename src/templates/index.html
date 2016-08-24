@@ -36,12 +36,18 @@
   <script type="text/javascript" src="//underscorejs.org/underscore-min.js"></script>
   <script type="text/javascript" src="//backbonejs.org/backbone-min.js"></script>
 
+  <!-- Moment.js -->
+  <script type="text/javascript" src="/wmarchive/web/static/js/utils/moment-with-locales.js"></script>
+  <script type="text/javascript">
+    var locale = window.navigator.userLanguage || window.navigator.language;
+    moment.locale(locale);
+  </script>
+
   <!-- Bootstrap -->
   <script type="text/javascript" src="/wmarchive/web/static/js/utils/tether.js"></script>
   <script type="text/javascript" src="/wmarchive/web/static/js/utils/bootstrap.js"></script>
 
   <!-- [Bootstrap DateRangePicker](https://github.com/dangrossman/bootstrap-daterangepicker) -->
-  <script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
   <script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
   <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
@@ -88,9 +94,12 @@
   <!-- Entry Point -->
   <script type="text/javascript">
     app.scope = new app.Scope();
+
     app.visualizations = new app.Visualizations();
+
     new app.NavMainView({ el: $('#nav-main-container') }).render();
     new app.FooterView({ el: $('#site-footer') }).render();
+
     app.router = new app.Router();
     Backbone.history.start({ pushState: true, root: "/wmarchive/web/" });
   </script>

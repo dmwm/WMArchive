@@ -5080,6 +5080,10 @@ a.text-danger:focus, a.text-danger:hover {
   line-height: 2.4rem;
   cursor: pointer; }
 
+.status {
+  font-size: small;
+  color: #DAE1E1; }
+
 #metrics .structure {
   display: block;
   margin-bottom: 1rem; }

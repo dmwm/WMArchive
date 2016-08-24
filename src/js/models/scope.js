@@ -13,7 +13,7 @@ app.Scope = Backbone.Model.extend({
     'jobtype': "Job Type",
     'jobstate': "Job State",
     'acquisitionEra': "Acquisition Era",
-    'exitCode': "Error Exit Code",
+    'exitCode': "Exit Code",
     // 'time' is handled separately
   },
 
@@ -39,7 +39,7 @@ app.Scope = Backbone.Model.extend({
     metrics: [ 'jobstate' ],
     axes: [ 'host', 'site' ],
 
-    start_date: moment('2016-06-28'),
+    start_date: moment('2016-06-28'), // TODO: dynamically show e.g. `moment().subtract(7, 'days')`
     end_date: moment(),
     workflow: null,
     task: null,
@@ -53,9 +53,18 @@ app.Scope = Backbone.Model.extend({
   },
 
   initialize: function() {
-    this.fetch();
+    var self = this;
     this.on('change:scope change:metrics change:axes', this.updateURL, this);
-    this.on('change:scope', this.fetch, this);
+    this.pendingFetch = this.fetch();
+    this.on('change:scope', function() {
+      if (self.pendingFetch != null) {
+        self.pendingFetch.abort();
+        self.pendingFetch = null;
+      }
+      this.pendingFetch = this.fetch().complete(function() {
+        self.pendingFetch = null;
+      });
+    }, this);
     this.on(Object.keys(this.defaults).map(function(key) {
       if (_.contains([ 'metrics', 'axes' ], key)) {
         return '';
@@ -136,7 +145,7 @@ app.Scope = Backbone.Model.extend({
   },
 
   parse: function(data) {
-    return { suggestions: data.result[0].performance.suggestions };
+    return data.result[0].performance;
   },
 
 });

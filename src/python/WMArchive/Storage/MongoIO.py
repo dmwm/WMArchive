@@ -14,6 +14,7 @@ from __future__ import print_function, division
 import json
 import datetime
 import traceback
+import time
 
 # Mongo modules
 from pymongo import MongoClient
@@ -192,6 +193,7 @@ class MongoStorage(Storage):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
+        start_time = time.time()
 
         def get_aggregation_result(cursor_or_dict):
             """
@@ -314,7 +316,28 @@ class MongoStorage(Storage):
                         }
                     ]))
 
+        status = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+            {
+                '$group': {
+                    '_id': None,
+                    'count': { '$sum': '$count' },
+                    'start_date': { '$min': '$start_date' },
+                    'end_date': { '$max': '$end_date' },
+                },
+            },
+            {
+                '$project': {
+                    '_id': False,
+                    'totalMatchedJobs': '$count',
+                    'start_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$start_date' } },
+                    'end_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$end_date' } },
+                }
+            }
+        ]))[0]
+        status["time"] = time.time() - start_time
+
         return {
             "suggestions": suggestions,
             "visualizations": visualizations,
+            "status": status,
         }

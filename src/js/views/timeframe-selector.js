@@ -3,12 +3,12 @@ var app = app || {};
 app.TimeframeSelector = Backbone.View.extend({
 
   tagName: 'fieldset',
-  className: 'filter-container form-group',
-  template: _.template('<div class="form-group"><label class="form-control-label" for="timeframe-selector">TIMEFRAME</label><div class="filter-text-container"><input type="date" class="form-control filter-text" id="timeframe-selector"></div></div>'),
+  className: 'filter-container form-group filter-active',
+  template: _.template('<div class="form-group"><label class="form-control-label" for="timeframe-selector">TIMEFRAME</label><div class="filter-text-container"><input type="text" class="form-control filter-text" id="timeframe-selector"></div></div>'),
 
   render: function() {
-    this.$el.html(this.template());
     this.model = app.scope;
+    this.$el.html(this.template());
     this.renderPicker();
     return this;
   },

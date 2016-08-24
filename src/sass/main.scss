@@ -151,6 +151,11 @@ $btn-secondary-border: $light;
 
 }
 
+.status {
+  font-size: small;
+  color: $light;
+}
+
 #metrics {
   .structure {
     display: block;

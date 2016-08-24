@@ -12,7 +12,7 @@ app.format_jobs_tick = function(job_count) {
   return numeral(job_count).format('0.0a');
 };
 
-app.format_time_daterangepicker = 'DD/MM/YYYY';
+app.format_time_daterangepicker = 'L';
 app.format_time_d3 = d3.timeFormat('%B %d, %Y');
 
 app.format_value = function(metric) {
