@@ -2,7 +2,19 @@ var app = app || {};
 
 app.PerformanceView = Backbone.View.extend({
 
-  template: _.template('<div class="container-fluid" id="scope-container"><div class="row"><div class="col-sm-12" id="scope"></div></div></div><div class="container-fluid" id="main-container"><div class="row"><div class="col-sm-2" id="metrics"></div><div class="col-sm-10" id="visualizations"></div></div></div>'),
+  template: _.template(`
+    <div class="container-fluid" id="scope-container">
+      <div class="row">
+        <div class="col-md-12" id="scope"></div>
+      </div>
+    </div>
+    <div class="container-fluid" id="main-container">
+      <div class="row">
+        <div class="col-md-2" id="metrics"></div>
+        <div class="col-md-10 card-columns" id="visualizations"></div>
+      </div>
+    </div>
+  `),
 
   initialize: function() {
     this.scopeView = new app.ScopeView();
@@ -33,7 +45,12 @@ app.PerformanceView = Backbone.View.extend({
 app.VisualizationSectionView = Backbone.View.extend({
 
   tagName: 'section',
-  className: 'visualization-container',
+  className: 'visualization-container card',
+
+  template: _.template(`
+    <div class="card-header"><%=title%></div>
+    <div class="card-block"></div>
+  `),
 
   initialize: function(options) {
     this.listenTo(this.model, 'change:data', this.render, this);
@@ -47,8 +64,6 @@ app.VisualizationSectionView = Backbone.View.extend({
     var axis = this.model.get('axis');
     var data = this.model.get('data');
 
-    this.$el.empty();
-
     var title = app.scope.titleForMetric(metric);
     if (axis == 'time') {
       title += " Evolution";
@@ -56,10 +71,11 @@ app.VisualizationSectionView = Backbone.View.extend({
       title += " per " + app.scope.filters[axis];
     }
 
-    this.$el.append('<h5>' + title + '</h5>');
+    this.$el.html(this.template({ title: title }));
+    var content = this.$('.card-block');
 
     if (data == null) {
-      this.$el.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
+      content.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
 
     } else {
       var VisualizationView = app.visualizationViews[metric];
@@ -70,9 +86,13 @@ app.VisualizationSectionView = Backbone.View.extend({
         VisualizationView = app.visualizationViews['default'];
       }
       var visualizationView = new VisualizationView({ data: data, metric: metric, axis: axis });
-      this.$el.append(visualizationView.$el);
+      content.append(visualizationView.$el);
       visualizationView.render();
-      $('[data-toggle="tooltip"]').tooltip(); // FIXME: Move this to an appropriate place
+
+      visualizationView.$('[data-toggle="tooltip"]').tooltip();
+
+      content.append('<p class="card-text text-xs-right"><small class="text-muted">aggregated in ' + numeral(this.model.get('status').time).format('0.00') + ' seconds</small></p>');
+
     }
 
     return this;

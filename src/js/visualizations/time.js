@@ -57,11 +57,10 @@ app.visualizationViews['time'] = Backbone.View.extend({
 
 
     var canvas = d3.select(this.el);
-    var container = canvas.append('div').attr('class', 'full-width-container')
-      .append('svg')
+    var container = canvas.append('svg')
         .attr('height', '200px')
         .attr('width', '100%')
-    var margin = { top: 20, right: 40, bottom: 30, left: 60 },
+    var margin = { top: 20, right: 30, bottom: 20, left: 60 },
       height = parseInt(container.style('height'), 10)
       width = parseInt(container.style('width'), 10);
     var chart = container.append('g').attr("transform", "translate(" + margin.left + "," + margin.top + ")")

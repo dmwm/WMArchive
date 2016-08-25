@@ -2,7 +2,7 @@ var app = app || {};
 
 app.ScopeView = Backbone.View.extend({
 
-  template: _.template('<form class="row"><div id="scope-title" class="col-sm-2" style="display: flex; flex-direction: column; justify-content: center;"><strong class="structure">Scope</strong></div><div class="col-sm-7" id="filters"></div><div class="col-sm-3" id="timeframe" style="display: flex; flex-direction: row; align-items: center"></div></div>'),
+  template: _.template('<form class="row"><div id="scope-title" class="col-md-2" style="display: flex; flex-direction: column; justify-content: center;"><strong class="structure">Scope</strong></div><div class="col-md-7" id="filters"></div><div class="col-md-3 pull-sm-right" id="timeframe" style="display: flex; flex-direction: row; align-items: center"></div>'),
 
   initialize: function() {
     this.filterViews = Object.keys(app.scope.filters).map(function(scope_key) {

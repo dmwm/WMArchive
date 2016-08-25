@@ -36,7 +36,11 @@ app.Visualization = Backbone.Model.extend({
   },
 
   parse: function(data) {
-    return { data: data.result[0].performance.visualizations[this.get('metric')][this.get('axis')] };
+    var result = data.result[0].performance;
+    return {
+      data: result.visualizations[this.get('metric')][this.get('axis')],
+      status: result.status,
+    };
   },
 
   queryParameters: function() {

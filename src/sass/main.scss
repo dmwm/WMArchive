@@ -8,6 +8,7 @@ $light: #DAE1E1;
 
 // Bootstrap Overrides
 $brand-primary: $highlight;
+$brand-secondary: $structure;
 $font-family-base: -apple-system, BlinkMacSystemFont,
   "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
   "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -20,6 +21,7 @@ $input-border-focus: $highlight;
 $input-border-color: $light;
 $input-color-placeholder: $light;
 $btn-secondary-border: $light;
+$text-muted: $light;
 
 // Bootstrap
 @import "bootstrap/bootstrap-flex.scss";
@@ -208,8 +210,29 @@ $btn-secondary-border: $light;
 
 // Canvas
 
+#visualizations {
+  margin-top: 1.5 * $spacer;
+  &.card-columns {
+    column-gap: 1.5 * $spacer;
+    @include media-breakpoint-down(lg) {
+      column-count: 1;
+    }
+    @include media-breakpoint-only(xl) {
+      column-count: 2;
+    }
+  }
+}
+
+.card, .card-header {
+  border-color: $structure;
+}
+.card-header {
+  background-color: $structure;
+  color: $background;
+}
+
 .visualization-container {
-  margin-top: 2*$spacer;
+  margin-bottom: 1.5 * $spacer;
   .chart-label {
     font-size: small;
   }
@@ -238,7 +261,7 @@ $btn-secondary-border: $light;
 }
 
 .full-width-container {
-  margin: $spacer;
+  margin-bottom: $spacer;
   .chart {
     width: 100%;
     height: 2rem;

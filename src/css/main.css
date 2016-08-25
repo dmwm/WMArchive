@@ -369,7 +369,7 @@ table {
 caption {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
-  color: #818a91;
+  color: #DAE1E1;
   text-align: left;
   caption-side: bottom; }
 
@@ -1747,7 +1747,7 @@ select.form-control-lg:not([size]):not([multiple]), .input-group-lg > select.for
   .form-check + .form-check {
     margin-top: -.25rem; }
   .form-check.disabled .form-check-label {
-    color: #818a91;
+    color: #DAE1E1;
     cursor: not-allowed; }
 
 .form-check-label {
@@ -4890,10 +4890,10 @@ a.bg-danger:focus, a.bg-danger:hover {
   font-style: italic; }
 
 .text-muted {
-  color: #818a91 !important; }
+  color: #DAE1E1 !important; }
 
 a.text-muted:focus, a.text-muted:hover {
-  color: #687077; }
+  color: #becaca; }
 
 .text-primary {
   color: #DB392E !important; }
@@ -5121,8 +5121,26 @@ a.text-danger:focus, a.text-danger:hover {
 .glyphicon-chevron-right:after {
   content: "\203A"; }
 
+#visualizations {
+  margin-top: 1.5rem; }
+  #visualizations.card-columns {
+    column-gap: 1.5rem; }
+    @media (max-width: 1199px) {
+      #visualizations.card-columns {
+        column-count: 1; } }
+    @media (min-width: 1200px) {
+      #visualizations.card-columns {
+        column-count: 2; } }
+
+.card, .card-header {
+  border-color: #77C8E5; }
+
+.card-header {
+  background-color: #77C8E5;
+  color: white; }
+
 .visualization-container {
-  margin-top: 2rem; }
+  margin-bottom: 1.5rem; }
   .visualization-container .chart-label {
     font-size: small; }
   .visualization-container a.chart-label, .visualization-container a {
@@ -5145,7 +5163,7 @@ a.text-danger:focus, a.text-danger:hover {
     text-align: center; }
 
 .full-width-container {
-  margin: 1rem; }
+  margin-bottom: 1rem; }
   .full-width-container .chart {
     width: 100%;
     height: 2rem; }
