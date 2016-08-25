@@ -177,7 +177,10 @@ app.Scope = Backbone.Model.extend({
     var params = this.queryParameters();
     params['metrics'] = [];
     params['axes'] = [];
-    params['suggestions'] = Object.keys(this.filters);
+    var suggestions = Object.keys(this.filters);
+    suggestions.splice(suggestions.indexOf('workflow'), 1);
+    suggestions.splice(suggestions.indexOf('task'), 1);
+    params['suggestions'] = suggestions;
     options.data = params;
     return Backbone.sync.apply(this, [method, model, options]);
   },
