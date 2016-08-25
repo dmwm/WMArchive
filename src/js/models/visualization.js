@@ -9,13 +9,13 @@ app.Visualization = Backbone.Model.extend({
     var self = this;
 
     // Cancel pending fetches on changes
-    this.pendingFetch = this.fetch();
+    this.pendingFetch = this.fetch({ error: self.fetchError });
     this.listenTo(app.scope, 'change:scope', function() {
       if (self.pendingFetch != null) {
         self.pendingFetch.abort();
         self.pendingFetch = null;
       }
-      this.pendingFetch = this.fetch().complete(function() {
+      self.pendingFetch = this.fetch({ error: self.fetchError }).complete(function() {
         self.pendingFetch = null;
       });
     });
@@ -40,6 +40,7 @@ app.Visualization = Backbone.Model.extend({
     return {
       data: result.visualizations[this.get('metric')][this.get('axis')],
       status: result.status,
+      error: null,
     };
   },
 
@@ -48,6 +49,12 @@ app.Visualization = Backbone.Model.extend({
       metrics: [ this.get('metric') ],
       axes: [ this.get('axis') ],
     };
+  },
+
+  fetchError: function(model, response, options) {
+    if (response.readyState == 4 && response.status != 200) {
+      model.set({ data: null, error: response.statusText });
+    }
   },
 
 });

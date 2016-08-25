@@ -53,7 +53,7 @@ app.VisualizationSectionView = Backbone.View.extend({
   `),
 
   initialize: function(options) {
-    this.listenTo(this.model, 'change:data', this.render, this);
+    this.listenTo(this.model, 'change:data change:error', this.render, this);
     this.listenTo(this.model, 'destroy', function(a,b,c) {
       this.remove();
     }, this);
@@ -63,6 +63,7 @@ app.VisualizationSectionView = Backbone.View.extend({
     var metric = this.model.get('metric');
     var axis = this.model.get('axis');
     var data = this.model.get('data');
+    var error = this.model.get('error');
 
     var title = app.scope.titleForMetric(metric);
     if (axis == 'time') {
@@ -75,7 +76,11 @@ app.VisualizationSectionView = Backbone.View.extend({
     var content = this.$('.card-block');
 
     if (data == null) {
-      content.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
+      if (error != null) {
+        content.append('<p class="card-text text-xs-center"><small class="text-muted">' + error + '</small></p>')
+      } else {
+        content.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
+      }
 
     } else {
       var VisualizationView = app.visualizationViews[metric];

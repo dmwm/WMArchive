@@ -64,6 +64,8 @@ app.FilterView = Backbone.View.extend({
 
   events: {
     'typeahead:select .filter-text': 'applyFilter',
+    'keyup .filter-text': 'keyup',
+    'focusout .filter-text': 'focusout',
     'click .clear-filter': 'clearFilter',
   },
 
@@ -81,6 +83,16 @@ app.FilterView = Backbone.View.extend({
   clearFilter: function(event, selection) {
     var scope_key = this.input_id;
     this.model.set(scope_key, null);
+  },
+
+  keyup: function(event) {
+    if (event.keyCode == 13) {
+      this.applyFilter(event, event.target.value);
+    }
+  },
+
+  focusout: function(event) {
+    this.applyFilter(event, event.target.value);
   },
 
 });

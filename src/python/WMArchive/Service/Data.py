@@ -23,7 +23,7 @@ import cherrypy
 # WMCore modules
 from WMCore.REST.Server import RESTEntity, restcall
 from WMCore.REST.Tools import tools
-from WMCore.REST.Validation import validate_str, validate_strlist, validate_num
+from WMCore.REST.Validation import validate_rx, validate_str, validate_strlist, validate_num
 from WMCore.REST.Format import JSONFormat
 
 # WMArchive modules
@@ -67,15 +67,15 @@ class WMAData(RESTEntity):
                 date_pattern = PAT_YYYYMMDD
                 validate_str('start_date', param, safe, date_pattern, optional=True)
                 validate_str('end_date', param, safe, date_pattern, optional=True)
-                validate_str('workflow', param, safe, re.compile(r'^[a-zA-Z0-9_]+'), optional=True)
-                validate_str('task', param, safe, re.compile(r'^[a-zA-Z0-9_]+'), optional=True)
-                validate_str('step', param, safe, re.compile(r'^[a-zA-Z0-9_]+'), optional=True)
-                validate_str('host', param, safe, re.compile(r'^[a-zA-Z0-9]+.[a-zA-Z0-9]+.[a-zA-Z0-9]+'), optional=True)
-                validate_str('site', param, safe, re.compile(r'^T[0-3]_[A-Z][A-Z]_[a-zA-Z0-9]+'), optional=True)
-                validate_str('jobtype', param, safe, re.compile(r'^[a-zA-Z0-9]+'), optional=True)
-                validate_str('jobstate', param, safe, re.compile(r'^[a-zA-Z0-9]+'), optional=True)
-                validate_str('acquisitionEra', param, safe, re.compile(r'^[a-zA-Z0-9_]+'), optional=True)
-                validate_num('exitCode', param, safe, optional=True)
+                validate_rx('workflow', param, safe, optional=True)
+                validate_rx('task', param, safe, optional=True)
+                validate_rx('step', param, safe, optional=True)
+                validate_rx('host', param, safe, optional=True)
+                validate_rx('site', param, safe, optional=True)
+                validate_rx('jobtype', param, safe, optional=True)
+                validate_rx('jobstate', param, safe, optional=True)
+                validate_rx('acquisitionEra', param, safe, optional=True)
+                validate_rx('exitCode', param, safe, optional=True)
                 validate_str('_', param, safe, PAT_INFO, optional=True)
 
                 return True
