@@ -193,7 +193,6 @@ class MongoStorage(Storage):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
-        print(metrics, axes, kwargs)
         start_time = time.time()
 
         def get_aggregation_result(cursor_or_dict):

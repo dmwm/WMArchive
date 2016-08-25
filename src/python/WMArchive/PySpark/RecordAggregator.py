@@ -33,8 +33,8 @@ def extract_stats(record):
                 break
         exitCode = None
         for error in step['errors']:
-            exitCode = error.get('exitCode')
-            if exitCode is not None:
+            exitCode = str(error.get('exitCode'))
+            if exitCode:
                 break
 
         stats = { 'scope': {
