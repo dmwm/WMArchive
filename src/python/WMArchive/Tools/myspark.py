@@ -240,11 +240,19 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
                     % (script, obj))
             ctx.stop()
             return
-        mro = obj.MapReduce(spec)
-        # example of collecting records from mapper and
-        # passing all of them to reducer function
-        records = avro_rdd.map(mro.mapper).collect()
-        out = mro.reducer(records)
+        # we have a nested use case when one MR return WMArchive spec
+        # we'll loop in that case until we get non-spec output
+        while True:
+            mro = obj.MapReduce(spec)
+            # example of collecting records from mapper and
+            # passing all of them to reducer function
+            records = avro_rdd.map(mro.mapper).collect()
+            out = mro.reducer(records)
+            logger.info('OUTPUT %s %s' % (out, type(out)))
+            if  is_spec(out):
+                spec = out
+            else:
+                break
 
         # the map(f).reduce(f) example but it does not collect
         # intermediate records
@@ -256,6 +264,14 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
     if  verbose:
         logger.info("Elapsed time %s" % htime(time.time()-time0))
     return out
+
+def is_spec(data):
+    "Check if given data is WMArchive spec"
+    if  not isinstance(data, dict):
+        return False
+    if  set(data.keys()) == set(['spec', 'fields']):
+        return True
+    return False
 
 def main():
     "Main function"
