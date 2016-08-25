@@ -48,7 +48,6 @@ app.TimeframeSelector = Backbone.View.extend({
         autoApply: true,
       },
       function(start, end, label) {
-        console.log("picker changed, setting timeframe", start.format('lll'), end.format(lll));
         self.model.set({ start_date: start, end_date: end });
       }
     );
