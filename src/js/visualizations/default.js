@@ -165,6 +165,7 @@ app.visualizationViews['default'] = Backbone.View.extend({
       var labels = data.map(function(d) { return d['label'] })
 
       var chart_size = 200; // py
+      var min_size = 20;
 
       var canvas = d3.select(this.el)
         .attr('class', 'canvas-flex');
@@ -185,7 +186,7 @@ app.visualizationViews['default'] = Backbone.View.extend({
           } else {
             count = d.average;
           }
-          return Math.sqrt(count / max_count) * chart_size + 'px';
+          return Math.sqrt(count / max_count) * (chart_size - min_size) + min_size + 'px';
         })
         .attr('viewBox', '0 0 100 100')
         .append("g")
