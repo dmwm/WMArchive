@@ -9,7 +9,7 @@ app.format_jobs = function(job_count) {
 };
 
 app.format_jobs_tick = function(job_count) {
-  return numeral(job_count).format('0.[0]a');
+  return numeral(job_count).format('0.[00]a');
 };
 
 app.format_time_daterangepicker = 'L';
@@ -21,7 +21,7 @@ app.format_value = function(metric) {
       return app.format_jobs;
     case 'events':
       return function(value) {
-        return numeral(value).format('0.[0]a') + " events";
+        return numeral(value).format('0.[00]a') + " events";
       };
     case 'cpu.TotalJobTime':
       return function(value) {
@@ -30,11 +30,11 @@ app.format_value = function(metric) {
     case 'storage.readTotalMB':
     case 'storage.writeTotalMB':
       return function(value) {
-        return numeral(value * 1e6).format("0.[0] b");
+        return numeral(value * 1e6).format("0.[00] b");
       };
     default:
       return function(value) {
-        return numeral(value).format("0.[0]");
+        return numeral(value).format("0.[00]");
       };
     }
 };
@@ -50,11 +50,11 @@ app.format_tick = function(metric) {
     case 'storage.readTotalMB':
     case 'storage.writeTotalMB':
       return function(value) {
-        return numeral(value * 1e6).format("0.[0] b");
+        return numeral(value * 1e6).format("0.[00] b");
       };
     default:
       return function(value) {
-        return numeral(value).format("0.[0]a");
+        return numeral(value).format("0.[00]a");
       };
     }
 };

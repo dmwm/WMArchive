@@ -5204,4 +5204,11 @@ svg .line {
 svg .filled {
   fill: #77C8E5; }
 
+.heatmap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; }
+  .heatmap .heatmap-item {
+    cursor: pointer; }
+
 /*# sourceMappingURL=main.css.map */

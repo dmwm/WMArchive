@@ -318,3 +318,12 @@ svg {
     fill: $structure;
   }
 }
+
+.heatmap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  .heatmap-item {
+    cursor: pointer;
+  }
+}
