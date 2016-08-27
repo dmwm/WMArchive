@@ -46,6 +46,7 @@ app.TimeframeSelector = Backbone.View.extend({
         opens: 'left',
         alwaysShowCalendars: true,
         autoApply: true,
+        cancelClass: 'btn-secondary',
       },
       function(start, end, label) {
         self.model.set({ start_date: start, end_date: end });

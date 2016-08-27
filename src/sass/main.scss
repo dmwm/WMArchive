@@ -25,6 +25,7 @@ $text-muted: $light;
 
 // Bootstrap
 @import "bootstrap/bootstrap-flex.scss";
+@import "daterangepicker.scss";
 
 
 // Header
@@ -197,9 +198,32 @@ $text-muted: $light;
   margin-top: 1rem;
 }
 
-.daterangepicker i.fa {
-  font-style: normal;
-
+.daterangepicker {
+  i.fa {
+    font-style: normal;
+  }
+  .input-mini.active {
+    border-color: $highlight;
+  }
+  .ranges li {
+    color: $light;
+    background-color: $background;
+    border-color: $light;
+    &:hover {
+      color: $highlight;
+      background-color: $background;
+      border-color: $highlight;
+    }
+    &.active {
+      color: $background;
+      background-color: $highlight;
+      border-color: $highlight;
+    }
+  }
+  td.active, td.active:hover {
+    color: $background;
+    background-color: $highlight;
+  }
 }
 .glyphicon-chevron-left:after {
   content: "\2039";
