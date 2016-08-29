@@ -14,6 +14,7 @@ from __future__ import print_function, division
 import json
 import datetime
 import traceback
+import time
 
 # Mongo modules
 from pymongo import MongoClient
@@ -188,10 +189,11 @@ class MongoStorage(Storage):
                 out.append({'wmaid':row['wmaid']})
         return out
 
-    def performance(self, metrics, axes, start_date=None, end_date=None, **kwargs):
+    def performance(self, metrics, axes, start_date=None, end_date=None, suggestions=[], **kwargs):
         """
         An example of how we can aggregate performance metrics over specific scopes in MongoDB.
         """
+        start_time = time.time()
 
         def get_aggregation_result(cursor_or_dict):
             """
@@ -232,10 +234,9 @@ class MongoStorage(Storage):
                 continue
             filters[scope_key] = {
                 '$match': {
-                    'scope.' + scope_key: kwargs[scope_key],
+                    'scope.' + scope_key: { '$regex': kwargs[scope_key] },
                 }
             }
-        print(filters)
         scope = timeframe_scope + filters.values()
 
         # Collect suggestions
@@ -245,7 +246,7 @@ class MongoStorage(Storage):
                     '_id': '$scope.' + scope_key,
                 },
             },
-        ]))) for scope_key in scope_keys }
+        ]))) for scope_key in suggestions }
 
         # Collect visualizations
         visualizations = {}
@@ -315,7 +316,44 @@ class MongoStorage(Storage):
                         }
                     ]))
 
+        status = (get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+            {
+                '$group': {
+                    '_id': None,
+                    'count': { '$sum': '$count' },
+                    'start_date': { '$min': '$start_date' },
+                    'end_date': { '$max': '$end_date' },
+                },
+            },
+            {
+                '$project': {
+                    '_id': False,
+                    'totalMatchedJobs': '$count',
+                    'start_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$start_date' } },
+                    'end_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$end_date' } },
+                }
+            }
+        ])) or [ {} ])[0]
+        status["time"] = time.time() - start_time
+        status.update((get_aggregation_result(self.performance_data.daily.aggregate([
+            {
+                '$group': {
+                    '_id': None,
+                    'min_date': { '$min': '$start_date' },
+                    'max_date': { '$max': '$end_date' },
+                },
+            },
+            {
+                '$project': {
+                    '_id': False,
+                    'min_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$min_date' } },
+                    'max_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$max_date' } },
+                }
+            }
+        ])) or [ {} ])[0])
+
         return {
             "suggestions": suggestions,
             "visualizations": visualizations,
+            "status": status,
         }

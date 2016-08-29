@@ -13,7 +13,7 @@ app.Scope = Backbone.Model.extend({
     'jobtype': "Job Type",
     'jobstate': "Job State",
     'acquisitionEra': "Acquisition Era",
-    'exitCode': "Error Exit Code",
+    'exitCode': "Exit Code",
     // 'time' is handled separately
   },
 
@@ -37,9 +37,9 @@ app.Scope = Backbone.Model.extend({
 
   defaults: {
     metrics: [ 'jobstate' ],
-    axes: [ 'host', 'site' ],
+    axes: [ 'host', 'jobstate', 'time', 'site' ],
 
-    start_date: moment('2016-06-28'),
+    start_date: moment().subtract(7, 'days'),
     end_date: moment(),
     workflow: null,
     task: null,
@@ -53,15 +53,62 @@ app.Scope = Backbone.Model.extend({
   },
 
   initialize: function() {
-    this.fetch();
+    var self = this;
+
+    // Trigger update URL on changes
     this.on('change:scope change:metrics change:axes', this.updateURL, this);
-    this.on('change:scope', this.fetch, this);
+
+    // Cancel pending fetches on changes
+    this.pendingFetch = this.fetch();
+    this.on('change:scope', function() {
+      if (self.pendingFetch != null) {
+        self.pendingFetch.abort();
+        self.pendingFetch = null;
+      }
+      this.pendingFetch = this.fetch().complete(function() {
+        self.pendingFetch = null;
+      });
+    }, this);
+
+    // Constrain timeframe on status change
+    this.on('change:status', function() {
+      var status = this.get('status') || {};
+      var min_date = status.min_date;
+      var max_date = status.max_date;
+      if (min_date != null && max_date != null) {
+        min_date = moment(min_date);
+        max_date = moment(max_date);
+        if (!min_date.isSame(this.get('min_date')) || !max_date.isSame(this.get('max_date'))) {
+          this.set({ min_date: min_date, max_date: max_date });
+        }
+      }
+    }, this);
+    this.on('change:min_date change:max_date', function() {
+      var min_date = this.get('min_date');
+      var max_date = this.get('max_date');
+      var start_date = this.get('start_date');
+      var end_date = this.get('end_date');
+      if (min_date != null && start_date.isBefore(min_date)) {
+        start_date = moment(min_date);
+      }
+      if (max_date != null && end_date.isAfter(max_date)) {
+        end_date = moment(max_date);
+      }
+      if (start_date.isAfter(end_date)) {
+        start_date = moment(min_date)
+      }
+      if (!start_date.isSame(this.get('start_date')) || !end_date.isSame(this.get('end_date'))) {
+        this.set({ start_date: start_date, end_date: end_date });
+      }
+    }, this);
+
+    // Trigger `change:scope` event on any scope change
     this.on(Object.keys(this.defaults).map(function(key) {
       if (_.contains([ 'metrics', 'axes' ], key)) {
         return '';
       }
       return 'change:' + key;
-    }).join(' '), function(event) {
+    }).join(' '), function() {
       this.trigger("change:scope");
     }, this);
   },
@@ -130,12 +177,16 @@ app.Scope = Backbone.Model.extend({
     var params = this.queryParameters();
     params['metrics'] = [];
     params['axes'] = [];
-    options.data = this.queryParameters();
+    var suggestions = Object.keys(this.filters);
+    suggestions.splice(suggestions.indexOf('workflow'), 1);
+    suggestions.splice(suggestions.indexOf('task'), 1);
+    params['suggestions'] = suggestions;
+    options.data = params;
     return Backbone.sync.apply(this, [method, model, options]);
   },
 
   parse: function(data) {
-    return { suggestions: data.result[0].performance.suggestions };
+    return data.result[0].performance;
   },
 
 });
