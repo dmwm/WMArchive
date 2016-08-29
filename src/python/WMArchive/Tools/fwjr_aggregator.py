@@ -5,7 +5,7 @@
 File       : FWJRAggregator.py
 Author     : Luca Menichetti <luca dot menichetti AT cern dot ch>
              Valentin Kuznetsov <vkuznet AT gmail dot com>
-Description: 
+Description:
 """
 
 # system modules
@@ -29,7 +29,7 @@ class OptionParser():
         self.parser.add_argument("--hdir", action="store",
             dest="hdir", default="", help="HDFS directory, e.g. /cms/wmarchive/avro/2016/08")
         self.parser.add_argument("--cond", action="store",
-            dest="cond", default="", help="Condition dictionary (JSON)")
+            dest="cond", default="{}", help="Condition dictionary (JSON)")
 
 def unpack_struct(colname, df):
     "Unpack FWJR structure"
@@ -105,5 +105,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

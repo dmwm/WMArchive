@@ -5,7 +5,7 @@ sizes of successfull FWJR jobs. Information is structured by agent host/site.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from pymongo import MongoClient
 from bson import json_util
 import time
@@ -19,9 +19,24 @@ def get_scope_hash(scope):
     return str(hash(frozenset(scope.items())))
 
 
-def extract_stats(record):
+def extract_stats(record, timeframe_precision="day"):
 
     meta_data = record['meta_data']
+
+    timestamp = datetime.fromtimestamp(meta_data['ts'])
+    if timeframe_precision == "month":
+        start_date = datetime(year=timestamp.year, month=timestamp.month)
+        end_date = start_date + timedelta(months=1) # FIXME: this always increments by the same amount and does not take varying month lengths into account
+    elif timeframe_precision == "week":
+        start_date = datetime(year=timestamp.year, month=timestamp.month, day=timestamp.day) - timedelta(days=timestamp.weekday())
+        end_date = start_date + timedelta(days=7)
+    elif timeframe_precision == "day":
+        start_date = datetime(year=timestamp.year, month=timestamp.month, day=timestamp.day)
+        end_date = start_date + timedelta(days=1)
+    elif timeframe_precision == "hour":
+        start_date = datetime(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=timestamp.hour)
+        end_date = start_date + timedelta(hours=1)
+
     taskname_components = record['task'].split('/')
 
     def extract_stats_from_step(step):
@@ -38,6 +53,8 @@ def extract_stats(record):
                 break
 
         stats = { 'scope': {
+            'start_date': start_date,
+            'end_date': end_date,
             'workflow': taskname_components[1],
             'task': taskname_components[-1],
             'host': meta_data['host'],
@@ -140,13 +157,6 @@ class MapReduce(object):
 
             meta_data = record['meta_data']
 
-            # Determine timeframe of aggregation
-            timestamp = datetime.fromtimestamp(meta_data['ts'])
-            if not 'start_date' in document or timestamp < document['start_date']:
-                document['start_date'] = timestamp
-            if not 'end_date' in document or timestamp > document['end_date']:
-                document['end_date'] = timestamp
-
             # Extract list of stats from record, generally one per step
             stats_list = extract_stats(record)
 
@@ -164,11 +174,6 @@ class MapReduce(object):
             'stats': {},
         }
         for existing_document in records:
-            if not 'start_date' in document or existing_document['start_date'] < document['start_date']:
-                document['start_date'] = existing_document['start_date']
-            if not 'end_date' in document or existing_document['end_date'] > document['end_date']:
-                document['end_date'] = existing_document['end_date']
-
             for scope_hash, existing_stats in existing_document['stats'].items():
                 document['stats'][scope_hash] = aggregate_stats(existing_stats, existing=document['stats'].get(scope_hash))
 
@@ -176,9 +181,6 @@ class MapReduce(object):
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
         # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
         stats = document['stats'].values()
-        for stat in stats:
-            stat['start_date'] = document['start_date']
-            stat['end_date'] = document['end_date']
 
         # Also dump results to json file
         with open('RecordAggregator_result.json', 'w') as outfile:
@@ -187,10 +189,10 @@ class MapReduce(object):
 
         # Store in MongoDB
         mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
-        daily_collection = mongo_client['performance']['daily']
-        daily_collection.insert(stats)
+        mongo_collection = mongo_client['performance']['aggregated']
+        mongo_collection.insert(stats)
 
-        print("Aggregated performance metrics stored in MongoDB database {}.".format(daily_collection))
+        print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
         print("--- {} seconds ---".format(time.time() - self.start_time))
 
         return document
