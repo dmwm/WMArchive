@@ -12,27 +12,31 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def parse_day(s):
+def parse_source(s):
+
+    def path_from_day(day):
+        return '/cms/wmarchive/avro/{year:04d}/{month:02d}/{day:02d}'.format(year=day.year, month=day.month, day=day.day)
+
     try:
-        return datetime.datetime.strptime(s, '%Y-%m-%d').date()
+        return path_from_day(datetime.datetime.strptime(s, '%Y-%m-%d').date())
     except ValueError:
-        return datetime.date.today() - datetime.timedelta(days=int(s))
+        pass
+    try:
+        return path_from_day(datetime.date.today() - datetime.timedelta(days=int(s)))
     except:
-        raise argparse.ArgumentTypeError("Please provide a date formatted like YYY-MM-DD or a number of days ago, e.g. 0 for today or 1 for yesterday.")
+        pass
+
+    return s
 
 parser = argparse.ArgumentParser(description="Run performance aggregations over the FWJR database.")
-parser.add_argument('-d', '--day', required=True, type=parse_day, help="The day of FWJR data to aggregate over, formatted like YYY-MM-DD or a number of days ago, e.g. 0 for today or 1 for yesterday.")
+parser.add_argument('source', type=parse_source, help="The FWJR data to aggregate over. Provide either a date formatted like YYYY-MM-DD, a number of days ago, e.g. 0 for today or 1 for yesterday, or a path in the HDFS such as /cms/wmarchive/avro/2016/08/30.")
+parser.add_argument('--precision', '-p', choices=[ 'hour', 'day', 'week', 'month' ], required=True, help="The temporal precision of aggregation.")
 args = parser.parse_args()
 
-logger.info("Aggregating performance data for {}...".format(args.day))
+logger.info("Aggregating {} performance data in {}...".format(args.precision.replace('y', 'i') + 'ly', args.source))
 
 from WMArchive.PySpark import RecordAggregator
 aggregation_script = RecordAggregator.__file__.replace('.pyc', '.py')
 logger.debug("Using aggregation script in {}".format(aggregation_script))
 
-hdfs_path_prefix = '/cms/wmarchive/avro/'
-
-hdfs_path = hdfs_path_prefix + '{year:04d}/{month:02d}/{day:02d}'.format(year=args.day.year, month=args.day.month, day=args.day.day)
-logger.debug("Path in HDFS: {}".format(hdfs_path))
-
-subprocess.call([ os.path.join(os.path.dirname(__file__), 'myspark'), '--hdir=hdfs://' + hdfs_path, '--schema=hdfs://' + hdfs_path_prefix + 'schemas/current.avsc', '--script=' + aggregation_script ])
+subprocess.call([ os.path.join(os.path.dirname(__file__), 'myspark'), '--hdir=hdfs://' + args.source, '--schema=hdfs:///cms/wmarchive/avro/schemas/current.avsc', '--script=' + aggregation_script ])
