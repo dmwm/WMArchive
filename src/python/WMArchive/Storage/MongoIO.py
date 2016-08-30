@@ -194,7 +194,7 @@ class MongoStorage(Storage):
         """
         start_time = time.time()
 
-        performance_data = self.mongo_client.aggregated.performance
+        performance_data = self.client.aggregated.performance
 
         def get_aggregation_result(cursor_or_dict):
             """
