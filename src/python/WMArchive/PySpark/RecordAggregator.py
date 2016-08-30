@@ -189,7 +189,7 @@ class MapReduce(object):
 
         # Store in MongoDB
         mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
-        mongo_collection = mongo_client['performance']['aggregated']
+        mongo_collection = mongo_client['aggregated']['performance']
         mongo_collection.insert(stats)
 
         print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))

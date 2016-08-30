@@ -73,7 +73,6 @@ class MongoStorage(Storage):
         self.collname = collname
         self.coll = self.mdb[collname]
         self.jobs = self.mdb['jobs'] # separate collection for job results
-        self.performance_data = self.client.performance # separate database for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
 
@@ -195,7 +194,7 @@ class MongoStorage(Storage):
         """
         start_time = time.time()
 
-        db = self.performance_data.aggregated
+        performance_data = self.mongo_client.aggregated.performance
 
         def get_aggregation_result(cursor_or_dict):
             """
@@ -242,7 +241,7 @@ class MongoStorage(Storage):
         scope = timeframe_scope + filters.values()
 
         # Collect suggestions
-        suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(db.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
+        suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(performance_data.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
             {
                 '$group': {
                     '_id': '$scope.' + scope_key,
@@ -274,7 +273,7 @@ class MongoStorage(Storage):
                     label = '$_id'
 
                 if metric == 'jobstate':
-                    visualizations[metric][axis] = get_aggregation_result(db.aggregate(scope + [
+                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
@@ -302,7 +301,7 @@ class MongoStorage(Storage):
                     ]))
 
                 else:
-                    visualizations[metric][axis] = get_aggregation_result(db.aggregate(scope + [
+                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': group_id,
@@ -320,7 +319,7 @@ class MongoStorage(Storage):
                         }
                     ]))
 
-        status = (get_aggregation_result(db.aggregate(scope + [
+        status = (get_aggregation_result(performance_data.aggregate(scope + [
             {
                 '$group': {
                     '_id': None,
@@ -339,7 +338,7 @@ class MongoStorage(Storage):
             }
         ])) or [ {} ])[0]
         status["time"] = time.time() - start_time
-        status.update((get_aggregation_result(db.aggregate([
+        status.update((get_aggregation_result(performance_data.aggregate([
             {
                 '$group': {
                     '_id': None,
