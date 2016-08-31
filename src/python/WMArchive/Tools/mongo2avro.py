@@ -60,6 +60,10 @@ class OptionParser(object):
         sleep = 600
         self.parser.add_argument("--sleep", action="store", type=int, \
             dest="sleep", default=sleep, help="Sleep interval, default %s seconds" % sleep)
+        close2midnight = 2340
+        self.parser.add_argument("--midnight-thr", action="store", type=int, \
+            dest="mthr", default=close2midnight, \
+            help="A time step to determine if it's close to midnight, default %s seconds" % close2midnight)
         self.parser.add_argument("--tstamp", action="store",\
             dest="tstamp", default="",\
             help="timestamp below which records will be removed, YYYYMMDD \
@@ -76,7 +80,41 @@ def gen_file_name(odir, compress=''):
         name += '.%s' % compress
     return os.path.join(odir, name)
 
-def file_name(odir, mdir, thr, compress):
+def move_file(fname, mdir):
+    "Move given file into migration area"
+    try:
+        os.mkdir(mdir)
+    except OSError:
+        pass
+    bname = os.path.basename(fname).split('.')[0]
+    tname = name = time.strftime("%H%M%S", time.gmtime())
+    nname = os.path.join(mdir, '%s_%s.avro' % (bname, tname))
+    print(tstamp('mongo2avro'), 'mv %s %s' % (fname, nname))
+    shutil.move(fname, nname)
+
+    # remove bad file (see AvroIO.py) associated with fname
+    bfname = '%s/bad/%s_bad.txt' % (os.path.dirname(fname), os.path.basename(fname))
+    if  os.path.isfile(bfname):
+        bfsize = os.path.getsize(bfname)
+        if  not bfsize:
+            os.remove(bfname)
+
+def low_production(mdir, close2midnight):
+    """
+    Check if we have a low-production rate, i.e. no files in migration dir
+    close to midnight.
+    """
+    hhmm = int(time.strftime("%H%M", time.localtime()))
+    if  hhmm < close2midnight:
+        return False # we don't know yet
+    files = [f for f in os.listdir(mdir) \
+            if os.path.isfile(os.path.join(mdir, f))]
+    if  len(files):
+        return False # we do have files in mdir, it is not low-production day
+    # we're close to midnight and we don't have files, it is low-production day
+    return True
+
+def file_name(odir, mdir, thr, compress, close2midnight):
     """
     Read content of given dir and either re-use existing file or create a new one
     based on given file size threshold. When file exceed given threshold it is
@@ -91,28 +129,22 @@ def file_name(odir, mdir, thr, compress):
     last_file = files[-1]
     fname = os.path.join(odir, last_file)
     size = os.path.getsize(fname)
+
+    # low-rate production use case: we don't accumulate data enough data in a day
+    # that it fits HDFS files size requirements, therefore we
+    # check if we close to midnight, if so, we'll check migration dir and
+    # if it does not have any entries we'll move existing files into mdir
+    if  low_production(mdir, close2midnight):
+        move_file(fname, mdir)
+        return file_name(odir, mdir, thr, compress, close2midnight)
+
     if  size < thr:
         return fname
 
-    try:
-        os.mkdir(mdir)
-    except OSError:
-        pass
-
     # move files into migration area
-    bname = os.path.basename(fname).split('.')[0]
-    tname = name = time.strftime("%H%M%S", time.gmtime())
-    nname = os.path.join(mdir, '%s_%s.avro' % (bname, tname))
-    print(tstamp('mongo2avro'), 'mv %s %s' % (fname, nname))
-    shutil.move(fname, nname)
+    move_file(fname, mdir)
 
-    # remove bad file (see AvroIO.py) associated with fname
-    bfname = '%s/bad/%s_bad.txt' % (os.path.dirname(fname), os.path.basename(fname))
-    if  os.path.isfile(bfname):
-        bfsize = os.path.getsize(bfname)
-        if  not bfsize:
-            os.remove(bfname)
-    return file_name(odir, mdir, thr, compress)
+    return file_name(odir, mdir, thr, compress, close2midnight)
 
 def migrate(muri, odir, mdir, avsc, thr, compress, chunk):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
@@ -128,7 +160,7 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk):
     wmaids = []
     total = 0
     fsize = 0
-    fname = file_name(odir, mdir, thr, compress)
+    fname = file_name(odir, mdir, thr, compress, close2midnight)
     while True:
         data = [r for r in itertools.islice(mdocs, chunk)]
         total += len(data)
@@ -156,7 +188,7 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk):
             rss = ''
         print(tstamp('mongo2avro'), "%s docs %s %s (%s bytes) %s" \
                 % (len(ids), fname, size_format(fsize), fsize, rss))
-        fname = file_name(odir, mdir, thr, compress)
+        fname = file_name(odir, mdir, thr, compress, close2midnight)
     print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
 
 def cleanup(muri, tst, stype):
@@ -180,7 +212,7 @@ def daemon(name, opts):
         time.sleep(opts.sleep)
         print(tstamp(name), 'Migrate mongodb records to avro files')
         migrate(opts.muri, opts.odir, opts.mdir, \
-                opts.schema, thr, opts.compress, opts.chunk)
+                opts.schema, thr, opts.compress, opts.chunk, opts.mthr)
 
         print(tstamp(name), 'Cleanup MongoDB')
         cleanup(opts.muri, opts.tstamp, opts.stype)
