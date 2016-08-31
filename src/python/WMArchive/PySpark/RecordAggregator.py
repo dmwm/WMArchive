@@ -55,6 +55,7 @@ def extract_stats(record, timeframe_precision="day"):
         stats = { 'scope': {
             'start_date': start_date,
             'end_date': end_date,
+            'timeframe_precision': timeframe_precision,
             'workflow': taskname_components[1],
             'task': taskname_components[-1],
             'host': meta_data['host'],
