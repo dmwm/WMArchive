@@ -14,6 +14,9 @@ import sys
 import time
 import json
 import argparse
+import time
+import logging
+logger = logging.getLogger(__name__)
 
 # spark modules
 from pyspark import SparkContext, SparkConf
@@ -22,14 +25,18 @@ from pyspark.sql.functions import *
 from pyspark.sql.types import *
 from pyspark import StorageLevel
 
+# pymongo modules
+from pymongo import MongoClient
+from bson import json_util
+
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='PROG')
-        self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default="", help="HDFS directory, e.g. /cms/wmarchive/avro/2016/08")
-        self.parser.add_argument("--cond", action="store",
-            dest="cond", default="{}", help="Condition dictionary (JSON)")
+        self.parser.add_argument("--hdir", required=True, help="HDFS directory, e.g. /cms/wmarchive/avro/2016/08")
+        self.parser.add_argument("--cond", default="{}", help="Condition dictionary (JSON)")
+        self.parser.add_argument('--precision', '-p', choices=[ 'hour', 'day', 'week', 'month' ], required=True, help="The temporal precision of aggregation.")
 
 def unpack_struct(colname, df):
     "Unpack FWJR structure"
@@ -45,8 +52,11 @@ def make_filters(fdf, cond):
         fdf = fdf.filter(fdf[key]==val)
     return fdf
 
-def aggregate(hdir, cond):
+def aggregate(hdir, cond, precision):
     "Collect aggregated statistics from HDFS"
+
+    start_time = time.time()
+    logger.info("Aggregating {} FWJR performance data in {} matching {}...".format(precision.replace('y', 'i') + 'ly', hdir, cond))
 
     conf = SparkConf().setAppName("wmarchive fwjr aggregator")
     sc = SparkContext(conf=conf)
@@ -85,23 +95,45 @@ def aggregate(hdir, cond):
         for row in rows:
             memory.append(row.asDict())
 
-    return {'cpu':cpu, 'storage':storage, 'memory':memory}
+    stats = {'cpu':cpu, 'storage':storage, 'memory':memory}
+
+    logger.info("Aggregation finished in {} seconds.".format(time.time() - start_time))
+    logger.debug("Result of aggregation: {}".format(stats))
+
+    return stats
 
 def main():
-    "Main function"
+    logging.basicConfig(level=logging.WARNING)
+    logger.setLevel(logging.DEBUG)
+
+    # Parse command line arguments
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
 
+    # Make sure to iterate over subfolders in HDFS directory
     hdir = opts.hdir
-    if  not hdir.endswith('*'):
+    if not hdir.endswith('*'):
         hdir += '*'
-    if  os.path.isfile(opts.cond):
+
+    # Load condition from file
+    if os.path.isfile(opts.cond):
         cond = json.load(open(opts.cond))
     else:
         cond = json.loads(opts.cond)
 
-    stats = aggregate(hdir, cond)
-    print(stats)
+    # Perform aggregation
+    stats = aggregate(hdir, cond, opts.precision)
+
+    # Dump results to json file
+    with open('aggregated_performance_data.json', 'w') as outfile:
+        json.dump(stats, outfile, default=json_util.default)
+        logger.info("Written result to {}.".format(outfile))
+
+    # Store in MongoDB
+    mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
+    mongo_collection = mongo_client['aggregated']['performance']
+    # mongo_collection.insert(stats)
+    logger.info("Stored in MongoDB collection {}.".format(mongo_collection))
 
 if __name__ == '__main__':
     main()
