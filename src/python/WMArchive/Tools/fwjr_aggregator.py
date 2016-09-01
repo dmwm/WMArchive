@@ -15,6 +15,7 @@ import time
 import json
 import argparse
 import time
+import datetime
 import logging
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,12 @@ from pyspark import StorageLevel
 from pymongo import MongoClient
 from bson import json_util
 
+DATE_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+
+def parse_date(s):
+    return datetime.datetime.strptime(s, DATE_FORMAT)
+
 
 class OptionParser():
     def __init__(self):
@@ -36,6 +43,8 @@ class OptionParser():
         self.parser = argparse.ArgumentParser(prog='PROG')
         self.parser.add_argument("--hdir", required=True, help="HDFS directory, e.g. /cms/wmarchive/avro/2016/08")
         self.parser.add_argument("--cond", default="{}", help="Condition dictionary (JSON)")
+        self.parser.add_argument('--min_date', type=parse_date, help="The earliest date of FWJRs to aggregate.")
+        self.parser.add_argument('--max_date', type=parse_date, help="The latest date of FWJRs to aggregate.")
         self.parser.add_argument('--precision', '-p', choices=[ 'hour', 'day', 'week', 'month' ], required=True, help="The temporal precision of aggregation.")
 
 def unpack_struct(colname, df):
@@ -52,11 +61,11 @@ def make_filters(fdf, cond):
         fdf = fdf.filter(fdf[key]==val)
     return fdf
 
-def aggregate(hdir, cond, precision):
+def aggregate(hdir, cond, precision, min_date, max_date):
     "Collect aggregated statistics from HDFS"
 
     start_time = time.time()
-    logger.info("Aggregating {} FWJR performance data in {} matching {}...".format(precision.replace('y', 'i') + 'ly', hdir, cond))
+    logger.info("Aggregating {} FWJR performance data in {} matching {} from {} to {}...".format(precision.replace('y', 'i') + 'ly', hdir, cond, min_date, max_date))
 
     conf = SparkConf().setAppName("wmarchive fwjr aggregator")
     sc = SparkContext(conf=conf)
@@ -112,7 +121,7 @@ def main():
         cond = json.loads(opts.cond)
 
     # Perform aggregation
-    stats = aggregate(hdir, cond, opts.precision)
+    stats = aggregate(hdir, cond, opts.precision, opts.min_date, opts.max_date)
 
     # Dump results to json file
     with open('aggregated_performance_data.json', 'w') as outfile:
