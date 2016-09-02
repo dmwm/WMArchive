@@ -6,7 +6,7 @@ app.visualizationViews['default'] = Backbone.View.extend({
   title: '',
 
   initialize: function(options) {
-    _.extend(this, _.pick(options, 'data', 'metric', 'axis'));
+    _.extend(this, _.pick(options, 'data', 'metric', 'axis', 'supplementaryData'));
   },
 
   render: function() {
@@ -142,6 +142,16 @@ app.visualizationViews['default'] = Backbone.View.extend({
           .text(function(d) {
             return d.label;
           });
+        label.append('small')
+          .attr('class', 'text-muted')
+          .text(function(d) {
+            if (self.axis == 'exitCode') {
+              return self.supplementaryData['exitCodes'][d['label']];
+            } else {
+              return "";
+            }
+          })
+
         var label_text = label.append('text')
           .text(function(d) {
             var count = 0;
@@ -239,6 +249,15 @@ app.visualizationViews['default'] = Backbone.View.extend({
         .text(function(d) {
           return d['label'];
         })
+      container.append('small')
+        .attr('class', 'text-muted text-xs-center')
+        .text(function(d) {
+          if (self.axis == 'exitCode') {
+            return self.supplementaryData['exitCodes'][d['label']];
+          } else {
+            return "";
+          }
+        })
       container.append('text')
         .attr('class', 'chart-label')
         .text(function(d) {
@@ -288,7 +307,6 @@ app.visualizationViews['default'] = Backbone.View.extend({
             return new_col;
           });
           new_row.label = col.data.label;
-          // console.log(col.data)
           new_row.average = col.data.totalCount;
           return new_row;
         });
@@ -306,7 +324,11 @@ app.visualizationViews['default'] = Backbone.View.extend({
       var item_content = item.append('g')
         .attr('data-toggle', 'tooltip')
         .attr('title', function(d) {
-          return d.label + ": " + app.format_value(self.metric)(d.average);
+          var label = d.label;
+          if (self.axis == 'exitCode') {
+            label += " - " + self.supplementaryData['exitCodes'][d['label']];
+          }
+          return label + ": " + app.format_value(self.metric)(d.average);
         })
         .attr('opacity', function(d) {
           return strength(d.average);

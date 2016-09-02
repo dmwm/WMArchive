@@ -11,6 +11,7 @@ Description: WMArchive Mongo storage client
 from __future__ import print_function, division
 
 # system modules
+import os
 import json
 import datetime
 import traceback
@@ -208,6 +209,7 @@ class MongoStorage(Storage):
         scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode' ]
 
         # Construct scope
+        scope = []
         timeframe_scope = []
 
         # Timeframes
@@ -224,9 +226,7 @@ class MongoStorage(Storage):
                     'scope.end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
                 }
             })
-
-        # Unwind `stats`
-        # timeframe_scope.append({ '$unwind': '$stats' })
+        scope += timeframe_scope
 
         # Scope
         filters = {}
@@ -238,10 +238,10 @@ class MongoStorage(Storage):
                     'scope.' + scope_key: { '$regex': kwargs[scope_key] },
                 }
             }
-        scope = timeframe_scope + filters.values()
+        scope += filters.values()
 
         # Collect suggestions
-        suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(performance_data.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
+        collected_suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(performance_data.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
             {
                 '$group': {
                     '_id': '$scope.' + scope_key,
@@ -349,14 +349,23 @@ class MongoStorage(Storage):
             {
                 '$project': {
                     '_id': False,
-                    'min_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$min_date' } },
-                    'max_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$max_date' } },
+                    'min_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$min_date' } },
+                    'max_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$max_date' } },
                 }
             }
         ])) or [ {} ])[0])
 
+        # Collect supplementary data
+        supplementaryData = {}
+        if "exitCode" in axes + suggestions:
+            try:
+                supplementaryData["exitCodes"] = json.loads(os.environ['WMARCHIVE_ERROR_CODES'])
+            except:
+                pass
+
         return {
-            "suggestions": suggestions,
-            "visualizations": visualizations,
             "status": status,
+            "suggestions": collected_suggestions,
+            "visualizations": visualizations,
+            "supplementaryData": supplementaryData,
         }
