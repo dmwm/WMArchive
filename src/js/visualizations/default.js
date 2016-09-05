@@ -140,6 +140,9 @@ app.visualizationViews['default'] = Backbone.View.extend({
 
         label.append('a')
           .text(function(d) {
+            return app.format_axis_label(self.axis)(d.label);
+          })
+          .attr('data-scope-filter', function(d) {
             return d.label;
           });
         label.append('small')
@@ -247,7 +250,10 @@ app.visualizationViews['default'] = Backbone.View.extend({
         .attr('class', 'chart-label')
         .attr('style', 'max-width: ' + chart_size * 0.7 + 'px')
         .text(function(d) {
-          return d['label'];
+          return app.format_axis_label(self.axis)(d.label);
+        })
+        .attr('data-scope-filter', function(d) {
+          return d.label;
         })
       container.append('small')
         .attr('class', 'text-muted text-xs-center')
@@ -364,7 +370,7 @@ app.visualizationViews['default'] = Backbone.View.extend({
         item_content.append("rect")
           .attr('height', '100%')
           .attr('width', '100%')
-          .attr('data-label', function(d) {
+          .attr('data-scope-filter', function(d) {
             return d.label;
           })
           .attr('opacity', 0)
@@ -375,16 +381,11 @@ app.visualizationViews['default'] = Backbone.View.extend({
   },
 
   events: {
-    'click a': 'refineFilter',
-    'click .heatmap-item': 'refineFilter',
+    'click [data-scope-filter]': 'refineFilter',
   },
 
   refineFilter: function(event) {
-    var label = event.target.text;
-    if (label == null) {
-      label = event.target.getAttribute('data-label');
-    }
-    app.scope.set(this.axis, label);
+    app.scope.set(this.axis, event.target.getAttribute('data-scope-filter'));
   },
 
 });
