@@ -16,18 +16,27 @@ app.Scope = Backbone.Model.extend({
     'exitCode': "Exit Code",
     // 'time' is handled separately
   },
-
   all_metrics: {
     'jobstate': "Job State",
     'cpu': {
       "_title": "CPU",
-      "TotalJobCPU": "CPU Consumption",
-      "TotalJobTime": "Processing Time",
+      "TotalJobTime": "Total Job Time",
+      "TotalJobCPU": "Total Job CPU",
+      "MinEventTime": "Min Event Time",
+      "MaxEventTime": "Max Event Time",
+      "AvgEventTime": "Average Event Time",
+      "EventThroughput": "Event Throughput",
+      "TotalLoopCPU": "Total Loop CPU",
     },
     'storage': {
       '_title': "Storage",
       "writeTotalMB": "Write",
       "readTotalMB": "Read",
+    },
+    'memory': {
+      '_title': "Memory",
+      "PeakValueRss": "Peak Value RSS",
+      "PeakValueVsize": "Peak Value Vsize",
     },
     'data': {
       '_title': "Data",

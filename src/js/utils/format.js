@@ -1,56 +1,53 @@
 var app = app || {};
 
-app.format_jobs = function(job_count) {
-  var suffix = ' jobs';
-  if (job_count == 1) {
-    suffix = ' job';
-  }
-  return app.format_jobs_tick(job_count) + suffix;
+app.format_jobs_tick = function(job_count) {
+  return app.format_tick('jobstate')(job_count);
 };
 
-app.format_jobs_tick = function(job_count) {
-  return numeral(job_count).format('0.[00]a');
+app.format_jobs = function(job_count) {
+  return app.format_value('jobstate')(job_count);
 };
 
 app.format_time_daterangepicker = 'L';
 app.format_time_d3 = d3.timeFormat('%B %d, %Y');
 
-app.format_value = function(metric) {
+app.format_tick = function(metric) {
   return function(value) {
     switch (metric) {
       case 'jobstate':
-        return app.format_jobs(value);
-      case 'events':
-        return numeral(value).format('0.[00]a') + " events";
-      case 'cpu.TotalJobTime':
-          return numeral(value).format("00:00:00") + " (" + numeral(value).format("0.0") + "s" + ")";
-      case 'storage.readTotalMB':
-      case 'storage.writeTotalMB':
-          return numeral(value * 1e6).format("0.[00] b");
+        return numeral(value).format('0.[00]a');
       default:
-          return numeral(value).format("0.[00]");
+        if (metric.startsWith('cpu.')) {
+          return numeral(value).format("00:00:00");
+        } else if (metric.startsWith('storage.') || metric.startsWith('memory.')) {
+          return numeral(value * 1e6).format("0.[00] b");
+        } else {
+          return numeral(value).format("0.[00]a");
+        }
       }
     };
 };
 
-app.format_tick = function(metric) {
-  switch (metric) {
-    case 'jobstate':
-      return app.format_jobs_tick;
-    case 'cpu.TotalJobTime':
-      return function(value) {
-        return numeral(value).format("00:00:00");
-      };
-    case 'storage.readTotalMB':
-    case 'storage.writeTotalMB':
-      return function(value) {
-        return numeral(value * 1e6).format("0.[00] b");
-      };
-    default:
-      return function(value) {
-        return numeral(value).format("0.[00]a");
-      };
-    }
+app.format_value = function(metric) {
+  return function(value) {
+    var tick = app.format_tick(metric)(value);
+    switch (metric) {
+      case 'jobstate':
+        var suffix = ' jobs';
+        if (value == 1) {
+          suffix = ' job';
+        }
+        return tick + suffix;
+      case 'events':
+        return tick + " events";
+      default:
+        if (metric.startsWith('cpu.')) {
+          return tick + " (" + numeral(value).format("0.0") + "s" + ")";
+        } else {
+          return tick;
+        }
+      }
+    };
 };
 
 app.format_ticks_label = function(metric) {
