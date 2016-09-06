@@ -5331,6 +5331,7 @@ a.text-danger:focus, a.text-danger:hover {
   color: white; }
 .filter-container .dropdown-menu {
   max-height: 10rem;
+  max-width: 150%;
   overflow-y: auto; }
 .filter-container .form-group {
   margin: 0; }

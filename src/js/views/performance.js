@@ -90,7 +90,7 @@ app.VisualizationSectionView = Backbone.View.extend({
       if (VisualizationView == null) {
         VisualizationView = app.visualizationViews['default'];
       }
-      var visualizationView = new VisualizationView({ data: data, metric: metric, axis: axis });
+      var visualizationView = new VisualizationView({ data: data, metric: metric, axis: axis, supplementaryData: this.model.get('supplementaryData') });
       content.append(visualizationView.$el);
       visualizationView.render();
 

@@ -11,6 +11,7 @@ Description: WMArchive Mongo storage client
 from __future__ import print_function, division
 
 # system modules
+import os
 import json
 import datetime
 import traceback
@@ -73,7 +74,6 @@ class MongoStorage(Storage):
         self.collname = collname
         self.coll = self.mdb[collname]
         self.jobs = self.mdb['jobs'] # separate collection for job results
-        self.performance_data = self.client.performance # separate database for aggregated results
         self.log(self.coll)
         self.chunk_size = chunk_size
 
@@ -195,6 +195,8 @@ class MongoStorage(Storage):
         """
         start_time = time.time()
 
+        performance_data = self.client.aggregated.performance
+
         def get_aggregation_result(cursor_or_dict):
             """
             Fallback for pymongo<3.0
@@ -207,6 +209,7 @@ class MongoStorage(Storage):
         scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode' ]
 
         # Construct scope
+        scope = []
         timeframe_scope = []
 
         # Timeframes
@@ -214,18 +217,16 @@ class MongoStorage(Storage):
         if start_date is not None:
             timeframe_scope.append({
                 '$match': {
-                    'start_date': { '$gte': datetime.datetime(int(start_date[0:4]), int(start_date[4:6]), int(start_date[6:8]), 0, 0, 0) },
+                    'scope.start_date': { '$gte': datetime.datetime(int(start_date[0:4]), int(start_date[4:6]), int(start_date[6:8]), 0, 0, 0) },
                 }
             })
         if end_date is not None:
             timeframe_scope.append({
                 '$match': {
-                    'end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
+                    'scope.end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
                 }
             })
-
-        # Unwind `stats`
-        # timeframe_scope.append({ '$unwind': '$stats' })
+        scope += timeframe_scope
 
         # Scope
         filters = {}
@@ -237,10 +238,10 @@ class MongoStorage(Storage):
                     'scope.' + scope_key: { '$regex': kwargs[scope_key] },
                 }
             }
-        scope = timeframe_scope + filters.values()
+        scope += filters.values()
 
         # Collect suggestions
-        suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(self.performance_data.daily.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
+        collected_suggestions = { scope_key: map(lambda d: d['_id'], get_aggregation_result(performance_data.aggregate(timeframe_scope + [ f for k, f in filters.iteritems() if k != scope_key ] + [
             {
                 '$group': {
                     '_id': '$scope.' + scope_key,
@@ -250,6 +251,8 @@ class MongoStorage(Storage):
 
         # Collect visualizations
         visualizations = {}
+
+        ISO_DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ"
 
         for metric in metrics:
             visualizations[metric] = {}
@@ -263,14 +266,14 @@ class MongoStorage(Storage):
             for axis in axes:
 
                 if axis == 'time':
-                    group_id = { 'start_date': '$start_date', 'end_date': '$end_date' }
-                    label = { 'start_date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': '$_id.start_date' } }, 'end_date': { '$dateToString': { 'format': "%Y-%m-%d", 'date': '$_id.end_date' } }, }
+                    group_id = { 'start_date': '$scope.start_date', 'end_date': '$scope.end_date' }
+                    label = { 'start_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$_id.start_date' } }, 'end_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$_id.end_date' } }, }
                 else:
                     group_id = '$scope.' + axis
                     label = '$_id'
 
                 if metric == 'jobstate':
-                    visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
@@ -298,7 +301,7 @@ class MongoStorage(Storage):
                     ]))
 
                 else:
-                    visualizations[metric][axis] = get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': group_id,
@@ -316,44 +319,53 @@ class MongoStorage(Storage):
                         }
                     ]))
 
-        status = (get_aggregation_result(self.performance_data.daily.aggregate(scope + [
+        status = (get_aggregation_result(performance_data.aggregate(scope + [
             {
                 '$group': {
                     '_id': None,
                     'count': { '$sum': '$count' },
-                    'start_date': { '$min': '$start_date' },
-                    'end_date': { '$max': '$end_date' },
+                    'start_date': { '$min': '$scope.start_date' },
+                    'end_date': { '$max': '$scope.end_date' },
                 },
             },
             {
                 '$project': {
                     '_id': False,
                     'totalMatchedJobs': '$count',
-                    'start_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$start_date' } },
-                    'end_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$end_date' } },
+                    'start_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$start_date' } },
+                    'end_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$end_date' } },
                 }
             }
         ])) or [ {} ])[0]
         status["time"] = time.time() - start_time
-        status.update((get_aggregation_result(self.performance_data.daily.aggregate([
+        status.update((get_aggregation_result(performance_data.aggregate([
             {
                 '$group': {
                     '_id': None,
-                    'min_date': { '$min': '$start_date' },
-                    'max_date': { '$max': '$end_date' },
+                    'min_date': { '$min': '$scope.start_date' },
+                    'max_date': { '$max': '$scope.end_date' },
                 },
             },
             {
                 '$project': {
                     '_id': False,
-                    'min_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$min_date' } },
-                    'max_date': { '$dateToString': { 'format': "%Y-%m-%dT%H:%M:%S.%LZ", 'date': '$max_date' } },
+                    'min_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$min_date' } },
+                    'max_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$max_date' } },
                 }
             }
         ])) or [ {} ])[0])
 
+        # Collect supplementary data
+        supplementaryData = {}
+        if "exitCode" in axes + suggestions:
+            try:
+                supplementaryData["exitCodes"] = json.loads(os.environ['WMARCHIVE_ERROR_CODES'])
+            except:
+                pass
+
         return {
-            "suggestions": suggestions,
-            "visualizations": visualizations,
             "status": status,
+            "suggestions": collected_suggestions,
+            "visualizations": visualizations,
+            "supplementaryData": supplementaryData,
         }

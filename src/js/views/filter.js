@@ -21,10 +21,21 @@ app.FilterView = Backbone.View.extend({
 
     this.$el.html(this.template({ label: this.label.toUpperCase(), input_id: this.input_id, placeholder: "Filter by " + this.label + "…" }));
 
+    var descriptions = null;
+    if (scope_key == 'exitCode') {
+      descriptions = (this.model.get('supplementaryData') || {})['exitCodes'];
+    }
+    var suggestions = ((this.model.get('suggestions') || {})[scope_key] || []).sort().map(function(suggestion) {
+      return {
+        value: suggestion,
+        description: (descriptions || {})[suggestion] || null,
+      };
+    });
+
     var all_selection_options = new Bloodhound({
       datumTokenizer: Bloodhound.tokenizers.whitespace,
       queryTokenizer: Bloodhound.tokenizers.whitespace,
-      local: ((this.model.get('suggestions') || {})[scope_key] || []).sort(),
+      local: suggestions,
     });
     function selection_options(q, sync) {
       if (q === '') {
@@ -46,7 +57,13 @@ app.FilterView = Backbone.View.extend({
     {
       name: this.input_id + '-options',
       source: selection_options,
+      display: function(suggestion) {
+        return suggestion.value;
+      },
       limit: 200,
+      templates: {
+        suggestion: _.template('<div><%=value%><% if (description != null) { %><small class="text-muted"> - <%=description%></small><% } %></div>')
+      },
     });
 
     this.$('.filter-text').val(scope_value);

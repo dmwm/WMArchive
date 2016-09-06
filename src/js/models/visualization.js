@@ -41,6 +41,7 @@ app.Visualization = Backbone.Model.extend({
       data: result.visualizations[this.get('metric')][this.get('axis')],
       status: result.status,
       error: null,
+      supplementaryData: result.supplementaryData,
     };
   },
 
