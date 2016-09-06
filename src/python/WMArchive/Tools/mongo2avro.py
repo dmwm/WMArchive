@@ -146,7 +146,7 @@ def file_name(odir, mdir, thr, compress, close2midnight):
 
     return file_name(odir, mdir, thr, compress, close2midnight)
 
-def migrate(muri, odir, mdir, avsc, thr, compress, chunk):
+def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
     mstg = MongoStorage(muri)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
