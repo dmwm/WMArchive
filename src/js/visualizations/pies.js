@@ -126,7 +126,7 @@ app.visualizationRenderers.pies = function(canvas, data, metric, axis, supplemen
     .attr('class', 'text-muted text-xs-center')
     .text(function(d) {
       if (axis == 'exitCode') {
-        return supplementaryData['exitCodes'][d['label']];
+        return (supplementaryData['exitCodes'] || {})[d['label']];
       } else {
         return "";
       }

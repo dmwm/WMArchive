@@ -95,7 +95,10 @@ app.visualizationRenderers.heatmap = function(canvas, data, metric, axis, supple
     .attr('title', function(d) {
       var label = d.label;
       if (self.axis == 'exitCode') {
-        label += " - " + self.supplementaryData['exitCodes'][d['label']];
+        var desciption = (supplementaryData['exitCodes'] || {})[d['label']];
+        if (desciption != null) {
+          label += " - " + desciption;
+        }
       }
       return label + ": " + app.format_value(metric)(d.average);
     })

@@ -134,7 +134,7 @@ app.visualizationRenderers.bars = function(canvas, data, metric, axis, supplemen
       .attr('class', 'text-muted')
       .text(function(d) {
         if (axis == 'exitCode') {
-          return supplementaryData['exitCodes'][d['label']];
+          return (supplementaryData['exitCodes'] || {})[d['label']];
         } else {
           return "";
         }
