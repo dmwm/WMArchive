@@ -93,7 +93,7 @@ app.visualizationRenderers.heatmap = function(canvas, data, metric, axis, supple
   var item_content = item.append('g')
     .attr('data-toggle', 'tooltip')
     .attr('title', function(d) {
-      var label = d.label;
+      var label = app.format_axis_label(axis)(d.label);
       if (self.axis == 'exitCode') {
         var desciption = (supplementaryData['exitCodes'] || {})[d['label']];
         if (desciption != null) {
