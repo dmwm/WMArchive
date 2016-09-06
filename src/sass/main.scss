@@ -265,6 +265,12 @@ $text-muted: $light;
     color: $link-color !important;
     cursor: pointer;
   }
+  section + section {
+    margin-top: 2 * $spacer;
+  }
+  .canvas-title {
+    margin-bottom: $spacer;
+  }
 }
 
 .canvas-flex {
