@@ -16,6 +16,7 @@ import json
 import datetime
 import traceback
 import time
+import traceback
 
 # Mongo modules
 from pymongo import MongoClient
@@ -359,9 +360,10 @@ class MongoStorage(Storage):
         supplementaryData = {}
         if "exitCode" in axes + suggestions:
             try:
-                supplementaryData["exitCodes"] = json.loads(os.environ['WMARCHIVE_ERROR_CODES'])
+                with open(os.environ['WMARCHIVE_ERROR_CODES']) as exit_codes_file:
+                    supplementaryData["exitCodes"] = json.load(exit_codes_file)
             except:
-                pass
+                traceback.print_exc()
 
         return {
             "status": status,
