@@ -75,6 +75,7 @@
   <script type="text/javascript" src="/wmarchive/web/static/js/models/scope.js"></script>
   <script type="text/javascript" src="/wmarchive/web/static/js/models/visualization.js"></script>
   <script type="text/javascript" src="/wmarchive/web/static/js/models/visualizations.js"></script>
+  <script type="text/javascript" src="/wmarchive/web/static/js/models/summary.js"></script>
 
   <!-- Utils -->
   <script type="text/javascript" src="/wmarchive/web/static/js/utils/format.js"></script>
@@ -106,6 +107,7 @@
     app.scope = new app.Scope();
 
     app.visualizations = new app.Visualizations();
+    app.summary = new app.Summary();
 
     new app.NavMainView({ el: $('#nav-main-container') }).render();
     new app.FooterView({ el: $('#site-footer') }).render();

@@ -266,6 +266,9 @@ class MongoStorage(Storage):
 
             for axis in axes:
 
+                if axis == '_summary':
+                    group_id = None
+                    label = axis
                 if axis == 'time':
                     group_id = { 'start_date': '$scope.start_date', 'end_date': '$scope.end_date' }
                     label = { 'start_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$_id.start_date' } }, 'end_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$_id.end_date' } }, }
@@ -274,7 +277,7 @@ class MongoStorage(Storage):
                     label = '$_id'
 
                 if metric == 'jobstate':
-                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
@@ -302,7 +305,7 @@ class MongoStorage(Storage):
                     ]))
 
                 else:
-                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': group_id,
@@ -319,6 +322,11 @@ class MongoStorage(Storage):
                             }
                         }
                     ]))
+
+                if axis == '_summary':
+                    aggregation_result = aggregation_result[0] if aggregation_result else None
+
+                visualizations[metric][axis] = aggregation_result
 
         status = (get_aggregation_result(performance_data.aggregate(scope + [
             {

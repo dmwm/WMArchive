@@ -5408,6 +5408,9 @@ a.text-danger:focus, a.text-danger:hover {
 .glyphicon-chevron-right:after {
   content: "\203A"; }
 
+#summary {
+  margin-top: 1.5rem; }
+
 #visualizations {
   margin-top: 1.5rem; }
   #visualizations.card-columns {

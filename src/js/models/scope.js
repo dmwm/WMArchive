@@ -122,7 +122,7 @@ app.Scope = Backbone.Model.extend({
     }, this);
   },
 
-  updateURL: function(a, b, c) {
+  updateURL: function() {
     var self = this;
     var params = this.queryParameters();
     app.router.navigate('/performance?' + Object.keys(params).map(function(key) {

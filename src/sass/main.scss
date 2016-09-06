@@ -235,6 +235,10 @@ $text-muted: $light;
 
 // Canvas
 
+#summary {
+  margin-top: 1.5 * $spacer;
+}
+
 #visualizations {
   margin-top: 1.5 * $spacer;
   &.card-columns {
