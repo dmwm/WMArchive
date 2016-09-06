@@ -359,8 +359,11 @@ class MongoStorage(Storage):
         supplementaryData = {}
         if "exitCode" in axes + suggestions:
             try:
-                supplementaryData["exitCodes"] = json.loads(os.environ['WMARCHIVE_ERROR_CODES'])
+                fname = os.environ.get('WMARCHIVE_ERROR_CODES', '')
+                with open(fname, 'r') as stream:
+                    supplementaryData["exitCodes"] = json.load(stream)
             except:
+                traceback.print_exc()
                 pass
 
         return {
