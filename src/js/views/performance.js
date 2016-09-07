@@ -109,14 +109,7 @@ app.VisualizationSectionView = Backbone.View.extend({
     var axis = this.model.get('axis');
     var data = this.model.get('data');
 
-    var VisualizationView = app.visualizationViews[metric];
-    if (axis === 'time') {
-      VisualizationView = app.visualizationViews['time'];
-    }
-    if (VisualizationView == null) {
-      VisualizationView = app.visualizationViews['default'];
-    }
-    var visualizationView = new VisualizationView({ data: data, metric: metric, axis: axis, supplementaryData: this.model.get('supplementaryData') });
+    var visualizationView = new app.VisualizationView({ data: data, metric: metric, axis: axis, supplementaryData: this.model.get('supplementaryData') });
     container.append(visualizationView.$el);
     return visualizationView.render();
   }
@@ -129,13 +122,20 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
     return "Summary";
   },
 
+  initialize: function() {
+    app.SummaryVisualizationSectionView.__super__.initialize.apply(this, arguments)
+    $(window).on('resize.resizeview', this.resize.bind(this));
+  },
+
   renderData: function(container) {
     var data = this.model.get('data');
 
     var container = d3.select(container.get(0));
 
+    // Overall success rate
     if (data['jobstate'] != null) {
-      var value = data['jobstate'];
+      var success_section = container.append('section');
+      var value = data['jobstate']['_summary'];
       var total_count = d3.sum(value.jobstates.map(function(d) { return d.count }));
       var success_count = 0;
       for (var d of value.jobstates) {
@@ -144,22 +144,36 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
           break;
         }
       }
-      value['label'] = numeral(success_count/total_count).format('0.00%') + " success rate";
-      app.visualizationRenderers.bars(container, [ value ], {
+      value['label'] = numeral(success_count/total_count).format('0.00%') + " overall success rate";
+      app.visualizationRenderers.bars(success_section, [ value ], {
         metric: metric,
         axis: '_summary',
       });
     }
-    for (var metric in data) {
-      if (metric == 'jobstate') {
-        continue;
-      }
-      var title = app.scope.titleForMetric(metric);
-      var value = data[metric];
-      container.append('p').text(app.format_value(metric)(value.average) + " " + title);
+
+    var metrics = Object.keys(data);
+    var i = metrics.indexOf('jobstate');
+    if (i >= 0) {
+      metrics.splice(i, 1);
+      metrics.splice(0, 0, 'jobstate');
+    }
+
+    for (var metric of metrics) {
+      var section = container.append('section');
+      section.append('h6').text(app.scope.titleForMetric(metric) + " Evolution");
+      var canvas = section.append('div');
+      app.visualizationRenderers.time(canvas, data[metric]['time'], {
+        metric: metric,
+        axis: 'time',
+        supplementaryData: this.model.get('supplementaryData'),
+      });
     }
 
     return this;
+  },
+
+  resize: function() {
+    this.render();
   },
 
 });

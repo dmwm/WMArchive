@@ -1,7 +1,6 @@
 var app = app || {};
-app.visualizationViews = app.visualizationViews || {};
 
-app.visualizationViews['default'] = Backbone.View.extend({
+app.VisualizationView = Backbone.View.extend({
 
   title: '',
 

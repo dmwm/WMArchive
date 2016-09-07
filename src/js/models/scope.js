@@ -46,7 +46,7 @@ app.Scope = Backbone.Model.extend({
 
   defaults: {
     metrics: [ 'jobstate' ],
-    axes: [ 'host', 'jobstate', 'time', 'site' ],
+    axes: [ 'host', 'jobstate', 'site' ],
 
     start_date: moment().subtract(7, 'days'),
     end_date: moment(),

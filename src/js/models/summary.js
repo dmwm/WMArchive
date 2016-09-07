@@ -21,12 +21,8 @@ app.Summary = app.Visualization.extend({
 
   parse: function(data) {
     var result = data.result[0].performance;
-    var data = {};
-    for (var metric in result.visualizations) {
-      data[metric] = result.visualizations[metric]['_summary'];
-    }
     return {
-      data: data,
+      data: result.visualizations,
       status: result.status,
       error: null,
       supplementaryData: result.supplementaryData,
@@ -36,7 +32,7 @@ app.Summary = app.Visualization.extend({
   queryParameters: function() {
     return {
       metrics: app.scope.get('metrics'),
-      axes: [ '_summary' ],
+      axes: [ 'time', '_summary' ],
     };
   },
 
