@@ -54,15 +54,8 @@ app.format_ticks_label = function(metric) {
   switch (metric) {
     case 'jobstate':
       return "Jobs";
-    case 'events':
-      return "Events";
-    case 'cpu.TotalJobTime':
-      return "Processing Time"
-    case 'storage.readTotalMB':
-    case 'storage.writeTotalMB':
-      return "Memory"
     default:
-      return null;
+      return app.scope.titleForMetric(metric);
     }
 };
 
