@@ -7,13 +7,13 @@ app.Scope = Backbone.Model.extend({
   filters: {
     'workflow': "Workflow",
     'task': "Task",
-    'step': "Step",
     'host': "Host",
     'site': "Site",
     'jobtype': "Job Type",
     'jobstate': "Job State",
     'acquisitionEra': "Acquisition Era",
     'exitCode': "Exit Code",
+    'exitStep': "Exit Step",
     // 'time' is handled separately
   },
   all_metrics: {

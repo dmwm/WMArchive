@@ -33,9 +33,9 @@ app.format_value = function(metric) {
     var tick = app.format_tick(metric)(value);
     switch (metric) {
       case 'jobstate':
-        var suffix = ' steps';
+        var suffix = ' jobs';
         if (value == 1) {
-          suffix = ' step';
+          suffix = ' job';
         }
         return tick + suffix;
       case 'events':
@@ -53,7 +53,7 @@ app.format_value = function(metric) {
 app.format_ticks_label = function(metric) {
   switch (metric) {
     case 'jobstate':
-      return "Steps";
+      return "Jobs";
     case 'events':
       return "Events";
     case 'cpu.TotalJobTime':

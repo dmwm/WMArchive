@@ -39,46 +39,60 @@ def extract_stats(record, timeframe_precision="day"):
 
     taskname_components = record['task'].split('/')
 
-    def extract_stats_from_step(step):
+    site = None
+    acquisitionEra = None
+    exitCode = None
+    exitStep = None
+    for step in record['steps']:
+        if site is None:
+            site = step.get('site')
+        if acquisitionEra is None:
+            for output in step['output']:
+                acquisitionEra = output.get('acquisitionEra')
+                if acquisitionEra is not None:
+                    break
+        if exitCode is None:
+            for error in step['errors']:
+                exitCode = str(error.get('exitCode'))
+                exitStep = step['name']
+                if exitCode:
+                    break
+        if site is not None and acquisitionEra is not None and exitCode is not None:
+            break
 
-        acquisitionEra = None
-        for output in step['output']:
-            acquisitionEra = output.get('acquisitionEra')
-            if acquisitionEra is not None:
-                break
-        exitCode = None
-        for error in step['errors']:
-            exitCode = str(error.get('exitCode'))
-            if exitCode:
-                break
+    stats = { 'scope': {
+        'start_date': start_date,
+        'end_date': end_date,
+        'timeframe_precision': timeframe_precision,
+        'workflow': taskname_components[1],
+        'task': taskname_components[-1],
+        'host': meta_data['host'],
+        'site': site,
+        'jobtype': meta_data['jobtype'],
+        'jobstate': meta_data['jobstate'],
+        'acquisitionEra': acquisitionEra,
+        'exitCode': exitCode,
+        'exitStep': exitStep,
+    } }
 
-        stats = { 'scope': {
-            'start_date': start_date,
-            'end_date': end_date,
-            'timeframe_precision': timeframe_precision,
-            'workflow': taskname_components[1],
-            'task': taskname_components[-1],
-            'host': meta_data['host'],
-            'site': step['site'],
-            'jobtype': meta_data['jobtype'],
-            'jobstate': meta_data['jobstate'],
-            'step': step['name'].rstrip(digits),
-            'acquisitionEra': acquisitionEra,
-            'exitCode': exitCode,
-        } }
+    stats['count'] = 1
 
-        stats['count'] = 1
+    events = sum(map(lambda output: output.get('events', 0) or 0, step['output']))
+    if events == 0:
+        events = None
+    stats['events'] = events
 
-        stats['performance'] = step['performance']
+    def aggregate_steps_performance(steps):
+        for step in steps:
+            # TODO: sum metrics of cmsRun steps
+            if step['name'].startswith('cmsRun'):
+                performance = step['performance']
+                return performance
+        return {}
 
-        events = sum(map(lambda output: output.get('events', 0) or 0, step['output']))
-        if events == 0:
-            events = None
-        stats['events'] = events
+    stats['performance'] = aggregate_steps_performance(record['steps'])
 
-        return stats
-
-    return map(extract_stats_from_step, record['steps'])
+    return stats
 
 
 def aggregate_stats(stats, existing):
@@ -159,12 +173,11 @@ class MapReduce(object):
             meta_data = record['meta_data']
 
             # Extract list of stats from record, generally one per step
-            stats_list = extract_stats(record)
+            stats = extract_stats(record)
 
             # Merge into document
-            for stats in stats_list:
-                scope_hash = get_scope_hash(stats['scope'])
-                document['stats'][scope_hash] = aggregate_stats(stats, existing=document['stats'].get(scope_hash))
+            scope_hash = get_scope_hash(stats['scope'])
+            document['stats'][scope_hash] = aggregate_stats(stats, existing=document['stats'].get(scope_hash))
 
         return document
 

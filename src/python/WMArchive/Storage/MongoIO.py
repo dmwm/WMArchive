@@ -207,7 +207,7 @@ class MongoStorage(Storage):
             return list(cursor_or_dict)
 
         # Valid keys in `stats.scope`
-        scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode' ]
+        scope_keys = [ 'workflow', 'task', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode', 'exitStep' ]
 
         # Construct scope
         scope = []
