@@ -232,6 +232,12 @@ $text-muted: $light;
 .glyphicon-chevron-right:after {
   content: "\203A";
 }
+.glyphicon-step-backward:after {
+  content: "\2039\2039";
+}
+.glyphicon-step-forward:after {
+  content: "\203A\203A";
+}
 
 // Canvas
 
@@ -274,6 +280,13 @@ $text-muted: $light;
   }
   .canvas-title {
     margin-bottom: $spacer;
+  }
+}
+
+.paging {
+  .paging-button {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
   }
 }
 

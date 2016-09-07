@@ -1,7 +1,12 @@
 app = app || {};
 app.visualizationRenderers = app.visualizationRenderers || {};
 
-app.visualizationRenderers.pies = function(canvas, data, metric, axis, supplementaryData) {
+app.visualizationRenderers.pies = function(canvas, data, options) {
+
+  var metric = options.metric;
+  var axis = options.axis;
+  var supplementaryData = options.supplementaryData;
+
 
   // Preprocess data
   var is_stacked = (data[0] || {})['jobstates'] != null;
@@ -41,6 +46,10 @@ app.visualizationRenderers.pies = function(canvas, data, metric, axis, supplemen
   var max_count = d3.max(axis_counts);
   var total_count = d3.sum(axis_counts);
 
+
+  if (options.start_index != null && options.stop_index != null) {
+    data = data.slice(options.start_index, options.stop_index);
+  }
 
 
   var labels = data.map(function(d) { return d['label'] })

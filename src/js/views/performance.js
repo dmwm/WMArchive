@@ -145,7 +145,10 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
         }
       }
       value['label'] = numeral(success_count/total_count).format('0.00%') + " success rate";
-      app.visualizationRenderers.bars(container, [ value ], metric, '_summary');
+      app.visualizationRenderers.bars(container, [ value ], {
+        metric: metric,
+        axis: '_summary',
+      });
     }
     for (var metric in data) {
       if (metric == 'jobstate') {
