@@ -160,7 +160,11 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
 
     for (var metric of metrics) {
       var section = container.append('section');
-      section.append('h6').text(app.scope.titleForMetric(metric) + " Evolution");
+      var title_container = section.append('h6').text(app.scope.titleForMetric(metric) + " Evolution");
+      if (metric != 'jobstate') {
+        title_container.append('small').attr('class', 'pull-xs-right text-muted')
+          .text(app.format_value(metric)(data[metric]['_summary'].average) + ' overall');
+      }
       var canvas = section.append('div');
       app.visualizationRenderers.time(canvas, data[metric]['time'], {
         metric: metric,
