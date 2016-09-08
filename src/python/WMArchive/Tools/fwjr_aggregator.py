@@ -24,6 +24,7 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import HiveContext
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+from pyspark.sql import Row
 from pyspark import StorageLevel
 
 # pymongo modules
@@ -72,28 +73,136 @@ def aggregate(hdir, cond, precision, min_date, max_date):
     sc.setLogLevel("ERROR")
     sqlContext = HiveContext(sc)
 
+    # ---
+    # 1. Open a pyspark shell with appropriate configuration with:
+    # ```
+    # pyspark --packages com.databricks:spark-avro_2.10:2.0.1 --driver-class-path=/usr/lib/hive/lib/* --driver-java-options=-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*
+    # ```
+    # 2. Paste this:
+    # from pyspark.sql.functions import *
+    # from pyspark.sql.types import *
+    # hdir = '/cms/wmarchive/avro/2016/06/28*'
+    # precision = 'day'
     fwjr_df = sqlContext.read.format("com.databricks.spark.avro").load(hdir)
+    # ---
 
-    jobs = make_filters(fwjr_df, cond)
-    steps = jobs.select('meta_data', 'task', explode(fwjr_df['steps']).alias('step'))
-    stats = steps.groupBy([
-        # TODO: start_date
-        # TODO: end_date
-        # TODO: timeframe_precision (just set value)
-        'meta_data.jobstate',
-        'meta_data.host',
-        'meta_data.jobtype',
-        'step.name',
-        'step.site',
-        split(steps['task'], '/').getItem(1).alias('workflow'),
-        # TODO: split(steps['task'], '/').getItem(-1).alias('task'),
-        # TODO: acquisitionEra (step.output(array).acquisitionEra(any/first))
-        # TODO: exitCode (step.errors(array).exitCode(any/first))
-    ]).agg(
-        avg('step.performance.cpu.TotalJobTime')
-    ).collect()
+    fwjr_df = make_filters(fwjr_df, cond)
 
-    # TODO: reshape to performance data structure
+    # ---
+    # 3. Paste this:
+    jobs = fwjr_df.select(
+        fwjr_df['meta_data.ts'].alias('timestamp'),
+        fwjr_df['meta_data.jobstate'],
+        fwjr_df['meta_data.host'],
+        fwjr_df['meta_data.jobtype'],
+        fwjr_df['task'],
+        fwjr_df['steps.site'].getItem(0).alias('site'),
+        fwjr_df['steps'],
+    )
+
+    # Timeframe
+    timestamp = jobs['timestamp']
+    if precision == "hour":
+        start_date = floor(timestamp / 3600) * 3600
+        end_date = start_date + 3600
+    elif precision == "day":
+        start_date = floor(timestamp / 86400) * 86400
+        end_date = start_date + 86400
+    elif precision == "week":
+        end_date = next_day(to_date(from_unixtime(timestamp)), 'Mon')
+        start_date = date_sub(end_date, 7)
+        start_date = to_utc_timestamp(start_date, 'UTC')
+        end_date = to_utc_timestamp(end_date, 'UTC')
+    elif precision == "month":
+        start_date = trunc(to_date(from_unixtime(timestamp)), 'month')
+        end_date = date_add(last_day(start_date), 1)
+        start_date = to_utc_timestamp(start_date, 'UTC')
+        end_date = to_utc_timestamp(end_date, 'UTC')
+
+    jobs = jobs.withColumn('start_date', start_date)
+    jobs = jobs.withColumn('end_date', end_date)
+    jobs = jobs.withColumn('timeframe_precision', lit(precision))
+    jobs = jobs.drop('timestamp')
+
+    # Task and workflow
+    jobs = jobs.withColumn('taskname_components', split(jobs['task'], '/'))
+    jobs = jobs.withColumn('workflow', jobs['taskname_components'].getItem(1))
+    jobs = jobs.withColumn('task', jobs['taskname_components'].getItem(size(jobs['taskname_components'])))
+    jobs = jobs.drop('taskname_components')
+
+    # Exit code and acquisition era
+    stepScopeStruct = StructType([
+        StructField('exitCode', StringType(), True),
+        StructField('exitStep', StringType(), True),
+        StructField('acquisitionEra', StringType(), True),
+    ])
+    def extract_step_scope(step_names, step_errors, step_outputs):
+        # TODO: improve this rather crude implementation
+        exitCode = None
+        exitStep = None
+        for (i, errors) in enumerate(step_errors):
+            if len(errors) > 0:
+                exitCode = errors[0].exitCode
+                exitStep = step_names[i]
+                break
+        acquisitionEra = None
+        for outputs in step_outputs:
+            if len(outputs) > 0:
+                acquisitionEra = outputs[0].acquisitionEra
+                break
+        return (exitCode, exitStep, acquisitionEra)
+
+    extract_step_scope_udf = udf(extract_step_scope, stepScopeStruct)
+    jobs = jobs.withColumn('step_scope', extract_step_scope_udf('steps.name', 'steps.errors', 'steps.output'))
+    jobs = jobs.select('*', 'step_scope.exitCode', 'step_scope.exitStep', 'step_scope.acquisitionEra').drop('step_scope')
+
+    # jobs.printSchema()
+    # ---
+
+
+    # Aggregation over steps
+    # TODO: Each job has an array of `steps`, each with a `performance` dictionary.
+    #       These performance dictionaries must be combined to one by summing their
+    #       values.
+    #       E.g. if a job has 3 steps, where 2 of them have a `performance`
+    #       dictionary with values such as `performance.cpu.TotalJobTime: 1` and
+    #       `performance.cpu.TotalJobTime: 2`, then as a result the _job_ should
+    #       have a `performance` dictionary with `performance.cpu.TotalJobTime: 3`.
+    #
+    #       All keys in the `performance` schema should be aggregated over in this fashion.
+
+
+    # Group jobs by scope
+    scopes = jobs.groupBy([
+        'start_date',
+        'end_date',
+        'timeframe_precision',
+        'jobstate',
+        'host',
+        'jobtype',
+        'site',
+        'workflow',
+        'task',
+        'acquisitionEra',
+        'exitCode',
+        'exitStep',
+    ])
+
+
+    # Aggregation over jobs
+    stats = scopes.agg(*(
+        [
+            count('jobstate').alias('count')
+        ] + [
+            # avg(aggregation_key) for aggregation_key in aggregation_keys
+            # TODO: Specify all aggregation keys from the `performance` schema here
+            #       to take the average over all jobs.
+        ]
+    )).collect()
+
+    # TODO: Reshape, so that the grouped-by keys are shifted into a `scope` dictionary
+    #       and the aggregated performance metrics are shifted into a `performance`
+    #       dictionary.
     stats = [row.asDict() for row in stats]
 
     logger.info("Aggregation finished in {} seconds.".format(time.time() - start_time))
@@ -106,7 +215,7 @@ def main():
     logger.setLevel(logging.DEBUG)
 
     # Parse command line arguments
-    optmgr  = OptionParser()
+    optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
 
     # Make sure to iterate over subfolders in HDFS directory
