@@ -33,9 +33,9 @@ app.format_value = function(metric) {
     var tick = app.format_tick(metric)(value);
     switch (metric) {
       case 'jobstate':
-        var suffix = ' steps';
+        var suffix = ' jobs';
         if (value == 1) {
-          suffix = ' step';
+          suffix = ' job';
         }
         return tick + suffix;
       case 'events':
@@ -53,16 +53,9 @@ app.format_value = function(metric) {
 app.format_ticks_label = function(metric) {
   switch (metric) {
     case 'jobstate':
-      return "Steps";
-    case 'events':
-      return "Events";
-    case 'cpu.TotalJobTime':
-      return "Processing Time"
-    case 'storage.readTotalMB':
-    case 'storage.writeTotalMB':
-      return "Memory"
+      return "Jobs";
     default:
-      return null;
+      return app.scope.titleForMetric(metric);
     }
 };
 

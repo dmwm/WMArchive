@@ -21,7 +21,6 @@ app.MetricsView = Backbone.View.extend({
     this.axisSelectors = Object.keys(app.scope.filters).map(function(scope_key) {
       return new app.MetricSelector({ name: scope_key, label: app.scope.filters[scope_key] });
     });
-    this.axisSelectors.push(new app.MetricSelector({ name: 'time', label: "Time" }));
     this.model = app.scope;
     this.listenTo(this.model, 'change:metrics', this.metricsChanged);
     this.listenTo(this.model, 'change:axes', this.metricsChanged);

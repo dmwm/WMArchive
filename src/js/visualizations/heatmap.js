@@ -1,7 +1,12 @@
 app = app || {};
 app.visualizationRenderers = app.visualizationRenderers || {};
 
-app.visualizationRenderers.heatmap = function(canvas, data, metric, axis, supplementaryData) {
+app.visualizationRenderers.heatmap = function(canvas, data, options) {
+
+  var metric = options.metric;
+  var axis = options.axis;
+  var supplementaryData = options.supplementaryData;
+
 
   // Preprocess data
   var is_stacked = (data[0] || {})['jobstates'] != null;
@@ -82,6 +87,10 @@ app.visualizationRenderers.heatmap = function(canvas, data, metric, axis, supple
     bar_data = stack_data;
   }
 
+  if (options.start_index != null && options.stop_index != null) {
+    bar_data = bar_data.slice(options.start_index, options.stop_index);
+  }
+
   var container = canvas.append('div').attr('class', 'heatmap')
 
   var item = container.selectAll('.heatmap-item')
@@ -93,7 +102,7 @@ app.visualizationRenderers.heatmap = function(canvas, data, metric, axis, supple
   var item_content = item.append('g')
     .attr('data-toggle', 'tooltip')
     .attr('title', function(d) {
-      var label = d.label;
+      var label = app.format_axis_label(axis)(d.label);
       if (self.axis == 'exitCode') {
         var desciption = (supplementaryData['exitCodes'] || {})[d['label']];
         if (desciption != null) {

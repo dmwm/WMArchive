@@ -5408,6 +5408,15 @@ a.text-danger:focus, a.text-danger:hover {
 .glyphicon-chevron-right:after {
   content: "\203A"; }
 
+.glyphicon-step-backward:after {
+  content: "\2039\2039"; }
+
+.glyphicon-step-forward:after {
+  content: "\203A\203A"; }
+
+#summary {
+  margin-top: 1.5rem; }
+
 #visualizations {
   margin-top: 1.5rem; }
   #visualizations.card-columns {
@@ -5437,6 +5446,10 @@ a.text-danger:focus, a.text-danger:hover {
     margin-top: 2rem; }
   .visualization-container .canvas-title {
     margin-bottom: 1rem; }
+
+.paging .paging-button {
+  margin-left: 0.5em;
+  margin-right: 0.5em; }
 
 .canvas-flex {
   display: flex;

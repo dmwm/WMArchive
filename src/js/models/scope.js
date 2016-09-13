@@ -7,13 +7,13 @@ app.Scope = Backbone.Model.extend({
   filters: {
     'workflow': "Workflow",
     'task': "Task",
-    'step': "Step",
     'host': "Host",
     'site': "Site",
     'jobtype': "Job Type",
     'jobstate': "Job State",
     'acquisitionEra': "Acquisition Era",
     'exitCode': "Exit Code",
+    'exitStep': "Exit Step",
     // 'time' is handled separately
   },
   all_metrics: {
@@ -46,7 +46,7 @@ app.Scope = Backbone.Model.extend({
 
   defaults: {
     metrics: [ 'jobstate' ],
-    axes: [ 'host', 'jobstate', 'time', 'site' ],
+    axes: [ 'host', 'jobstate', 'site' ],
 
     start_date: moment().subtract(7, 'days'),
     end_date: moment(),
@@ -122,7 +122,7 @@ app.Scope = Backbone.Model.extend({
     }, this);
   },
 
-  updateURL: function(a, b, c) {
+  updateURL: function() {
     var self = this;
     var params = this.queryParameters();
     app.router.navigate('/performance?' + Object.keys(params).map(function(key) {

@@ -16,6 +16,7 @@ import json
 import datetime
 import traceback
 import time
+import traceback
 
 # Mongo modules
 from pymongo import MongoClient
@@ -206,7 +207,7 @@ class MongoStorage(Storage):
             return list(cursor_or_dict)
 
         # Valid keys in `stats.scope`
-        scope_keys = [ 'workflow', 'task', 'step', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode' ]
+        scope_keys = [ 'workflow', 'task', 'host', 'site', 'jobtype', 'jobstate', 'acquisitionEra', 'exitCode', 'exitStep' ]
 
         # Construct scope
         scope = []
@@ -265,6 +266,9 @@ class MongoStorage(Storage):
 
             for axis in axes:
 
+                if axis == '_summary':
+                    group_id = None
+                    label = axis
                 if axis == 'time':
                     group_id = { 'start_date': '$scope.start_date', 'end_date': '$scope.end_date' }
                     label = { 'start_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$_id.start_date' } }, 'end_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$_id.end_date' } }, }
@@ -273,7 +277,7 @@ class MongoStorage(Storage):
                     label = '$_id'
 
                 if metric == 'jobstate':
-                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
@@ -301,7 +305,7 @@ class MongoStorage(Storage):
                     ]))
 
                 else:
-                    visualizations[metric][axis] = get_aggregation_result(performance_data.aggregate(scope + [
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
                                 '_id': group_id,
@@ -318,6 +322,11 @@ class MongoStorage(Storage):
                             }
                         }
                     ]))
+
+                if axis == '_summary':
+                    aggregation_result = aggregation_result[0] if aggregation_result else None
+
+                visualizations[metric][axis] = aggregation_result
 
         status = (get_aggregation_result(performance_data.aggregate(scope + [
             {
@@ -359,12 +368,10 @@ class MongoStorage(Storage):
         supplementaryData = {}
         if "exitCode" in axes + suggestions:
             try:
-                fname = os.environ.get('WMARCHIVE_ERROR_CODES', '')
-                with open(fname, 'r') as stream:
-                    supplementaryData["exitCodes"] = json.load(stream)
+                with open(os.environ.get('WMARCHIVE_ERROR_CODES', ''), 'r') as exit_codes_file:
+                    supplementaryData["exitCodes"] = json.load(exit_codes_file)
             except:
                 traceback.print_exc()
-                pass
 
         return {
             "status": status,

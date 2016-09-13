@@ -1,8 +1,11 @@
 app = app || {};
 app.visualizationRenderers = app.visualizationRenderers || {};
 
-app.visualizationRenderers.bars = function(canvas, data, metric, axis, supplementaryData) {
+app.visualizationRenderers.bars = function(canvas, data, options) {
 
+  var metric = options.metric;
+  var axis = options.axis;
+  var supplementaryData = options.supplementaryData;
 
   // Preprocess data
   var is_stacked = (data[0] || {})['jobstates'] != null;
@@ -77,6 +80,10 @@ app.visualizationRenderers.bars = function(canvas, data, metric, axis, supplemen
       return new_row;
     });
     bar_data = stack_data;
+  }
+
+  if (options.start_index != null && options.stop_index != null) {
+    bar_data = bar_data.slice(options.start_index, options.stop_index);
   }
 
   var container = canvas.selectAll('.full-width-container')

@@ -62,20 +62,20 @@ class WMAData(RESTEntity):
 
                 # Validate arguments
                 validate_strlist('metrics[]', param, safe, re.compile(r'^[a-zA-Z.]+'))
-                validate_strlist('axes[]', param, safe, re.compile(r'^[a-zA-Z]+'))
+                validate_strlist('axes[]', param, safe, re.compile(r'^[a-zA-Z_]+'))
                 validate_strlist('suggestions[]', param, safe, re.compile(r'^[a-zA-Z]+'))
                 date_pattern = PAT_YYYYMMDD
                 validate_str('start_date', param, safe, date_pattern, optional=True)
                 validate_str('end_date', param, safe, date_pattern, optional=True)
                 validate_rx('workflow', param, safe, optional=True)
                 validate_rx('task', param, safe, optional=True)
-                validate_rx('step', param, safe, optional=True)
                 validate_rx('host', param, safe, optional=True)
                 validate_rx('site', param, safe, optional=True)
                 validate_rx('jobtype', param, safe, optional=True)
                 validate_rx('jobstate', param, safe, optional=True)
                 validate_rx('acquisitionEra', param, safe, optional=True)
                 validate_rx('exitCode', param, safe, optional=True)
+                validate_rx('exitStep', param, safe, optional=True)
                 validate_str('_', param, safe, PAT_INFO, optional=True)
 
                 return True
