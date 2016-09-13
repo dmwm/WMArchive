@@ -67,7 +67,6 @@ app.visualizationRenderers.time = function(canvas, data, options) {
   var position = d3.scaleUtc()
     .domain([ d3.min(all_dates), d3.max(all_dates) ])
     .range([ 0, width - margin.left - margin.right ])
-    .nice();
 
   if (is_stacked) {
     var stack = d3.stack()
