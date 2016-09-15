@@ -9,7 +9,7 @@
     "readMBSec": "Read rate MB/millisecond.",
     "readMaxMSec": "The longest read time in millisecond.",
     "readTotalSecs": "Total time for root-based read in seconds.",
-    "writeTotalSecs": "Total writting time in seconds."
+    "writeTotalSecs": "Total writting time in microseconds."
             },
 "cpu":{   
     "MinEventTime":"Shortest event wall time in seconds.",
