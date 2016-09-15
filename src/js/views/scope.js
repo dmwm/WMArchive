@@ -38,14 +38,16 @@ app.ScopeStatusView = Backbone.View.extend({
   render: function() {
     var status = this.model.get('status');
     var statusDescription = "";
-    if (status != null) {
+    if (status == null) {
+      this.$el.html('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"></div>')
+    } else {
       statusDescription = "Matches <b>" + app.format_jobs(status.totalMatchedJobs) + "</b>";
       if (status.start_date != null && status.end_date != null) {
         statusDescription += "<br>from " + moment(status.start_date).format('lll') + " to " + moment(status.end_date).format('lll');
       }
       statusDescription += ".";
+      this.$el.html(this.template({ status: statusDescription }));
     }
-    this.$el.html(this.template({ status: statusDescription }));
     return this;
   },
 

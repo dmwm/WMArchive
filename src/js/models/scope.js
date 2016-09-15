@@ -16,33 +16,33 @@ app.Scope = Backbone.Model.extend({
     'exitStep': "Exit Step",
     // 'time' is handled separately
   },
-  all_metrics: {
-    'jobstate': "Job State",
-    'cpu': {
-      "_title": "CPU",
-      "TotalJobTime": "Total Job Time",
-      "TotalJobCPU": "Total Job CPU",
-      "MinEventTime": "Min Event Time",
-      "MaxEventTime": "Max Event Time",
-      "AvgEventTime": "Average Event Time",
-      "EventThroughput": "Event Throughput",
-      "TotalLoopCPU": "Total Loop CPU",
-    },
-    'storage': {
-      '_title': "Storage",
-      "writeTotalMB": "Write",
-      "readTotalMB": "Read",
-    },
-    'memory': {
-      '_title': "Memory",
-      "PeakValueRss": "Peak Value RSS",
-      "PeakValueVsize": "Peak Value Vsize",
-    },
-    'data': {
-      '_title': "Data",
-      'events': "Events",
-    },
-  },
+  // all_metrics: {
+  //   'jobstate': "Job State",
+  //   'cpu': {
+  //     "_title": "CPU",
+  //     "TotalJobTime": "Total Job Time",
+  //     "TotalJobCPU": "Total Job CPU",
+  //     "MinEventTime": "Min Event Time",
+  //     "MaxEventTime": "Max Event Time",
+  //     "AvgEventTime": "Average Event Time",
+  //     "EventThroughput": "Event Throughput",
+  //     "TotalLoopCPU": "Total Loop CPU",
+  //   },
+  //   'storage': {
+  //     '_title': "Storage",
+  //     "writeTotalMB": "Write",
+  //     "readTotalMB": "Read",
+  //   },
+  //   'memory': {
+  //     '_title': "Memory",
+  //     "PeakValueRss": "Peak Value RSS",
+  //     "PeakValueVsize": "Peak Value Vsize",
+  //   },
+  //   'data': {
+  //     '_title': "Data",
+  //     'events': "Events",
+  //   },
+  // },
 
   defaults: {
     metrics: [ 'jobstate' ],
@@ -174,11 +174,19 @@ app.Scope = Backbone.Model.extend({
     this.set(query);
   },
 
-  titleForMetric: function(metric_path) {
-    var title = this.all_metrics;
+  descriptionForMetric: function(metric_path) {
+    var title = this.get('all_metrics');
     for (var metric_key of metric_path.split(".")) {
       title = title[metric_key];
     }
+    return title;
+  },
+
+  titleForMetric: function(metric_path) {
+    var components = metric_path.split(".");
+    var title = components[components.length - 1];
+    title = title.replace(/([A-Z]+)/g, " $1").replace(/([A-Z][a-z])/g, " $1");
+    title = title.charAt(0).toUpperCase() + title.slice(1);
     return title;
   },
 
@@ -195,7 +203,9 @@ app.Scope = Backbone.Model.extend({
   },
 
   parse: function(data) {
-    return data.result[0].performance;
+    var result = data.result[0].performance;
+    result.all_metrics = result.supplementaryData.metrics;
+    return result;
   },
 
 });

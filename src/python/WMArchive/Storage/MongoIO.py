@@ -372,6 +372,12 @@ class MongoStorage(Storage):
                     supplementaryData["exitCodes"] = json.load(exit_codes_file)
             except:
                 traceback.print_exc()
+        if len(metrics) == 0:
+            try:
+                with open(os.environ.get('WMARCHIVE_PERF_METRICS', ''), 'r') as metrics_file:
+                    supplementaryData["metrics"] = json.load(metrics_file)
+            except:
+                traceback.print_exc()
 
         return {
             "status": status,
