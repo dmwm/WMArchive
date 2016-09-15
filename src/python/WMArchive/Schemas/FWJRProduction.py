@@ -75,7 +75,9 @@ fwjr = \
                          "PNN": "T2_CERN_CH",
                          "GUID": '',
                          "StageOutCommand": "srmv2-lcg"}],
-              'performance': {"multicore": {},
+              'performance': {
+                  "multicore": {
+                  },
                   "storage": {
                     "readAveragekB": 77.8474891246,
                     "readCachePercentageOps": 0.0,
@@ -86,11 +88,12 @@ fwjr = \
                     'readTotalMB': 7423.792,    
                     'readTotalSecs': 0.0,
                     'writeTotalMB': 357.624,
-                    'writeTotalSecs': 575158.0},
-                    "memory": {
+                    'writeTotalSecs': 575158.0
+                   },
+                   "memory": {
                        "PeakValueRss": 0.0,
                        "PeakValueVsize": 0.0
-                    },
+                   },
                    "cpu": {
                        "TotalJobCPU": 0.39894,
                        "AvgEventCPU": -2.0, # for ("-nan")
@@ -100,8 +103,11 @@ fwjr = \
                        "TotalEventCPU": 0.0,
                        "TotalJobTime": 26.4577,
                        "MinEventTime": 0.0,
-                       "MaxEventTime": 0.0
-                   }},
+                       "MaxEventTime": 0.0,
+                       'EventThroughput': 0.0,
+                       'TotalLoopCPU': 0.0
+                   }
+              },
               'site': 'T2_CH_CERN',
               'start': 1454569735,
               'status': 0,
