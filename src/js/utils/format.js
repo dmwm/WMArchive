@@ -16,8 +16,22 @@ app.format_tick = function(metric) {
     switch (metric) {
       case 'jobstate':
         return numeral(value).format('0.[00]a');
+      case 'storage.readPercentageOps':
+      case 'storage.readCachePercentageOps':
+        return numeral(value / 100).format('0.[00]%');
+      case 'storage.readAverageKB':
+        return numeral(value * 1e3).format('0.[00]b');
+      case 'storage.readNumOps':
+        return numeral(value).format("0.[00]a");
+      case 'storage.readMBSec':
+        return numeral(value * 1e6).format("0.[00]b") + "/ms";
+      case 'storage.readMaxMSec':
+        return numeral(value).format("0.[00]a") + " ms";
+      case 'storage.readTotalSecs':
+      case 'storage.writeTotalSecs':
+        return numeral(value).format("00:00:00");
       default:
-        if (metric.startsWith('cpu.')) {
+        if (metric.startsWith('cpu.') && metric != 'cpu.EventThroughput') {
           return numeral(value).format("00:00:00");
         } else if (metric.startsWith('storage.') || metric.startsWith('memory.')) {
           return numeral(value * 1e6).format("0.[00] b");
@@ -40,6 +54,8 @@ app.format_value = function(metric) {
         return tick + suffix;
       case 'events':
         return tick + " events";
+      case 'cpu.EventThroughput':
+        return tick + " events/second";
       default:
         if (metric.startsWith('cpu.')) {
           return tick + " (" + numeral(value).format("0.0") + "s" + ")";
