@@ -13,23 +13,15 @@ app.MetricsView = Backbone.View.extend({
 
   render: function(){
     var all_metrics = app.scope.get('all_metrics');
-    var all_metrics_keys = Object.keys(all_metrics || {});
-    // make sure jobstate is at the beginning
-    var i = all_metrics_keys.indexOf('jobstate');
-    if (i >= 0) {
-      all_metrics_keys.splice(i, 1);
-      all_metrics_keys.splice(0, 0, 'jobstate');
-    }
 
-    var metricSelectors = [].concat.apply([], all_metrics_keys.map(function(metric_key) {
-      var value = all_metrics[metric_key];
-      if (typeof value === 'string') {
-        return [ new app.MetricSelector({ name: metric_key, label: app.scope.titleForMetric(metric_key), description: app.scope.descriptionForMetric(metric_key) }) ];
+    var metricSelectors = [].concat.apply([], (all_metrics || []).map(function(metric) {
+      if (metric.metrics == null) {
+        return [ new app.MetricSelector({ name: metric.key, label: metric.title, description: metric.description }) ];
       } else {
-        var selectors = [ new app.MetricSectionTitle({ title: app.scope.titleForMetric(metric_key) }) ];
-        selectors.push.apply(selectors, Object.keys(value).map(function(nested_metric_key) {
-          var key = metric_key + '.' + nested_metric_key;
-          return new app.MetricSelector({ name: key, label: app.scope.titleForMetric(key), description: app.scope.descriptionForMetric(key) });
+        var selectors = [ new app.MetricSectionTitle({ title: metric.title }) ];
+        selectors.push.apply(selectors, metric.metrics.map(function(nested_metric) {
+          var key = metric.key + '.' + nested_metric.key;
+          return new app.MetricSelector({ name: key, label: nested_metric.title, description: nested_metric.description });
         }));
         return selectors;
       }

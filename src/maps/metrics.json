@@ -1,31 +1,152 @@
-{
-  "jobstate": "Number of jobs and their success rate.",
-  "cpu": {
-    "TotalJobTime": "Job wall time in seconds.",
-    "TotalJobCPU": "Job CPU in seconds.",
-    "MinEventTime": "Shortest event wall time in seconds.",
-    "MaxEventTime": "Longest event wall time in seconds",
-    "AvgEventTime": "Average event wall time in seconds.",
-    "EventThroughput": "Number of events per second.",
-    "TotalLoopCPU": "in seconds."
+[
+  {
+    "key": "jobstate",
+    "title": "Job State",
+    "description": "Number of jobs and their success rate.",
+    "unit": ""
   },
-  "storage": {
-    "writeTotalMB": "Total storage layer written data in MB.",
-    "readTotalMB": "Total storage layer read in MB.",
-    "readPercentageOps" : "Percentage of operations by the ROOT layer vs. storage layer.",
-    "readAverageKB": "Read rate of storage layer in KB/operation.",
-    "readNumOps": "Storage-based read operations.",
-    "readCachePercentageOps": "Percentage of successful operations by ROOT layer vs. storage layer.",
-    "readMBSec": "Read rate in MB/ms.",
-    "readMaxMSec": "The longest read time in ms.",
-    "readTotalSecs": "Total time for ROOT-based read in seconds.",
-    "writeTotalSecs": "Total writing time in seconds."
+  {
+    "key": "cpu",
+    "title": "CPU",
+    "metrics": [
+      {
+        "key": "TotalJobTime",
+        "title": "Total Job Time",
+        "description": "Job wall time.",
+        "unit": "s"
+      },
+      {
+        "key": "TotalJobCPU",
+        "title": "Total Job CPU",
+        "description": "",
+        "unit": "s"
+      },
+      {
+        "key": "MinEventTime",
+        "title": "Min. Event Time",
+        "description": "Shortest event wall time.",
+        "unit": "s"
+      },
+      {
+        "key": "MaxEventTime",
+        "title": "Max. Event Time",
+        "description": "Longest event wall time",
+        "unit": "s"
+      },
+      {
+        "key": "AvgEventTime",
+        "title": "Avg. Event Time",
+        "description": "Average event wall time.",
+        "unit": "s"
+      },
+      {
+        "key": "EventThroughput",
+        "title": "Event Throughput",
+        "description": "Number of events per second.",
+        "unit": "/s"
+      },
+      {
+        "key": "TotalLoopCPU",
+        "title": "Total Loop CPU",
+        "description": "",
+        "unit": "s"
+      }
+    ]
   },
-  "memory":{
-    "PeakValueRss": "in MB",
-    "peakValueVsize": "in MB"
+  {
+    "key": "storage",
+    "title": "Storage",
+    "metrics": [
+      {
+        "key": "writeTotalMB",
+        "title": "Write",
+        "description": "Total storage layer written data.",
+        "unit": "MB"
+      },
+      {
+        "key": "readTotalMB",
+        "title": "Read",
+        "description": "Total storage layer read data.",
+        "unit": "MB"
+      },
+      {
+        "key": "readPercentageOps",
+        "title": "Read Percentage ROOT",
+        "description": "Percentage of operations by the ROOT layer vs. storage layer.",
+        "unit": "%"
+      },
+      {
+        "key": "readAveragekB",
+        "title": "Read Rate",
+        "description": "Read rate of storage layer per operation.",
+        "unit": "KB"
+      },
+      {
+        "key": "readNumOps",
+        "title": "Read Operations",
+        "description": "Storage-based read operations.",
+        "unit": ""
+      },
+      {
+        "key": "readCachePercentageOps",
+        "title": "Read Cache Operations",
+        "description": "Percentage of successful operations by ROOT layer vs. storage layer.",
+        "unit": "%"
+      },
+      {
+        "key": "readMBSec",
+        "title": "Read Rate",
+        "description": "Read rate.",
+        "unit": "MB/ms"
+      },
+      {
+        "key": "readMaxMSec",
+        "title": "Max. Read Time",
+        "description": "The longest read time.",
+        "unit": "ms"
+      },
+      {
+        "key": "readTotalSecs",
+        "title": "ROOT Read Time",
+        "description": "Total time for ROOT-based read.",
+        "unit": "s"
+      },
+      {
+        "key": "writeTotalSecs",
+        "title": "Write Time",
+        "description": "Total writing time.",
+        "unit": "microseconds"
+      }
+    ]
   },
-  "data": {
-    "events": "Events"
+  {
+    "key": "memory",
+    "title": "Memory",
+    "metrics": [
+      {
+        "key": "PeakValueRss",
+        "title": "Peak Value Rss",
+        "description": "",
+        "unit": "MB"
+      },
+      {
+        "key": "peakValueVsize",
+        "title": "Peak Value Vsize",
+        "description": "",
+        "unit": "MB"
+      }
+    ]
+  },
+  {
+    "key": "data",
+    "title": "Data",
+    "metrics": [
+      {
+        "key": "events",
+        "title": "Events",
+        "description": "",
+        "unit": ""
+      }
+    ]
   }
-}
+]
