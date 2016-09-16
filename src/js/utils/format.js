@@ -63,7 +63,7 @@ app.format_ticks_label = function(metric) {
     case 'jobstate':
       return "Jobs";
     default:
-      return app.scope.titleForMetric(metric);
+      return app.scope.metricForKey(metric).title;
     }
 };
 
