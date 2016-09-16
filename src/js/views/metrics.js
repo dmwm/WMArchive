@@ -5,36 +5,43 @@ app.MetricsView = Backbone.View.extend({
   template: _.template('<strong class="structure">Metrics</strong><fieldset id="metric-selectors" class="form-group"></fieldset><strong class="structure">Axes</strong><fieldset id="axis-selectors" class="form-group"></fieldset>'),
 
   initialize: function() {
-    this.metricSelectors = [].concat.apply([], Object.keys(app.scope.all_metrics).map(function(metric_key) {
-      var value = app.scope.all_metrics[metric_key];
-      if (typeof value === 'string') {
-        return [ new app.MetricSelector({ name: metric_key, label: value }) ];
-      } else {
-        return Object.keys(value).map(function(nested_metric_key) {
-          if (nested_metric_key == '_title') {
-            return new app.MetricSectionTitle({ title: value._title });
-          }
-          return new app.MetricSelector({ name: metric_key + '.' + nested_metric_key, label: value[nested_metric_key] });
-        });
-      }
-    }));
-    this.axisSelectors = Object.keys(app.scope.filters).map(function(scope_key) {
-      return new app.MetricSelector({ name: scope_key, label: app.scope.filters[scope_key] });
-    });
     this.model = app.scope;
+    this.listenTo(this.model, 'change:all_metrics', this.render);
     this.listenTo(this.model, 'change:metrics', this.metricsChanged);
     this.listenTo(this.model, 'change:axes', this.metricsChanged);
   },
 
   render: function(){
+    var all_metrics = app.scope.get('all_metrics');
+
+    var metricSelectors = [].concat.apply([], (all_metrics || []).map(function(metric) {
+      if (metric.metrics == null) {
+        return [ new app.MetricSelector({ name: metric.key, label: metric.title, description: metric.description }) ];
+      } else {
+        var selectors = [ new app.MetricSectionTitle({ title: metric.title }) ];
+        selectors.push.apply(selectors, metric.metrics.map(function(nested_metric) {
+          var key = metric.key + '.' + nested_metric.key;
+          return new app.MetricSelector({ name: key, label: nested_metric.title, description: nested_metric.description });
+        }));
+        return selectors;
+      }
+    }));
+    var axisSelectors = Object.keys(app.scope.filters).map(function(scope_key) {
+      return new app.MetricSelector({ name: scope_key, label: app.scope.filters[scope_key] });
+    });
+
+
     this.$el.html(this.template());
-    for (var selector of this.metricSelectors) {
-      this.$('#metric-selectors').append(selector.$el);
-      selector.render();
+    if (all_metrics == null) {
+      // render loading indicator
+      this.$('#metric-selectors').append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"></div>');
+    } else {
+      for (var selector of metricSelectors) {
+        this.$('#metric-selectors').append(selector.render().$el);
+      }
     }
-    for (var selector of this.axisSelectors) {
-      this.$('#axis-selectors').append(selector.$el);
-      selector.render();
+    for (var selector of axisSelectors) {
+      this.$('#axis-selectors').append(selector.render().$el);
     }
     this.metricsChanged();
   },
@@ -88,6 +95,7 @@ app.MetricSectionTitle = Backbone.View.extend({
 
   render: function(){
     this.$el.html(this.template({ title: this.title }));
+    return this;
   },
 
 });

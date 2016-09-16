@@ -86,7 +86,7 @@ app.VisualizationSectionView = Backbone.View.extend({
   title: function() {
     var metric = this.model.get('metric');
     var axis = this.model.get('axis');
-    var title = app.scope.titleForMetric(metric);
+    var title = app.scope.metricForKey(metric).title;
     if (axis == 'time') {
       title += " Evolution";
     } else {
@@ -102,6 +102,7 @@ app.VisualizationSectionView = Backbone.View.extend({
     } else {
       container.append('<div class="loading-indicator"><img src="/wmarchive/web/static/images/cms_loading_indicator.gif"><p><strong class="structure">Loading...</structure></p></div>');
     }
+    return this;
   },
 
   renderData: function(container) {
@@ -125,9 +126,16 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
   initialize: function() {
     app.SummaryVisualizationSectionView.__super__.initialize.apply(this, arguments)
     $(window).on('resize.resizeview', this.resize.bind(this));
+    this.listenTo(app.scope, 'change:all_metrics', this.render, this);
   },
 
   renderData: function(container) {
+
+    if (app.scope.get('all_metrics') == null) {
+      return this.renderPlaceholder(container);
+    }
+
+
     var data = this.model.get('data');
 
     var container = d3.select(container.get(0));
@@ -160,7 +168,7 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
 
     for (var metric of metrics) {
       var section = container.append('section');
-      var title_container = section.append('h6').text(app.scope.titleForMetric(metric) + " Evolution");
+      var title_container = section.append('h6').text(app.scope.metricForKey(metric).title + " Evolution");
       if (metric != 'jobstate') {
         title_container.append('small').attr('class', 'pull-xs-right text-muted')
           .text(app.format_value(metric)(data[metric]['_summary'].average) + ' overall average');

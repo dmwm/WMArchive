@@ -9,11 +9,14 @@ app.Visualizations = Backbone.Collection.extend({
 
   initialize: function() {
     this.construct();
-    this.listenTo(app.scope, 'change:metrics change:axes', this.construct);
+    this.listenTo(app.scope, 'change:metrics change:axes change:all_metrics', this.construct);
   },
 
   construct: function() {
     var scope = app.scope;
+    if (scope.get('all_metrics') == null) {
+      return;
+    }
     var metrics = scope.get('metrics');
     var axes = scope.get('axes');
     var self = this;

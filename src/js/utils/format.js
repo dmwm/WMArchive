@@ -12,23 +12,31 @@ app.format_time_daterangepicker = 'L';
 app.format_time_d3 = d3.timeFormat('%B %d, %Y');
 
 app.format_tick = function(metric) {
+  var unit = app.scope.metricForKey(metric).unit;
   return function(value) {
-    switch (metric) {
-      case 'jobstate':
-        return numeral(value).format('0.[00]a');
+    switch (unit) {
+      case "s":
+        return numeral(value).format("00:00:00");
+      case "%":
+        return numeral(value / 100).format('0.[00]%');
+      case "MB":
+        return numeral(value * 1e6).format("0.[00] b");
+      case "KB":
+        return numeral(value * 1e3).format("0.[00] b");
+      case "MB/ms":
+        return numeral(value * 1e6).format("0.[00] b") + "/ms";
+      case "ms":
+        return numeral(value).format("0.[00]a") + " ms";
+      case "microseconds":
+        return numeral(value * 1e-6).format("00:00:00");
       default:
-        if (metric.startsWith('cpu.')) {
-          return numeral(value).format("00:00:00");
-        } else if (metric.startsWith('storage.') || metric.startsWith('memory.')) {
-          return numeral(value * 1e6).format("0.[00] b");
-        } else {
-          return numeral(value).format("0.[00]a");
-        }
+        return numeral(value).format("0.[00]a") + unit;
       }
     };
 };
 
 app.format_value = function(metric) {
+  var unit = app.scope.metricForKey(metric).unit;
   return function(value) {
     var tick = app.format_tick(metric)(value);
     switch (metric) {
@@ -41,7 +49,7 @@ app.format_value = function(metric) {
       case 'events':
         return tick + " events";
       default:
-        if (metric.startsWith('cpu.')) {
+        if (unit == "s") {
           return tick + " (" + numeral(value).format("0.0") + "s" + ")";
         } else {
           return tick;
@@ -55,7 +63,7 @@ app.format_ticks_label = function(metric) {
     case 'jobstate':
       return "Jobs";
     default:
-      return app.scope.titleForMetric(metric);
+      return app.scope.metricForKey(metric).title;
     }
 };
 

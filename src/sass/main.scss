@@ -4,7 +4,7 @@ $structure: #77C8E5;
 $background: white;
 $subtle: #FDF8EE;
 $text: black;
-$light: #DAE1E1;
+$light: darken(#DAE1E1, 5%);
 
 // Bootstrap Overrides
 $brand-primary: $highlight;
@@ -90,7 +90,8 @@ $text-muted: $light;
   margin: 2*$spacer auto;
   text-align: center;
   img {
-    max-width: 200px;
+    margin: $spacer;
+    max-width: 50px;
   }
 }
 
