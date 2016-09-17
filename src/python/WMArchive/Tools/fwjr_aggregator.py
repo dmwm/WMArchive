@@ -5,7 +5,11 @@
 File       : FWJRAggregator.py
 Author     : Luca Menichetti <luca dot menichetti AT cern dot ch>
              Valentin Kuznetsov <vkuznet AT gmail dot com>
+             Nils Leif Fischer <nfischerol AT gmail dot com>
 Description:
+
+    Replaces `WMArchive.PySpark.RecordAggregator` for aggregating performance data
+    as documented in https://github.com/knly/WMArchiveAggregation.
 """
 
 # system modules

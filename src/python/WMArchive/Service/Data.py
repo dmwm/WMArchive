@@ -55,7 +55,8 @@ class WMAData(RESTEntity):
         """
         if  method == 'GET':
 
-            # Check for `performance` endpoint
+            # Check for `performance` endpoint, documented in
+            # https://github.com/knly/WMArchiveAggregation
             if len(param.args) == 1 and param.args[0] == 'performance':
                 safe.args.append(param.args[0])
                 param.args.remove(param.args[0])
@@ -103,6 +104,7 @@ class WMAData(RESTEntity):
         All work is done by WMArchiveManager
         """
         if 'performance' in args:
+            # documented in https://github.com/knly/WMArchiveAggregation
             kwds['metrics'] = kwds.pop('metrics[]', None)
             kwds['axes'] = kwds.pop('axes[]', None)
             kwds['suggestions'] = kwds.pop('suggestions[]', None)
