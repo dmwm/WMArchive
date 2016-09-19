@@ -104,14 +104,19 @@
 
   <!-- Entry Point -->
   <script type="text/javascript">
+    // Create singleton stateful scope object with default values
     app.scope = new app.Scope();
 
+    // Visualizations are managed by this collection in response to scope changes
     app.visualizations = new app.Visualizations();
+    // The summary is always shown and also responds to scope changes
     app.summary = new app.Summary();
 
+    // Render common UI components
     new app.NavMainView({ el: $('#nav-main-container') }).render();
     new app.FooterView({ el: $('#site-footer') }).render();
 
+    // Setup router
     app.router = new app.Router();
     Backbone.history.start({ pushState: true, root: "/wmarchive/web/" });
   </script>

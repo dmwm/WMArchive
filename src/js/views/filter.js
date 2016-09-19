@@ -1,42 +1,72 @@
+// Author: [Nils Leif Fischer](https://github.com/knly)
+// Documentation: https://github.com/knly/WMArchiveAggregation
+
 var app = app || {};
 
 app.FilterView = Backbone.View.extend({
 
+  // Definition of the rendered HTML element
   tagName: 'fieldset',
   className: 'filter-container form-group',
 
-  template: _.template('<div class="dropdown form-group"><label class="form-control-label" for="<%=input_id%>"><%=label%></label><div class="filter-text-container"><input type="search" class="form-control filter-text" id="<%=input_id%>" placeholder="<%=placeholder%>"><span class="clear-filter">✕</span></div></div>'),
+  // Content template of the rendered HTML element
+  template: _.template(`
+      <div class="dropdown form-group">
+        <label class="form-control-label" for="<%=input_id%>">
+          <%=label%>
+        </label>
+        <div class="filter-text-container">
+          <input type="search" class="form-control filter-text" id="<%=input_id%>" placeholder="<%=placeholder%>">
+          <span class="clear-filter">✕</span>
+        </div>
+      </div>
+    `),
 
-  initialize: function(params) {
-    this.label = params.label;
-    this.input_id = params.input_id;
+  // Initialize view object
+  initialize: function(options) {
+    // Expects a dictionary with `label` and `input_id` keys on initialization
+    _.extend(this, _.pick(options, 'label', 'input_id'));
+
+    // Listen to scope changes and re-render
     this.model = app.scope;
     this.listenTo(this.model, 'change:' + this.input_id, this.render);
     this.listenTo(this.model, 'change:suggestions', this.render);
   },
 
+  // Render view to HTML
   render: function() {
     var scope_key = this.input_id;
+    // Always retrieve Backbone.Model attributes with `get`.
     var scope_value = this.model.get(scope_key);
 
-    this.$el.html(this.template({ label: this.label.toUpperCase(), input_id: this.input_id, placeholder: "Filter by " + this.label + "…" }));
+    // Render content template
+    this.$el.html(this.template({
+      label: this.label.toUpperCase(),
+      input_id: this.input_id,
+      placeholder: "Filter by " + this.label + "…"
+    }));
 
+
+    // Render suggestions dropdown menu
+    // First, retrieve descriptions for suggestions if available
     var descriptions = null;
     if (scope_key == 'exitCode') {
       descriptions = (this.model.get('supplementaryData') || {})['exitCodes'];
     }
+    // Retrieve suggestions data and combine it with descriptions
     var suggestions = ((this.model.get('suggestions') || {})[scope_key] || []).sort().map(function(suggestion) {
       return {
         value: suggestion,
         description: (descriptions || {})[suggestion] || null,
       };
     });
-
+    // Setup suggestions dataset
     var all_selection_options = new Bloodhound({
       datumTokenizer: Bloodhound.tokenizers.whitespace,
       queryTokenizer: Bloodhound.tokenizers.whitespace,
       local: suggestions,
     });
+    // Setup function to show all suggestions if no input is in textfield
     function selection_options(q, sync) {
       if (q === '') {
         sync(all_selection_options.all());
@@ -44,6 +74,7 @@ app.FilterView = Backbone.View.extend({
         all_selection_options.search(q, sync);
       }
     }
+    // Render suggestions dropdown menu
     this.$('.filter-text').typeahead({
       hint: true,
       highlight: true,
@@ -66,6 +97,7 @@ app.FilterView = Backbone.View.extend({
       },
     });
 
+    // Toggle active state to style differently if the filter is active
     this.$('.filter-text').val(scope_value);
     if (scope_value != null && scope_value != '') {
       this.$el.addClass('filter-active');
@@ -75,10 +107,14 @@ app.FilterView = Backbone.View.extend({
       this.$('.clear-filter').hide();
     }
 
-    this.delegateEvents(); // required to trigger events when added to parent view
+    // Required to trigger events when added to parent view
+    this.delegateEvents();
+
+    // Always return `this` in `render` to allow functional chaining
     return this;
   },
 
+  // User interaction events to listen to
   events: {
     'typeahead:select .filter-text': 'applyFilter',
     'keyup .filter-text': 'keyup',

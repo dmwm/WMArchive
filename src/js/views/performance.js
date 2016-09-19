@@ -1,3 +1,6 @@
+// Author: [Nils Leif Fischer](https://github.com/knly)
+// Documentation: https://github.com/knly/WMArchiveAggregation
+
 var app = app || {};
 
 app.PerformanceView = Backbone.View.extend({
@@ -20,21 +23,32 @@ app.PerformanceView = Backbone.View.extend({
   `),
 
   initialize: function() {
+    // Here we create the view objects on initialization to `render` them later.
+    // We can alternatively recreate them on every `render` as done in other views.
     this.scopeView = new app.ScopeView();
     this.metricsView = new app.MetricsView();
+
+    // Observe changes to the visualizations collection and render them.
+    // Note that visualizations that are `destroy`ed are removed automatically.
     this.model = app.visualizations;
     this.listenTo(this.model, 'add', this.addVisualization);
   },
 
   render: function() {
     this.$el.html(this.template());
+    // Render views to specific elements in the HTML tree.
+    // Often, views are rendered and `append`ed to the HTML tree instead, like below.
     this.scopeView.setElement(this.$('#scope')).render();
     this.metricsView.setElement(this.$('#metrics')).render();
 
     var self = this;
 
-    this.$('#summary').append(new app.SummaryVisualizationSectionView({ model: app.summary }).render().$el);
+    // Always render the summary view
+    this.$('#summary').append(new app.SummaryVisualizationSectionView({
+      model: app.summary
+    }).render().$el);
 
+    // Render all visualizations in the collection
     self.model.each(function(visualization) {
       self.addVisualization(visualization);
     });
@@ -42,11 +56,15 @@ app.PerformanceView = Backbone.View.extend({
 
   addVisualization: function(visualization) {
     var visualizationsView = this.$('#visualizations');
-    visualizationsView.append(new app.VisualizationSectionView({ model: visualization }).render().$el);
+    visualizationsView.append(new app.VisualizationSectionView({
+      model: visualization
+    }).render().$el);
   }
 
 });
 
+
+// The container view for each visualization widget
 app.VisualizationSectionView = Backbone.View.extend({
 
   tagName: 'section',
@@ -57,8 +75,11 @@ app.VisualizationSectionView = Backbone.View.extend({
     <div class="card-block"></div>
   `),
 
-  initialize: function(options) {
+  // Expected to be initialized with a `model: visualization`.
+  initialize: function() {
+    // Observe visualization data changes to display loading indicators and errors
     this.listenTo(this.model, 'change:data change:error', this.render, this);
+    // Remove this widget when the visualization is destroyed.
     this.listenTo(this.model, 'destroy', function() {
       this.remove();
     }, this);
@@ -67,9 +88,11 @@ app.VisualizationSectionView = Backbone.View.extend({
   render: function() {
     var data = this.model.get('data');
 
+    // Render content template
     this.$el.html(this.template({ title: this.title() }));
     var container = this.$('.card-block');
 
+    // Render visualization when there is data available, or the placeholder otherwise
     if (data == null) {
       this.renderPlaceholder(container);
     } else {
@@ -83,6 +106,7 @@ app.VisualizationSectionView = Backbone.View.extend({
     return this;
   },
 
+  // The title of the widget that may be overridden.
   title: function() {
     var metric = this.model.get('metric');
     var axis = this.model.get('axis');
@@ -95,6 +119,7 @@ app.VisualizationSectionView = Backbone.View.extend({
     return title;
   },
 
+  // Render the loading indicator or an error
   renderPlaceholder: function(container) {
     var error = this.model.get('error');
     if (error != null) {
@@ -105,18 +130,27 @@ app.VisualizationSectionView = Backbone.View.extend({
     return this;
   },
 
+  // Render the actual visualization with the available data
   renderData: function(container) {
     var metric = this.model.get('metric');
     var axis = this.model.get('axis');
     var data = this.model.get('data');
 
-    var visualizationView = new app.VisualizationView({ data: data, metric: metric, axis: axis, supplementaryData: this.model.get('supplementaryData') });
+    // The visualization rendering is delegated to the VisualizationView.
+    var visualizationView = new app.VisualizationView({
+      data: data,
+      metric: metric,
+      axis: axis,
+      supplementaryData: this.model.get('supplementaryData')
+    });
     container.append(visualizationView.$el);
     return visualizationView.render();
   }
 
 });
 
+
+// A subclass of the VisualizationSectionView that specifically renders the summary.
 app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
 
   title: function() {
@@ -134,7 +168,6 @@ app.SummaryVisualizationSectionView = app.VisualizationSectionView.extend({
     if (app.scope.get('all_metrics') == null) {
       return this.renderPlaceholder(container);
     }
-
 
     var data = this.model.get('data');
 
