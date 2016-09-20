@@ -192,11 +192,12 @@ class MongoStorage(Storage):
 
     def performance(self, metrics, axes, start_date=None, end_date=None, suggestions=[], **kwargs):
         """
-        An example of how we can aggregate performance metrics over specific scopes in MongoDB.
+        The performance service endpoint that the web UI relies upon to present
+        aggregated performance data as documented in https://github.com/knly/WMArchiveAggregation.
         """
         start_time = time.time()
 
-        performance_data = self.client.aggregated.performance
+        performance_data = self.client[os.environ.get('WMARCHIVE_PERF_DB', 'aggregated')][os.environ.get('WMARCHIVE_PERF_COLL', 'performance')]
 
         def get_aggregation_result(cursor_or_dict):
             """

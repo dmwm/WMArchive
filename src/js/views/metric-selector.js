@@ -1,3 +1,6 @@
+// Author: [Nils Leif Fischer](https://github.com/knly)
+// Documentation: https://github.com/knly/WMArchiveAggregation
+
 var app = app || {};
 
 app.MetricSelector = Backbone.View.extend({

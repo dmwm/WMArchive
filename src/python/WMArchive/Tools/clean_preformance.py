@@ -86,7 +86,8 @@ def main():
             if start_date < prev_min_date:
                 logger.info("Latest {} data is from {}, generating from {} to {}...".format(precision_ly, max_date, start_date, prev_min_date))
                 subprocess.call([ os.path.join(os.path.dirname(__file__), 'fwjr_aggregator'), '--hdir=/cms/wmarchive/avro/2016', '--precision=' + precision, '--min_date=' + start_date.strftime(AGGREGATOR_DATE_FORMAT), '--max_date=' + prev_min_date.strftime(AGGREGATOR_DATE_FORMAT) ])
-                # TODO: dynamically select HDFS path
+                # TODO: dynamically select HDFS path or just give entire dataset
+                #       and use FWJRs' `timestamp` to filter by max_date and min_date.
             else:
                 logger.info("Latest {} data is from {}, no need to regenerate data to {}.".format(precision_ly, max_date, prev_min_date))
 
@@ -94,4 +95,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

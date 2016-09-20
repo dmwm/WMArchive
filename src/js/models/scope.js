@@ -1,9 +1,15 @@
+// Author: [Nils Leif Fischer](https://github.com/knly)
+// Documentation: https://github.com/knly/WMArchiveAggregation
+
 var app = app || {};
 
 app.Scope = Backbone.Model.extend({
 
   urlRoot: '/wmarchive/data/performance',
 
+  // All filters presented in the UI as scope filters and axes.
+  // Remember to also adjust the `/data/performance` endpoint when changing these,
+  // as detailed in https://github.com/knly/WMArchiveAggregation/.
   filters: {
     'workflow': "Workflow",
     'task': "Task",
@@ -17,6 +23,9 @@ app.Scope = Backbone.Model.extend({
     // 'time' is handled separately
   },
 
+  // Default values for all atributes. Make sure to access them with `get`.
+  // Remember that all of these are processed to construct the URL and
+  // the query to `data/performance`, so only keep valid attributes here.
   defaults: {
     metrics: [ 'jobstate' ],
     axes: [ 'host', 'jobstate', 'site' ],
@@ -40,8 +49,10 @@ app.Scope = Backbone.Model.extend({
     // Trigger update URL on changes
     this.on('change:scope change:metrics change:axes', this.updateURL, this);
 
-    // Cancel pending fetches on changes
+    // Initial fetch
     this.pendingFetch = this.fetch();
+
+    // Cancel pending fetches on changes
     this.on('change:scope', function() {
       if (self.pendingFetch != null) {
         self.pendingFetch.abort();
@@ -95,6 +106,7 @@ app.Scope = Backbone.Model.extend({
     }, this);
   },
 
+  // Set a persistent site URL containing all attributes
   updateURL: function() {
     var self = this;
     var params = this.queryParameters();

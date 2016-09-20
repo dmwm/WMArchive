@@ -1,10 +1,22 @@
+// Author: [Nils Leif Fischer](https://github.com/knly)
+// Documentation: https://github.com/knly/WMArchiveAggregation
+
 var app = app || {};
 
 app.ScopeView = Backbone.View.extend({
 
-  template: _.template('<form class="row"><div id="scope-title" class="col-md-2" style="display: flex; flex-direction: column; justify-content: center;"><strong class="structure">Scope</strong></div><div class="col-md-7" id="filters"></div><div class="col-md-3 pull-sm-right" id="timeframe" style="display: flex; flex-direction: row; align-items: center"></div>'),
+  template: _.template(`
+      <form class="row">
+        <div id="scope-title" class="col-md-2" style="display: flex; flex-direction: column; justify-content: center;">
+          <strong class="structure">Scope</strong>
+        </div>
+        <div class="col-md-7" id="filters"></div>
+        <div class="col-md-3 pull-sm-right" id="timeframe" style="display: flex; flex-direction: row; align-items: center"></div>
+      </form>
+    `),
 
   initialize: function() {
+    // Create a filter view for every available scope filter
     this.filterViews = Object.keys(app.scope.filters).map(function(scope_key) {
       return new app.FilterView({ input_id: scope_key, label: app.scope.filters[scope_key] })
     });
@@ -13,7 +25,9 @@ app.ScopeView = Backbone.View.extend({
 
   render: function() {
     this.$el.html(this.template());
+    // Render status view
     this.$('#scope-title').append(new app.ScopeStatusView().render().$el);
+    // Render filter views
     for (var i in this.filterViews) {
       var filterView = this.filterViews[i];
       this.$('#filters').append(filterView.$el);
