@@ -10,6 +10,17 @@ Description:
 
     Replaces `WMArchive.PySpark.RecordAggregator` for aggregating performance data
     as documented in https://github.com/knly/WMArchiveAggregation.
+
+    ## Assumptions made in the aggregation procedure
+
+    - `meta_data.ts` is a UTC timestamp.
+    - `task` is a list separated by `/` characters, where the first value is the job's `workflow` name and the last value is the job's `task` name.
+    - All `steps.site` are equal.
+    - The first element in `flatten(steps.errors)` is the reason of failure for the job.
+    - All `flatten(steps.outputs.acquisitionEra)` are equal.
+    - All `steps.performance` combine to a job's `performance` as follows:
+      - _Sum_ values with the same key.
+
 """
 
 # system modules
@@ -77,34 +88,49 @@ def aggregate(hdir, cond, precision, min_date, max_date):
     sc.setLogLevel("ERROR")
     sqlContext = HiveContext(sc)
 
-    # ---
+    # To test the procedure in an interactive pyspark shell:
+    #
     # 1. Open a pyspark shell with appropriate configuration with:
+    #
     # ```
     # pyspark --packages com.databricks:spark-avro_2.10:2.0.1 --driver-class-path=/usr/lib/hive/lib/* --driver-java-options=-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*
     # ```
+
     # 2. Paste this:
+    #
+    # >>>
     # from pyspark.sql.functions import *
     # from pyspark.sql.types import *
     # hdir = '/cms/wmarchive/avro/2016/06/28*'
     # precision = 'day'
     fwjr_df = sqlContext.read.format("com.databricks.spark.avro").load(hdir)
-    # ---
+    # <<<
 
+    # Here we process the filters given by `cond`.
+    # TODO: Filter by min_date and max_date and possibly just remove the `hdir` option and instead process the entire dataset, or make it optional.
     fwjr_df = make_filters(fwjr_df, cond)
 
-    # ---
     # 3. Paste this:
+    #
+    # >>>
+
+    # Select the data we are interested in
     jobs = fwjr_df.select(
         fwjr_df['meta_data.ts'].alias('timestamp'),
         fwjr_df['meta_data.jobstate'],
         fwjr_df['meta_data.host'],
         fwjr_df['meta_data.jobtype'],
         fwjr_df['task'],
-        fwjr_df['steps.site'].getItem(0).alias('site'),
-        fwjr_df['steps'],
+        fwjr_df['steps.site'].getItem(0).alias('site'), # TODO: improve
+        fwjr_df['steps'], # TODO: `explode` here, see below
+        # TODO: also select `meta_data.fwjr_id`
     )
 
-    # Timeframe
+    # Transfrom each record to the data we then want to group by:
+
+    # Transform timestamp to start_date and end_date with given precision,
+    # thus producing many jobs that have the same start_date and end_date.
+    # These will later be grouped by.
     timestamp = jobs['timestamp']
     if precision == "hour":
         start_date = floor(timestamp / 3600) * 3600
@@ -128,13 +154,13 @@ def aggregate(hdir, cond, precision, min_date, max_date):
     jobs = jobs.withColumn('timeframe_precision', lit(precision))
     jobs = jobs.drop('timestamp')
 
-    # Task and workflow
+    # Transform `task` to task and workflow name
     jobs = jobs.withColumn('taskname_components', split(jobs['task'], '/'))
     jobs = jobs.withColumn('workflow', jobs['taskname_components'].getItem(1))
     jobs = jobs.withColumn('task', jobs['taskname_components'].getItem(size(jobs['taskname_components'])))
     jobs = jobs.drop('taskname_components')
 
-    # Exit code and acquisition era
+    # Extract exit code and acquisition era
     stepScopeStruct = StructType([
         StructField('exitCode', StringType(), True),
         StructField('exitStep', StringType(), True),
@@ -160,23 +186,42 @@ def aggregate(hdir, cond, precision, min_date, max_date):
     jobs = jobs.withColumn('step_scope', extract_step_scope_udf('steps.name', 'steps.errors', 'steps.output'))
     jobs = jobs.select('*', 'step_scope.exitCode', 'step_scope.exitStep', 'step_scope.acquisitionEra').drop('step_scope')
 
+    # <<<
+
+    # You can check the schema at any time with:
+    # ```
     # jobs.printSchema()
-    # ---
+    # ```
 
-
-    # Aggregation over steps
-    # TODO: Each job has an array of `steps`, each with a `performance` dictionary.
+    # TODO: Phase 1: Aggregation over steps
+    #
+    #       Each job has a list of `steps`, each with a `performance` dictionary.
     #       These performance dictionaries must be combined to one by summing their
-    #       values.
+    #       values, or possibly in a different way for each metric.
     #       E.g. if a job has 3 steps, where 2 of them have a `performance`
     #       dictionary with values such as `performance.cpu.TotalJobTime: 1` and
     #       `performance.cpu.TotalJobTime: 2`, then as a result the _job_ should
     #       have a `performance` dictionary with `performance.cpu.TotalJobTime: 3`.
     #
     #       All keys in the `performance` schema should be aggregated over in this fashion.
+    #       The performance metrics are documented in https://github.com/knly/WMArchiveAggregation
+    #       with a reference to `WMArchive/src/maps/metrics.json`.
+    #
+    #       To achieve this aggregation using pyspark-native functions, we should
+    #       `explode` on the `steps` array and possibly even further down into
+    #       `output` and/or `errors`, keeping track of the `meta_data.fwjr_id`.
+    #       Then we can group by the `fwjr_id` and make use of the pyspark aggregation
+    #       functions such as `pyspark.sql.functions.sum` similar to below.
 
+    # Phase 2: Aggregation over jobs
 
     # Group jobs by scope
+    # TODO: Explore if this is a performance bottleneck since everything
+    #       is processed on one node. An approach based on a `reduce` function
+    #       may be more feasable. That said, the `groupBy` is exactly
+    #       the functionality we want to achieve and is pyspark-native,
+    #       so I believe we should test this first and see if it really
+    #       leads to any problems.
     scopes = jobs.groupBy([
         'start_date',
         'end_date',
@@ -192,21 +237,21 @@ def aggregate(hdir, cond, precision, min_date, max_date):
         'exitStep',
     ])
 
-
-    # Aggregation over jobs
+    # Perform the aggregation over the grouped jobs
     stats = scopes.agg(*(
         [
             count('jobstate').alias('count')
         ] + [
-            # avg(aggregation_key) for aggregation_key in aggregation_keys
-            # TODO: Specify all aggregation keys from the `performance` schema here
+            # TODO: Specify all aggregation keys here by reading the `performance` schema
             #       to take the average over all jobs.
+            # avg(aggregation_key) for aggregation_key in aggregation_keys
         ]
     )).collect()
 
     # TODO: Reshape, so that the grouped-by keys are shifted into a `scope` dictionary
     #       and the aggregated performance metrics are shifted into a `performance`
-    #       dictionary.
+    #       dictionary, to finally achieve the data structure detailed in
+    #       https://github.com/knly/WMArchiveAggregation
     stats = [row.asDict() for row in stats]
 
     logger.info("Aggregation finished in {} seconds.".format(time.time() - start_time))
@@ -243,7 +288,7 @@ def main():
 
     # Store in MongoDB
     # mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
-    # mongo_collection = mongo_client['aggregated']['performance']
+    # mongo_collection = mongo_client['aggregated']['performance_test'] # TODO: switch to aggregated.performance when everything works.
     # mongo_collection.insert(stats)
     # logger.info("Stored in MongoDB collection {}.".format(mongo_collection))
 
