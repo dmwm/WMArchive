@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # Author: Nils Fischer <n.fischer@viwid.com>
 # Tool to run performance aggregations over the FWJR database in HDFS.
+# Documentation: https://github.com/knly/WMArchiveAggregation
+# TODO: Merge into `WMArchive.Tools.fwjr_aggregator` as soon as the old
+#       myspark approach is no longer needed.
 
 import argparse
 import datetime
@@ -69,6 +72,7 @@ def main():
         logger.debug("Using myspark aggregation script in {}.".format(aggregation_script))
 
         for source in args.source:
+            # TODO: use current.avsc.20160914 schema
             subprocess.call([ os.path.join(bin_dir, 'myspark'), '--hdir=hdfs://' + source, '--schema=hdfs:///cms/wmarchive/avro/schemas/current.avsc', '--script=' + aggregation_script ])
 
     else:

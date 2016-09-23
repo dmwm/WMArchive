@@ -3,4 +3,4 @@
 # find out where WMArchive is installed on a system
 wmaroot=`python -c "import WMArchive; print '/'.join(WMArchive.__file__.split('/')[:-1])"`
 # run actual script
-python $wmaroot/Tools/clean_preformance.py ${1+"$@"}
+python $wmaroot/Tools/clean_performance.py ${1+"$@"}

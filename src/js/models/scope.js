@@ -30,7 +30,7 @@ app.Scope = Backbone.Model.extend({
     metrics: [ 'jobstate' ],
     axes: [ 'host', 'jobstate', 'site' ],
 
-    start_date: moment().subtract(7, 'days'),
+    start_date: moment().subtract(30, 'days'),
     end_date: moment(),
     workflow: null,
     task: null,
