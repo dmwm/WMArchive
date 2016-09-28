@@ -31,8 +31,6 @@ import json
 import argparse
 import time
 import datetime
-import logging
-logger = logging.getLogger(__name__)
 
 # spark modules
 from pyspark import SparkContext, SparkConf
@@ -57,11 +55,29 @@ class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='PROG')
-        self.parser.add_argument("--hdir", required=True, help="HDFS directory, e.g. /cms/wmarchive/avro/2016/08")
-        self.parser.add_argument("--cond", default="{}", help="Condition dictionary (JSON)")
-        self.parser.add_argument('--min_date', type=parse_date, help="The earliest date of FWJRs to aggregate.")
-        self.parser.add_argument('--max_date', type=parse_date, help="The latest date of FWJRs to aggregate.")
-        self.parser.add_argument('--precision', '-p', choices=[ 'hour', 'day', 'week', 'month' ], required=True, help="The temporal precision of aggregation.")
+        self.parser.add_argument("--hdir", required=True, \
+                help="HDFS directory, e.g. /cms/wmarchive/avro/2016/08")
+        self.parser.add_argument("--cond", default="{}", \
+                help="Condition dictionary (JSON)")
+        self.parser.add_argument('--min_date', type=parse_date, \
+                help="The earliest date of FWJRs to aggregate.")
+        self.parser.add_argument('--max_date', type=parse_date, \
+                help="The latest date of FWJRs to aggregate.")
+        self.parser.add_argument('--precision', '-p', \
+                choices=[ 'hour', 'day', 'week', 'month' ], required=True, \
+                help="The temporal precision of aggregation.")
+        muri = 'mongodb://localhost:8230'
+        self.parser.add_argument('--mongo', type=string, \
+                dest="muri", default=muri, \
+                help="MongoDB URI, default=%s" % muri)
+        dbname = 'aggregated.performance'
+        self.parser.add_argument('--dbname', type=string, \
+                dest="dbname", default=dbname, \
+                help="MongoDB name, default=%s" % dbname)
+        fout = ''
+        self.parser.add_argument('--fout', type=string, \
+                dest="fout", default=fout, \
+                help="Output file with aggregation statistics, default=%s" % fout)
 
 def unpack_struct(colname, df):
     "Unpack FWJR structure"
@@ -81,7 +97,7 @@ def aggregate(hdir, cond, precision, min_date, max_date):
     "Collect aggregated statistics from HDFS"
 
     start_time = time.time()
-    logger.info("Aggregating {} FWJR performance data in {} matching {} from {} to {}...".format(precision.replace('y', 'i') + 'ly', hdir, cond, min_date, max_date))
+    print("Aggregating {} FWJR performance data in {} matching {} from {} to {}...".format(precision.replace('y', 'i') + 'ly', hdir, cond, min_date, max_date))
 
     conf = SparkConf().setAppName("wmarchive fwjr aggregator")
     sc = SparkContext(conf=conf)
@@ -254,15 +270,12 @@ def aggregate(hdir, cond, precision, min_date, max_date):
     #       https://github.com/knly/WMArchiveAggregation
     stats = [row.asDict() for row in stats]
 
-    logger.info("Aggregation finished in {} seconds.".format(time.time() - start_time))
-    logger.debug("Result of aggregation: {}".format(stats))
+    print("Aggregation finished in {} seconds.".format(time.time() - start_time))
+#     print("Result of aggregation: {}".format(stats))
 
     return stats
 
 def main():
-    logging.basicConfig(level=logging.WARNING)
-    logger.setLevel(logging.DEBUG)
-
     # Parse command line arguments
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
@@ -281,16 +294,14 @@ def main():
     # Perform aggregation
     stats = aggregate(hdir, cond, opts.precision, opts.min_date, opts.max_date)
 
-    # Dump results to json file
-    with open('aggregated_performance_data.json', 'w') as outfile:
-        json.dump(stats, outfile, default=json_util.default)
-        logger.info("Written result to {}.".format(outfile))
-
-    # Store in MongoDB
-    # mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
-    # mongo_collection = mongo_client['aggregated']['performance_test'] # TODO: switch to aggregated.performance when everything works.
-    # mongo_collection.insert(stats)
-    # logger.info("Stored in MongoDB collection {}.".format(mongo_collection))
+    if  opts.fout:
+        with open(opts.fout, 'w') as outfile:
+            json.dump(stats, outfile, default=json_util.default)
+    else:
+        mongo_client = MongoClient(opts.muri)
+        dbname, collname = opts.mongodb
+        mongo_collection = mongo_client[dbname][collname]
+        mongo_collection.insert(stats)
 
 if __name__ == '__main__':
     main()

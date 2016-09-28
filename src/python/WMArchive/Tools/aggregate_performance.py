@@ -11,9 +11,6 @@ import subprocess
 import os
 import time
 
-import logging
-logger = logging.getLogger(__name__)
-
 def parse_source(s):
 
     def path_from_day(day):
@@ -57,32 +54,31 @@ def main():
 
     logging.basicConfig(level=logging.DEBUG)
 
-    # Find WMArchive/bin directory
-    import WMArchive
-    bin_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(WMArchive.__file__)))), 'bin')
-
     # Begin logging
     start_time = time.time()
-    logger.info("Aggregating {} performance data in {}...".format(args.precision.replace('y', 'i') + 'ly', args.source))
+    print("Aggregating {} performance data in {}...".format(args.precision.replace('y', 'i') + 'ly', args.source))
 
     if args.use_myspark:
 
         from WMArchive.PySpark import RecordAggregator
         aggregation_script = RecordAggregator.__file__.replace('.pyc', '.py')
-        logger.debug("Using myspark aggregation script in {}.".format(aggregation_script))
+        print("Using myspark aggregation script in {}.".format(aggregation_script))
 
         for source in args.source:
             # TODO: use current.avsc.20160914 schema
-            subprocess.call([ os.path.join(bin_dir, 'myspark'), '--hdir=hdfs://' + source, '--schema=hdfs:///cms/wmarchive/avro/schemas/current.avsc', '--script=' + aggregation_script ])
+            subprocess.call([ 'myspark', '--hdir=hdfs://' + source, \
+                    '--schema=hdfs:///cms/wmarchive/avro/schemas/current.avsc', \
+                    '--script=' + aggregation_script ])
 
     else:
 
-        logger.debug("Using fwjr_aggregator aggregation script.")
+        print("Using fwjr_aggregator aggregation script.")
 
         for source in args.source:
-            subprocess.call([ os.path.join(bin_dir, 'fwjr_aggregator'), '--hdir=' + source, '--precision=' + args.precision ])
+            subprocess.call([ 'fwjr_aggregator', '--hdir=' + source, \
+                    '--precision=' + args.precision ])
 
-    logger.info("Completed FWJR performance data aggregation in {} seconds.".format(time.time() - start_time))
+    print("Completed FWJR performance data aggregation in {} seconds.".format(time.time() - start_time))
 
 if __name__ == '__main__':
     main()
