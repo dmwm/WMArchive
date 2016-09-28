@@ -67,15 +67,15 @@ class OptionParser():
                 choices=[ 'hour', 'day', 'week', 'month' ], required=True, \
                 help="The temporal precision of aggregation.")
         muri = 'mongodb://localhost:8230'
-        self.parser.add_argument('--mongo', type=string, \
+        self.parser.add_argument('--mongo', type=str, \
                 dest="muri", default=muri, \
                 help="MongoDB URI, default=%s" % muri)
         dbname = 'aggregated.performance'
-        self.parser.add_argument('--dbname', type=string, \
+        self.parser.add_argument('--dbname', type=str, \
                 dest="dbname", default=dbname, \
                 help="MongoDB name, default=%s" % dbname)
         fout = ''
-        self.parser.add_argument('--fout', type=string, \
+        self.parser.add_argument('--fout', type=str, \
                 dest="fout", default=fout, \
                 help="Output file with aggregation statistics, default=%s" % fout)
 

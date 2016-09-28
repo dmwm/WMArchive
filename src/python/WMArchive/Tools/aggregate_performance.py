@@ -52,9 +52,6 @@ def main():
     optmgr  = OptionParser()
     args = optmgr.parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG)
-
-    # Begin logging
     start_time = time.time()
     print("Aggregating {} performance data in {}...".format(args.precision.replace('y', 'i') + 'ly', args.source))
 
