@@ -299,7 +299,7 @@ def main():
             json.dump(stats, outfile, default=json_util.default)
     else:
         mongo_client = MongoClient(opts.muri)
-        dbname, collname = opts.mongodb
+        dbname, collname = opts.dbname.split('.')
         mongo_collection = mongo_client[dbname][collname]
         mongo_collection.insert(stats)
 
