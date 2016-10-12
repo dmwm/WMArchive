@@ -41,6 +41,7 @@ else
 
     # Modify with local[*] to use all the available cores in the node
     #   optionally increase driver memory with --driver-memory 2G (default 1G)
+    PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
     spark-submit --jars $avrojar,$sparkexjar \
         --executor-memory $((`nproc`/4))G \
         --master local[$((`nproc`/4))] \
