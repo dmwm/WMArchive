@@ -292,8 +292,7 @@ def main():
         pdata = dict(job=data)
         postdata(opts.store, pdata, opts.ckey, opts.cert, opts.verbose)
     else:
-        #print(results)
-        pass
+        print(results)
 
 if __name__ == '__main__':
     main()
