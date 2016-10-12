@@ -45,6 +45,9 @@ class OptionParser():
                 help="The temporal precision of aggregation.")
         self.parser.add_argument('--use_myspark', action='store_true', \
                 help="Use legacy myspark script.")
+        schema = 'hdfs:///cms/wmarchive/avro/schemas/current.avsc'
+        self.parser.add_argument('--schema', action='store', \
+                default=schema, help="WMArchive schema, default=%s" % schema)
         self.parser.set_defaults(use_myspark=False)
 
 def main():
@@ -64,7 +67,7 @@ def main():
         for source in args.source:
             # TODO: use current.avsc.20160914 schema
             subprocess.call([ 'myspark', '--hdir=hdfs://' + source, \
-                    '--schema=hdfs:///cms/wmarchive/avro/schemas/current.avsc', \
+                    '--schema=' + args.schema, \
                     '--script=' + aggregation_script ])
 
     else:
