@@ -2,12 +2,10 @@
 # Author: Nils Fischer <n.fischer@viwid.com>
 # Tool to regularly clean aggregated performance data in MongoDB by gradually decreasing precision
 
-import logging
-logger = logging.getLogger(__name__)
-
+import os
+import argparse
 import datetime
 import subprocess
-import os
 
 from pymongo import MongoClient
 
@@ -60,12 +58,12 @@ def main():
             min_date = min_date.replace(day=1)
 
         # Remove all data earlier that this
-        logger.info("Removing all {} data earlier than {}...".format(precision_ly, min_date))
+        print("Removing all {} data earlier than {}...".format(precision_ly, min_date))
         removal_result = performance_data.remove({
             'scope.timeframe_precision': precision,
             'scope.end_date': { '$lte': min_date},
         })
-        logger.info(removal_result)
+        print(removal_result)
 
         if prev_min_date is not None:
 
@@ -84,12 +82,12 @@ def main():
             start_date = max_date or min_date
 
             if start_date < prev_min_date:
-                logger.info("Latest {} data is from {}, generating from {} to {}...".format(precision_ly, max_date, start_date, prev_min_date))
+                print("Latest {} data is from {}, generating from {} to {}...".format(precision_ly, max_date, start_date, prev_min_date))
                 subprocess.call([ os.path.join(os.path.dirname(__file__), 'fwjr_aggregator'), '--hdir=/cms/wmarchive/avro/2016', '--precision=' + precision, '--min_date=' + start_date.strftime(AGGREGATOR_DATE_FORMAT), '--max_date=' + prev_min_date.strftime(AGGREGATOR_DATE_FORMAT) ])
                 # TODO: dynamically select HDFS path or just give entire dataset
                 #       and use FWJRs' `timestamp` to filter by max_date and min_date.
             else:
-                logger.info("Latest {} data is from {}, no need to regenerate data to {}.".format(precision_ly, max_date, prev_min_date))
+                print("Latest {} data is from {}, no need to regenerate data to {}.".format(precision_ly, max_date, prev_min_date))
 
         prev_min_date = min_date
 
