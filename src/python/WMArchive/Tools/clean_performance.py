@@ -42,8 +42,6 @@ def main():
     mongo_client = MongoClient(args.muri)
     performance_data = mongo_client['aggregated']['performance']
 
-    logging.basicConfig(level=logging.INFO)
-
     prev_min_date = None
     for precision in [ 'hour', 'day', 'week', 'month' ]:
         precision_ly = precision.replace('y', 'i') + 'ly'
