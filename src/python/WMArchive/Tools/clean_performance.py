@@ -5,11 +5,7 @@
 import os
 import argparse
 import datetime
-import subprocess
-
 from pymongo import MongoClient
-
-from WMArchive.Tools.fwjr_aggregator import DATE_FORMAT as AGGREGATOR_DATE_FORMAT
 
 MIN_TIME = {
     'hour': datetime.timedelta(hours=48),
@@ -33,6 +29,23 @@ class OptionParser(object):
         self.parser.add_argument("--mongo", action="store",\
                 dest="muri", default="mongodb://localhost:8230", \
                 help="MongoDB URI")
+        self.parser.add_argument("--interval", action="store",\
+                dest="interval", default="3m", \
+                help="interval for removal, support h (hour), d (day), m (month) notation, default 3m")
+        self.parser.add_argument("--dry-run", action="store_true",\
+                dest="dryrun", default="", \
+                help="Construct query for DB but do not execute it, i.e. dry-run")
+
+def min_date(interval):
+    "Convert given interval into timestamp"
+    if  interval.endswith('h'):
+        return datetime.datetime.now() - datetime.timedelta(hours=int(interval[:-1]))
+    if  interval.endswith('d'):
+        return datetime.datetime.now() - datetime.timedelta(days=int(interval[:-1]))
+    if  interval.endswith('m'):
+        return datetime.datetime.now() - datetime.timedelta(weeks=5*int(interval[:-1]))
+    msg = 'Unsupported interval, please use h/d/m notations to specify hour/day/month'
+    raise NotImplementedError(msg)
 
 def main():
     # Parse command line arguments
@@ -42,52 +55,13 @@ def main():
     mongo_client = MongoClient(args.muri)
     performance_data = mongo_client['aggregated']['performance']
 
-    prev_min_date = None
-    for precision in [ 'hour', 'day', 'week', 'month' ]:
-        precision_ly = precision.replace('y', 'i') + 'ly'
-
-        # Determine earliest date where performance data should have this precision
-        min_date = datetime.datetime.now() - MIN_TIME[precision]
-        if precision in [ 'hour', 'day', 'week' ]:
-            min_date = min_date.replace(hour=0, minute=0, second=0, microsecond=0)
-        if precision in [ 'day' ]:
-            min_date = min_date - datetime.timedelta(days=min_date.weekday())
-        if precision in [ 'week' ]:
-            min_date = min_date.replace(day=1)
-
-        # Remove all data earlier that this
-        print("Removing all {} data earlier than {}...".format(precision_ly, min_date))
-        removal_result = performance_data.remove({
-            'scope.timeframe_precision': precision,
-            'scope.end_date': { '$lte': min_date},
-        })
-        print(removal_result)
-
-        if prev_min_date is not None:
-
-            # Find latest date where data of this precision exists
-            max_date = (get_aggregation_result(performance_data.aggregate([
-                {
-                    '$match': { 'scope.timeframe_precision': precision},
-                },
-                {
-                    '$group': {
-                        '_id': None,
-                        'max_date': { '$max': '$scope.end_date' },
-                    }
-                },
-            ])) or [ {} ])[0].get('max_date')
-            start_date = max_date or min_date
-
-            if start_date < prev_min_date:
-                print("Latest {} data is from {}, generating from {} to {}...".format(precision_ly, max_date, start_date, prev_min_date))
-                subprocess.call([ os.path.join(os.path.dirname(__file__), 'fwjr_aggregator'), '--hdir=/cms/wmarchive/avro/2016', '--precision=' + precision, '--min_date=' + start_date.strftime(AGGREGATOR_DATE_FORMAT), '--max_date=' + prev_min_date.strftime(AGGREGATOR_DATE_FORMAT) ])
-                # TODO: dynamically select HDFS path or just give entire dataset
-                #       and use FWJRs' `timestamp` to filter by max_date and min_date.
-            else:
-                print("Latest {} data is from {}, no need to regenerate data to {}.".format(precision_ly, max_date, prev_min_date))
-
-        prev_min_date = min_date
+    mdate = min_date(args.interval)
+    print("Removing all data earlier than {}...".format(mdate))
+    spec = {'scope.end_date': {'$lte': mdate}}
+    if  args.dryrun:
+        print "MongoDB query: {}".format(spec)
+    else:
+        res = performance_data.remove(spec)
 
 if __name__ == '__main__':
     main()
