@@ -262,6 +262,8 @@ class MongoStorage(Storage):
             aggregation_key = 'performance.' + metric
             if metric == 'data.events':
                 aggregation_key = 'events'
+            elif metric == 'data.exitcodes':
+                aggregation_key = 'exitcodes'
             elif metric == 'jobstate':
                 aggregation_key = 'count'
 
@@ -304,7 +306,47 @@ class MongoStorage(Storage):
                             }
                         }
                     ]))
-
+                elif metric == 'data.exitcodes':
+                    if  aggregation_key == 'exitcodes':
+                        if  not 'exit' in filters.keys():
+                            scope += [{'$match': {"scope.exitCode":{'$ne':None}}}]
+                    if  group_id == None or group_id == '$scope._summary' or isinstance(group_id, dict):
+                        sdate = { '$dateToString' : {'format': ISO_DATE_FORMAT, 'date':"$scope.start_date"} }
+                        edate = { '$dateToString' : {'format': ISO_DATE_FORMAT, 'date':"$scope.end_date"} }
+                        eid = {'start_date':'$sdate', 'end_date':'$edate'}
+                    else:
+                        sdate = group_id
+                        edate = group_id
+                        eid = '$sdate'
+                    query = scope + [
+                        {
+                            '$project' : {
+                                'sdate': sdate,
+                                'edate': edate,
+                                'dcode': '$exitCode',
+                                '_id':False,
+                            }
+                        },
+                        {
+                            '$group' : {
+                                '_id': eid,
+                                'average': {'$sum': 1},
+                                'count':{'$sum':1},
+                            }
+                        },
+                        {
+                            '$sort':{'_id':1}
+                        },
+                        {
+                            '$project' : {
+                                '_id': False,
+                                'label': '$_id',
+                                'average': '$average',
+                                'count': '$count',
+                            }
+                        }
+                    ]
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(query))
                 else:
                     aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
                         {
