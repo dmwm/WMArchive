@@ -146,6 +146,12 @@
         "title": "Events",
         "description": "",
         "unit": ""
+      },
+      {
+        "key": "exitcodes",
+        "title": "ExitCodes",
+        "description": "Total number of exit codes",
+        "unit": ""
       }
     ]
   }
