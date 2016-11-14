@@ -186,7 +186,7 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
     """
-    if  opts.verbose:
+    if  verbose:
         print("### schema", schema_file)
         print("### path", data_path)
         print("### script", script)
