@@ -26,18 +26,21 @@ import httplib
 import argparse
 
 # WMArchive modules
-from WMArchive.Utils.Utils import htime, wmaHash
+from WMArchive.Utils.Utils import htime, wmaHash, trange
 
 class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='PROG')
-        msg = "Input data location on HDFS, e.g. hdfs:///path/data"
+        year = time.strftime("%Y", time.localtime())
+        hdir = 'hdfs:///cms/wmarchive/avro'
+        msg = "Input data location on HDFS, e.g. %s/%s" % (hdir, year)
         self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default="", help=msg)
-        msg = "Input schema, e.g. hdfs:///path/fwjr.avsc"
+            dest="hdir", default=hdir, help=msg)
+        schema = 'fwjr_prod.avsc'
+        msg = "Input schema, default %s/%s" % (hdir, schema)
         self.parser.add_argument("--schema", action="store",
-            dest="schema", default="", help=msg)
+            dest="schema", default="%s/%s" % (hdir, schema), help=msg)
         msg = "python script with custom mapper/reducer functions"
         self.parser.add_argument("--script", action="store",
             dest="script", default="", help=msg)
@@ -242,17 +245,21 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
             return
         # we have a nested use case when one MR return WMArchive spec
         # we'll loop in that case until we get non-spec output
+        count = 0
         while True:
             mro = obj.MapReduce(spec)
             # example of collecting records from mapper and
             # passing all of them to reducer function
             records = avro_rdd.map(mro.mapper).collect()
             out = mro.reducer(records)
-            logger.info('OUTPUT %s %s' % (out, type(out)))
+            if  count > 3:
+                print("### WARNING, loop counter exceed its limit")
+                break
             if  is_spec(out):
                 spec = out
             else:
                 break
+            count += 1
 
         # the map(f).reduce(f) example but it does not collect
         # intermediate records
@@ -269,7 +276,8 @@ def is_spec(data):
     "Check if given data is WMArchive spec"
     if  not isinstance(data, dict):
         return False
-    if  set(data.keys()) == set(['spec', 'fields']):
+    std_keys = set(['spec', 'fields'])
+    if  set(data.keys()) & std_keys == std_keys:
         return True
     return False
 
@@ -278,9 +286,16 @@ def main():
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     time0 = time.time()
+    spec = json.load(open(opts.spec))
+    timerange = spec.get('spec', {}).get('timerange', [])
     hdir = opts.hdir.split()
     if  len(hdir) == 1:
         hdir = hdir[0]
+        hdirs = []
+        for tval in trange(timerange):
+            if  hdir.find(tval) == -1:
+                hdirs.append(os.path.join(hdir, tval))
+        hdir = hdirs
     results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}

@@ -27,6 +27,7 @@ procedure to look-up desired log (on SRM) from given log tar.gz input.
 """
 
 import re
+import json
 
 def match_value(keyval, value):
     "helper function to match value from spec with keyval"
@@ -69,7 +70,7 @@ def match_lfn(rec, lfn):
 
 def extract_output(rec, step_name):
     "Extract output files from a record which has given step"
-    lfns = [] # our output
+    lfns = set() # our output
     meta = rec.get('meta_data', {})
     merged = meta.get('jobtype', '').lower().startswith('merge')
     lfn_array = rec.get('LFNArray', [])
@@ -79,14 +80,14 @@ def extract_output(rec, step_name):
                 for item in step.get('output', []):
                     for lfn_idx in item.get('inputLFNs', []):
                         lfn = lfn_array[lfn_idx]
-                        lfns.append(lfn)
+                        lfns.add(lfn)
         else: # if we're given non-merged record we extract outputLFNs of given step_name
             if  step.get('name', '').lower().startswith(step_name.lower()):
                 for item in step.get('output', []):
                     for lfn_idx in item.get('outputLFNs', []):
                         lfn = lfn_array[lfn_idx]
-                        lfns.append(lfn)
-    return lfns
+                        lfns.add(lfn)
+    return list(lfns)
 
 def is_ext(uinput, ext):
     """
@@ -106,6 +107,7 @@ def is_ext(uinput, ext):
 
 class MapReduce(object):
     def __init__(self, ispec=None):
+        self.ispec = ispec
         self.query = ''
         if  ispec:
             spec = ispec['spec']
@@ -152,15 +154,21 @@ class MapReduce(object):
             for item in data:
                 out.append(item)
         if  self.step_name == 'logCollect': # final step we'll return results
-            return out
+            odict = {'logCollect': out}
+            queries = self.ispec.get('queries', [])
+            if  queries:
+                odict.update({'queries':queries})
+            return json.dumps(odict)
         exts = [r.split('.')[-1] for r in out]
         if  len(set(exts)) > 1: # multiple extensions, we'll return non-root entries
             out = [r for r in out if not r.endswith('root')]
-        if  not out:
-            return out
         return self.make_spec(out)
 
     def make_spec(self, data):
         "Make WMArchive spec from provided data"
         spec = {'query': data, 'timerange':self.timerange}
-        return dict(spec=spec, fields=self.fields)
+        sdict = dict(spec=spec, fields=self.fields)
+#         queries = self.ispec.get('queries', [])
+#         queries.append(data)
+#         sdict['queries'] = queries
+        return sdict

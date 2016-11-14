@@ -151,6 +151,17 @@ def file_name(uri, wmaid, compress=None):
         return '%s.%s' % (fname, compress)
     return fname
 
+def trange(timerange):
+    "Split given timerange values into list of sub-dirs on HDFS"
+    out = []
+    mint = int(time.mktime(time.strptime(str(timerange[0]), "%Y%m%d")))
+    maxt = int(time.mktime(time.strptime(str(timerange[-1]), "%Y%m%d")))
+    day = 24*60*60
+    for val in range(mint+day, maxt+day+day, day):
+        tst = time.strftime('%Y/%m/%d', time.gmtime(val))
+        out.append(tst)
+    return out
+
 def htime(seconds):
     "Convert given seconds into human readable form of N hour(s), N minute(s), N second(s)"
     minutes, secs = divmod(seconds, 60)
