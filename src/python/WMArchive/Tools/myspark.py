@@ -186,6 +186,11 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
     """
+    if  opts.verbose:
+        print("### schema", schema_file)
+        print("### path", data_path)
+        print("### script", script)
+        print("### spec", spec_file)
     time0 = time.time()
     # pyspark modules
     from pyspark import SparkContext
@@ -235,6 +240,8 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
             spec = json.load(open(spec_file))
         else:
             spec = json.loads(spec_file)
+    if  verbose:
+        print("### spec", spec)
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
@@ -252,9 +259,13 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
             # passing all of them to reducer function
             records = avro_rdd.map(mro.mapper).collect()
             out = mro.reducer(records)
+            if  verbose:
+                print("### Loop count", count)
             if  count > 3:
                 print("### WARNING, loop counter exceed its limit")
                 break
+            if  verbose:
+                print("### found results", out)
             if  is_spec(out):
                 spec = out
             else:
