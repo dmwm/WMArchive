@@ -13,6 +13,16 @@ fi
 # find out where WMArchive is installed on a system
 wmaroot=`python -c "import WMArchive; print '/'.join(WMArchive.__file__.split('/')[:-1])"`
 
+# allow to disable spark output, client should setup his/her own log4j.properties
+# via WMA_LOG4J environment variable
+conf=""
+# look if we requested to show full log output
+if [[ "$@" =~ "--no-log4j" ]]; then
+    if [ -n "$WMA_LOG4J" ] && [ -f $WMA_LOG4J ]; then
+        conf="--conf spark.driver.extraJavaOptions=\"-Dlog4j.configuration=file:$WMA_LOG4J\""
+    fi
+fi
+
 # set avro jars
 avrojar=/usr/lib/avro/avro-mapred.jar
 sparkexjar=/usr/lib/spark/examples/lib/spark-examples-1.6.0-cdh5.7.0-hadoop2.6.0-cdh5.7.0.jar
