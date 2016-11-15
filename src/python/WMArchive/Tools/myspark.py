@@ -49,6 +49,8 @@ class OptionParser():
             dest="spec", default="", help=msg)
         self.parser.add_argument("--yarn", action="store_true",
             dest="yarn", default=False, help="run job on analytics cluster via yarn resource manager")
+        self.parser.add_argument("--no-log4j", action="store_true",
+            dest="no-log4j", default=False, help="Disable spark log4j messages")
         msg = "store results into WMArchive, provide WMArchvie url"
         self.parser.add_argument("--store", action="store",
             dest="store", default="", help=msg)
