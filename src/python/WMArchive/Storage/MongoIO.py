@@ -348,6 +348,8 @@ class MongoStorage(Storage):
                     ]
                     aggregation_result = get_aggregation_result(performance_data.aggregate(query))
                 else:
+                    key = '%s' % aggregation_key
+                    scope += [{"$match": {key:{"$gte":0}}}]
                     aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
                         {
                             '$group': {
