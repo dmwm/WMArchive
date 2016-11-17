@@ -168,7 +168,7 @@ class MapReduce(object):
         "Make WMArchive spec from provided data"
         spec = {'query': data, 'timerange':self.timerange}
         sdict = dict(spec=spec, fields=self.fields)
-#         queries = self.ispec.get('queries', [])
-#         queries.append(data)
-#         sdict['queries'] = queries
+        queries = self.ispec.get('queries', [])
+        queries.append(data)
+        sdict['queries'] = queries
         return sdict
