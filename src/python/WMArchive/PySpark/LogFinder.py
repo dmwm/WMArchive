@@ -81,12 +81,11 @@ def extract_output(rec, step_name):
                     for lfn_idx in item.get('inputLFNs', []):
                         lfn = lfn_array[lfn_idx]
                         lfns.add(lfn)
-        else: # if we're given non-merged record we extract outputLFNs of given step_name
-            if  step.get('name', '').lower().startswith(step_name.lower()):
-                for item in step.get('output', []):
-                    for lfn_idx in item.get('outputLFNs', []):
-                        lfn = lfn_array[lfn_idx]
-                        lfns.add(lfn)
+        if  step.get('name', '').lower().startswith(step_name.lower()):
+            for item in step.get('output', []):
+                for lfn_idx in item.get('outputLFNs', []):
+                    lfn = lfn_array[lfn_idx]
+                    lfns.add(lfn)
     return list(lfns)
 
 def is_ext(uinput, ext):
@@ -124,6 +123,8 @@ class MapReduce(object):
             raise Exception("No input query is provided in a spec")
         self.is_lfn = is_ext(self.query, 'root')
         self.is_log = is_ext(self.query, 'tar.gz')
+        if  not self.is_log:
+            self.is_log = is_ext(self.query, 'tar')
         self.step_name = 'logArch' if self.is_lfn else 'logCollect'
 
     def mapper(self, records):
