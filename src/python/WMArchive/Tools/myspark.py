@@ -243,7 +243,7 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
         else:
             spec = json.loads(spec_file)
     if  verbose:
-        print("### spec", spec)
+        print("### spec", json.dumps(spec))
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
