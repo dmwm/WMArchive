@@ -20,7 +20,10 @@ import calendar
 import datetime
 
 # https://github.com/nvawda/bz2file
-from bz2file import BZ2File
+try:
+    from bz2file import BZ2File
+except:
+    pass
 
 # WMArchive modules
 from WMArchive.Utils.Regexp import PAT_YYYYMMDD, PAT_YYYY
