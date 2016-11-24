@@ -18,8 +18,9 @@ wmaroot=`python -c "import WMArchive; print '/'.join(WMArchive.__file__.split('/
 conf=""
 # look if we requested to show full log output
 if [[ "$@" =~ "--no-log4j" ]]; then
+    conf=" --conf spark.ui.showConsoleProgress=false "
     if [ -n "$WMA_LOG4J" ] && [ -f $WMA_LOG4J ]; then
-        conf="--conf spark.driver.extraJavaOptions=\"-Dlog4j.configuration=file:$WMA_LOG4J\""
+        conf="$conf --conf spark.driver.extraJavaOptions=\"-Dlog4j.configuration=file:$WMA_LOG4J\""
     fi
 fi
 
