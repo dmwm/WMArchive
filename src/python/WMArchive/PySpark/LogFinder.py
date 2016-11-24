@@ -27,6 +27,7 @@ procedure to look-up desired log (on SRM) from given log tar.gz input.
 """
 
 import re
+import sys
 import json
 
 def match_value(keyval, value):
@@ -54,7 +55,7 @@ def match_log(rec, ifile):
                 return True
     return False
 
-def match_lfn(rec, lfn):
+def match_lfn(rec, lfn, is_output=False):
     "Find if record match given lfn/pfn"
     if  isinstance(lfn, list):
         lfns = lfn
@@ -62,10 +63,23 @@ def match_lfn(rec, lfn):
         lfns = [lfn]
     meta = rec.get('meta_data', {})
     merged = meta.get('jobtype', '').lower().startswith('merge')
-    for idx, val in enumerate(rec.get('LFNArray', [])):
-        for lfn in lfns:
-            if  match_value(val, lfn):
+    # get outputLFNs ids
+    if  is_output:
+        oids = set()
+        for step in rec.get('steps', []):
+            for item in step.get('output', []):
+                for lfn_idx in item.get('outputLFNs', []):
+                    oids.add(lfn_idx)
+        lfn_array = rec.get('LFNArray', [])
+        for oid in oids:
+            fname = lfn_array[oid]
+            if  fname in lfns:
                 return True
+    else:
+        for lfn_idx, val in enumerate(rec.get('LFNArray', [])):
+            for lfn in lfns:
+                if  match_value(val, lfn):
+                    return True
     return False
 
 def extract_output(rec, step_name):
@@ -81,11 +95,12 @@ def extract_output(rec, step_name):
                     for lfn_idx in item.get('inputLFNs', []):
                         lfn = lfn_array[lfn_idx]
                         lfns.add(lfn)
-        if  step.get('name', '').lower().startswith(step_name.lower()):
-            for item in step.get('output', []):
-                for lfn_idx in item.get('outputLFNs', []):
-                    lfn = lfn_array[lfn_idx]
-                    lfns.add(lfn)
+        else: # if we're given non-merged record we extract outputLFNs of given step_name
+            if  step.get('name', '').lower().startswith(step_name.lower()):
+                for item in step.get('output', []):
+                    for lfn_idx in item.get('outputLFNs', []):
+                        lfn = lfn_array[lfn_idx]
+                        lfns.add(lfn)
     return list(lfns)
 
 def is_ext(uinput, ext):
@@ -108,6 +123,7 @@ class MapReduce(object):
     def __init__(self, ispec=None):
         self.ispec = ispec
         self.query = ''
+        self.verbose = ispec.get('verbose', False)
         if  ispec:
             spec = ispec['spec']
             self.fields = ispec.get('fields', [])
@@ -121,11 +137,17 @@ class MapReduce(object):
             raise Exception("No spec is provided")
         if  not self.query:
             raise Exception("No input query is provided in a spec")
+        self.is_output = False
+        if  'queries' in self.ispec: # second phase look-up
+            self.is_output = True
         self.is_lfn = is_ext(self.query, 'root')
         self.is_log = is_ext(self.query, 'tar.gz')
         if  not self.is_log:
             self.is_log = is_ext(self.query, 'tar')
         self.step_name = 'logArch' if self.is_lfn else 'logCollect'
+        if  self.verbose:
+            print("### query", self.query)
+            print("### is_output", self.is_output, self.step_name, "is_log", self.is_log)
 
     def mapper(self, records):
         """
@@ -133,27 +155,34 @@ class MapReduce(object):
         collect process. It will be called by RDD.map() object within spark.
         The spec of the class is a JSON query which we'll apply to records.
         """
+        matches = []
         for rec in records:
             if  not rec:
                 continue
             if  self.is_lfn:
-                if  match_lfn(rec, self.query):
-                    return rec
+                if  match_lfn(rec, self.query, self.is_output):
+                    matches.append(rec)
             elif self.is_log:
                 if  match_log(rec, self.query):
-                    return rec
+                    matches.append(rec)
+        return matches
 
     def reducer(self, records, init=0):
         "Simpler reducer which collects all results from RDD.collect() records"
         out = []
         nrec = 0
-        for rec in records:
-            if  not rec:
-                continue
-            nrec += 1
-            data = extract_output(rec, self.step_name)
-            for item in data:
-                out.append(item)
+        if  self.verbose:
+            print("### reducer", len(records))
+        for items in records:
+            for rec in items:
+                if  not rec:
+                    continue
+                nrec += 1
+                data = extract_output(rec, self.step_name)
+                for item in data:
+                    out.append(item)
+        if  self.verbose:
+            print("### matches", nrec, " reducer", len(out))
         if  self.step_name == 'logCollect': # final step we'll return results
             odict = {'logCollect': out}
             queries = self.ispec.get('queries', [])
@@ -170,6 +199,11 @@ class MapReduce(object):
         spec = {'query': data, 'timerange':self.timerange}
         sdict = dict(spec=spec, fields=self.fields)
         queries = self.ispec.get('queries', [])
-        queries.append(data)
+        if  isinstance(data, list):
+            for item in data:
+                if  item not in queries:
+                    queries.append(item)
+        else:
+            queries.append(data)
         sdict['queries'] = queries
         return sdict

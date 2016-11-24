@@ -259,15 +259,13 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
             mro = obj.MapReduce(spec)
             # example of collecting records from mapper and
             # passing all of them to reducer function
-            records = avro_rdd.map(mro.mapper).collect()
+            records = avro_rdd.filter(mro.mapper).collect()
             out = mro.reducer(records)
             if  verbose:
                 print("### Loop count", count)
             if  count > 3:
                 print("### WARNING, loop counter exceed its limit")
                 break
-            if  verbose:
-                print("### found results", out)
             if  is_spec(out):
                 spec = out
             else:
