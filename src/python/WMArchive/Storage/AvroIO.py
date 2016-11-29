@@ -49,7 +49,8 @@ class AvroStorage(Storage):
         # perform input data validation
         good_data = []
         # write bad data records into output file
-        bdir = '%s/bad' % os.path.dirname(fname)
+        bdir = os.path.dirname(fname)
+        bdir = '%s/bad' % bdir if bdir else '/tmp/bad'
         if  not os.path.exists(bdir):
             os.makedirs(bdir)
         bfname = '%s/%s_bad.txt' % (bdir, os.path.basename(fname))
