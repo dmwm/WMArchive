@@ -156,59 +156,53 @@ class MapReduce(object):
         print("Starting FWJR aggregation...")
         self.start_time = time.time()
 
-
     def mapper(self, records):
         """
         Function to extract necessary information from records during spark
         collect process. It will be called by RDD.collect() object within spark.
         """
-        document = {
-            'stats': {}
-        }
-        for record in records:
-            if not record:
-                # FIXME: This happens many times
+        docs = []
+        for rec in records:
+            if  not rec:
                 continue
-
-            meta_data = record['meta_data']
-
-            # Extract list of stats from record, generally one per step
-            stats = extract_stats(record)
-
-            # Merge into document
-            scope_hash = get_scope_hash(stats['scope'])
-            document['stats'][scope_hash] = aggregate_stats(stats, existing=document['stats'].get(scope_hash))
-
-        return document
-
+            docs.append(rec)
+        return docs
 
     def reducer(self, records, init=0):
         "Simpler reducer which collects all results from RDD.collect() records"
-        document = {
-            'stats': {},
-        }
-        for existing_document in records:
-            if  'stats' in existing_document:
-                for scope_hash, existing_stats in existing_document['stats'].items():
-                    document['stats'][scope_hash] = aggregate_stats(existing_stats, existing=document['stats'].get(scope_hash))
+        stats = {}
+        for items in records:
+            for record in items:
+                if  not record:
+                    continue
+                # Extract list of stats from record, generally one per step
+                rstats = extract_stats(record)
 
+                # Merge into document
+                scope_hash = get_scope_hash(rstats['scope'])
+                stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
+
+        # aggregate among all stats documents
+        for scope_hash, rstats in stats.items():
+            stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
 
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
         # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
-        stats = document['stats'].values()
+        stats = stats.values()
+        print("### total number of collected stats", len(stats))
 
         # Also dump results to json file
         with open('RecordAggregator_result.json', 'w') as outfile:
             # json.dump(document, outfile, default=json_util.default)
             json.dump(stats, outfile, default=json_util.default)
 
-        if  stats:
+        if  len(stats):
             # Store in MongoDB
             mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
             mongo_collection = mongo_client['aggregated']['performance']
             mongo_collection.insert(stats)
+            print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
 
-        print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
         print("--- {} seconds ---".format(time.time() - self.start_time))
 
-        return document
+        return stats
