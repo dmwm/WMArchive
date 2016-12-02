@@ -55,6 +55,7 @@ else
     PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
     spark-submit --jars $avrojar,$sparkexjar \
         --executor-memory $((`nproc`/4))G \
+        --driver-memory 4G \
         --master local[$((`nproc`/4))] \
         --driver-class-path '/usr/lib/hive/lib/*' \
         --driver-java-options '-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*' \
