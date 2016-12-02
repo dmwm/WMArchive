@@ -38,6 +38,8 @@ class OptionParser(object):
             dest="schema", default="", help="Input Avro schema")
         self.parser.add_argument("--fout", action="store", \
             dest="fout", default="", help="Output Avro file")
+        self.parser.add_argument("--nrecords", action="store", \
+            dest="nrecords", default="", help="Read given number of records")
 
 
 def write(fin, fout, schema):
@@ -52,16 +54,25 @@ def write(fin, fout, schema):
         writer.append(data)
     writer.close()
 
-def read(fin, fout=None):
+def read(fin, fout=None, nrecords=0):
     "Read given avro file according to its schema and dump on stdout its content"
     reader = DataFileReader(open(fin, "r"), DatumReader())
     fobj = open(fout, 'w') if fout else None
+    count = 0
+    if  fobj:
+        fobj.write("[\n")
     for rec in reader:
         if  fobj:
+            if  count:
+                fobj.write(",\n")
             fobj.write(json.dumps(rec))
         else:
             pprint.pprint(rec)
+        if  nrecords and count >= nrecords:
+            break
+        count += 1
     if  fobj:
+        fobj.write("]\n")
         fobj.close()
     reader.close()
 
@@ -72,7 +83,7 @@ def main():
     if  opts.fout and opts.fin.endswith('json'):
         write(opts.fin, opts.fout, opts.schema)
     else:
-        read(opts.fin, opts.fout)
+        read(opts.fin, opts.fout, int(opts.nrecords))
 
 if __name__ == '__main__':
     main()
