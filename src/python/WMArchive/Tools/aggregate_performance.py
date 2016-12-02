@@ -5,16 +5,17 @@
 # TODO: Merge into `WMArchive.Tools.fwjr_aggregator` as soon as the old
 #       myspark approach is no longer needed.
 
+import os
+import json
+import time
 import argparse
 import datetime
 import subprocess
-import os
-import time
 
 def parse_source(s):
 
     def path_from_day(day):
-        return '/cms/wmarchive/avro/{year:04d}/{month:02d}/{day:02d}'.format(year=day.year, month=day.month, day=day.day)
+        return '{year:04d}{month:02d}{day:02d}'.format(year=day.year, month=day.month, day=day.day)
 
     if s == 'all':
         start_date = datetime.date(year=2016, month=6, day=1)
@@ -48,7 +49,14 @@ class OptionParser():
         schema = 'hdfs:///cms/wmarchive/avro/schemas/current.avsc'
         self.parser.add_argument('--schema', action='store', \
                 default=schema, help="WMArchive schema, default=%s" % schema)
+        self.parser.add_argument('--spec', action='store', \
+                default="", help="Spec file to use")
         self.parser.set_defaults(use_myspark=False)
+
+def make_spec(day):
+    "Create WMA spec"
+    spec = {'spec':{'timerange':[day,day]}, 'fields':['wmaid']}
+    return spec
 
 def main():
     # Parse command line arguments
@@ -64,9 +72,19 @@ def main():
         aggregation_script = RecordAggregator.__file__.replace('.pyc', '.py')
         print("Using myspark aggregation script in {}.".format(aggregation_script))
 
-        for source in args.source:
-            # TODO: use current.avsc.20160914 schema
-            subprocess.call([ 'myspark', '--hdir=hdfs://' + source, \
+        for day in args.source:
+            if  args.spec:
+                spec_file = args.spec
+                spec = json.load(open(spec_file))
+            else:
+                spec = make_spec(day)
+                spec_file = '/tmp/wma_agg.spec'
+                fobj = open(spec_file, 'w')
+                fobj.write(json.dumps(spec))
+                fobj.close()
+            print('Use spec=%s\n%s' % (spec_file, spec))
+            subprocess.call([ 'myspark', \
+                    '--spec=' + spec_file, \
                     '--schema=' + args.schema, \
                     '--script=' + aggregation_script ])
 
