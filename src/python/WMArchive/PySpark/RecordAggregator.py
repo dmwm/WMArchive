@@ -188,8 +188,9 @@ class MapReduce(object):
             'stats': {},
         }
         for existing_document in records:
-            for scope_hash, existing_stats in existing_document['stats'].items():
-                document['stats'][scope_hash] = aggregate_stats(existing_stats, existing=document['stats'].get(scope_hash))
+            if  'stats' in existing_document:
+                for scope_hash, existing_stats in existing_document['stats'].items():
+                    document['stats'][scope_hash] = aggregate_stats(existing_stats, existing=document['stats'].get(scope_hash))
 
 
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
@@ -201,10 +202,11 @@ class MapReduce(object):
             # json.dump(document, outfile, default=json_util.default)
             json.dump(stats, outfile, default=json_util.default)
 
-        # Store in MongoDB
-        mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
-        mongo_collection = mongo_client['aggregated']['performance']
-        mongo_collection.insert(stats)
+        if  stats:
+            # Store in MongoDB
+            mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
+            mongo_collection = mongo_client['aggregated']['performance']
+            mongo_collection.insert(stats)
 
         print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
         print("--- {} seconds ---".format(time.time() - self.start_time))
