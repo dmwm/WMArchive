@@ -29,12 +29,14 @@ import datetime
 # WMArchive modules
 from WMArchive.Utils.Utils import htime, wmaHash, trange
 
+HDIR = 'hdfs:///cms/wmarchive/avro'
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='PROG')
         year = time.strftime("%Y", time.localtime())
-        hdir = 'hdfs:///cms/wmarchive/avro'
+        hdir = HDIR
         msg = "Input data location on HDFS, e.g. %s/%s" % (hdir, year)
         self.parser.add_argument("--hdir", action="store",
             dest="hdir", default=hdir, help=msg)
@@ -301,19 +303,22 @@ def main():
 
     todate = datetime.datetime.today()
     todate = int(todate.strftime("%Y%m%d"))
-    fromdate = datetime.datetime.today()-datetime.timedelta(days=7)
+    fromdate = datetime.datetime.today()-datetime.timedelta(days=1)
     fromdate = int(fromdate.strftime("%Y%m%d"))
     spec = json.load(open(opts.spec)) if opts.spec else {}
     timerange = spec.get('spec', {}).get('timerange', [fromdate, todate])
 
-    hdir = opts.hdir.split()
-    if  len(hdir) == 1:
-        hdir = hdir[0]
-        hdirs = []
-        for tval in trange(timerange):
-            if  hdir.find(tval) == -1:
-                hdirs.append(os.path.join(hdir, tval))
-        hdir = hdirs
+    if  opts.hdir == HDIR:
+        hdir = opts.hdir.split()
+        if  len(hdir) == 1:
+            hdir = hdir[0]
+            hdirs = []
+            for tval in trange(timerange):
+                if  hdir.find(tval) == -1:
+                    hdirs.append(os.path.join(hdir, tval))
+            hdir = hdirs
+    else:
+        hdir = opts.HDIR
     results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
