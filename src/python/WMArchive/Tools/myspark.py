@@ -24,6 +24,7 @@ import urllib
 import urllib2
 import httplib
 import argparse
+import datetime
 
 # WMArchive modules
 from WMArchive.Utils.Utils import htime, wmaHash, trange
@@ -297,8 +298,14 @@ def main():
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     time0 = time.time()
-    spec = json.load(open(opts.spec))
-    timerange = spec.get('spec', {}).get('timerange', [])
+
+    todate = datetime.datetime.today()
+    todate = int(todate.strftime("%Y%m%d"))
+    fromdate = datetime.datetime.today()-datetime.timedelta(days=7)
+    fromdate = int(fromdate.strftime("%Y%m%d"))
+    spec = json.load(open(opts.spec)) if opts.spec else {}
+    timerange = spec.get('spec', {}).get('timerange', [fromdate, todate])
+
     hdir = opts.hdir.split()
     if  len(hdir) == 1:
         hdir = hdir[0]
