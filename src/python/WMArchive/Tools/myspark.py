@@ -318,7 +318,7 @@ def main():
                     hdirs.append(os.path.join(hdir, tval))
             hdir = hdirs
     else:
-        hdir = opts.HDIR
+        hdir = opts.hdir
     results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
