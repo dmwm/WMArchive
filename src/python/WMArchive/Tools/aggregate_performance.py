@@ -12,6 +12,11 @@ import argparse
 import datetime
 import subprocess
 
+try:
+    from wmarchive_config import HDIR
+except:
+    HDIR = 'hdfs:///cms/wmarchive/avro'
+
 def parse_source(s):
 
     def path_from_day(day):
@@ -33,8 +38,6 @@ def parse_source(s):
         pass
 
     return s
-
-HDIR = 'hdfs:///cms/wmarchive/avro'
 
 class OptionParser():
     def __init__(self):
