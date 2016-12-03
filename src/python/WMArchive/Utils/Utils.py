@@ -28,6 +28,18 @@ except:
 # WMArchive modules
 from WMArchive.Utils.Regexp import PAT_YYYYMMDD, PAT_YYYY
 
+def write_records(fname, records):
+    "Write records to given file name"
+    count = 0
+    with open(fname, 'w') as ostream:
+        ostream.write('[\n')
+        for rec in records:
+            if  count:
+                ostream.write(",\n")
+            ostream.write(json.dumps(rec))
+            count += 1
+        ostream.write("]\n")
+
 def open_file(fname, mode='r'):
     """
     Helper function to open file, plain, gz, bz2 formats. Returns file descriptor.

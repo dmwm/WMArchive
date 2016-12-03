@@ -9,7 +9,7 @@ information.
 
 import re
 
-from WMArchive.Utils.Utils import write_records
+from WMArchvie.Utils.Utils import write_records
 
 def parse_spec(spec):
     "Simple spec parser, it converts strings to patterns so far"
@@ -34,12 +34,19 @@ def match_value(keyval, value):
 def match(rec, spec):
     "Find if record match given spec"
     for key, val in spec.items():
-        if key == 'lfn':
-            for lfn in rec['LFNArray']:
-                if match_value(lfn, val):
-                    return True
-        elif key in rec:
-            return match_value(rec[key], val)
+        key = key.lower()
+        for step in rec['steps']:
+            if  step.get('name', '').lower().startswith('cmsrun'):
+                for output in step['output']:
+                    for kkk, vvv in output.items():
+                        if  kkk.lower() == key:
+                            if  isinstance(vvv, list):
+                                for value in vvv:
+                                    if  match_value(str(value), val):
+                                        return True
+                            else:
+                                if  match_value(str(vvv), val):
+                                    return True
     return False
 
 class MapReduce(object):
