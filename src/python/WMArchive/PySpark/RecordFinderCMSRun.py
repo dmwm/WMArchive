@@ -9,7 +9,17 @@ information.
 
 import re
 
-from WMArchive.Utils.Utils import write_records
+def write_records(fname, records):
+    "Write records to given file name"
+    count = 0
+    with open(fname, 'w') as ostream:
+        ostream.write('[\n')
+        for rec in records:
+            if  count:
+                ostream.write(",\n")
+            ostream.write(json.dumps(rec))
+            count += 1
+        ostream.write("]\n")
 
 def parse_spec(spec):
     "Simple spec parser, it converts strings to patterns so far"
