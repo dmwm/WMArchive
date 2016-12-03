@@ -11,6 +11,10 @@ from bson import json_util
 import time
 from string import digits
 
+try:
+    from wmarchi_config import MONGOURI
+except:
+    MONGOURI = 'mongodb://localhost:8230'
 
 def get_scope_hash(scope):
     """
@@ -152,8 +156,10 @@ class MapReduce(object):
     def __init__(self, spec=None):
         # spec here is redundant since our mapper and reducer does not use it
         self.spec = spec
-        # Timing
-        print("Starting FWJR aggregation...")
+        self.mongouri = MONGOURI
+        self.verbose = spec.get('verbose', False)
+        if  self.verbose:
+            print("Starting FWJR aggregation...")
         self.start_time = time.time()
 
     def mapper(self, records):
@@ -189,20 +195,21 @@ class MapReduce(object):
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
         # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
         stats = stats.values()
-        print("### total number of collected stats", len(stats))
-
-        # Also dump results to json file
-        with open('RecordAggregator_result.json', 'w') as outfile:
-            # json.dump(document, outfile, default=json_util.default)
-            json.dump(stats, outfile, default=json_util.default)
+        if  self.verbose:
+            print("### total number of collected stats", len(stats))
+            with open('/tmp/wma_agg.json', 'w') as outfile:
+                # json.dump(document, outfile, default=json_util.default)
+                json.dump(stats, outfile, default=json_util.default)
 
         if  len(stats):
             # Store in MongoDB
-            mongo_client = MongoClient('mongodb://localhost:8230') # TODO: read from config
+            mongo_client = MongoClient(self.mongouri) # TODO: read from config
             mongo_collection = mongo_client['aggregated']['performance']
             mongo_collection.insert(stats)
-            print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
+            if  self.verbose:
+                print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
 
-        print("--- {} seconds ---".format(time.time() - self.start_time))
+        if  self.verbose:
+            print("--- {} seconds ---".format(time.time() - self.start_time))
 
         return stats
