@@ -60,17 +60,23 @@ class MapReduce(object):
         collect process. It will be called by RDD.map() object within spark.
         The spec of the class is a JSON query which we'll apply to records.
         """
-        nrec = 0
+        matches = []
         for rec in records:
             if  not rec:
                 continue
             if  not self.spec:
-                nrec += 1
+                matches.append(1)
                 continue
-            if  match(rec, self.spec):
-                nrec += 1
-        return nrec
+            elif match(rec, self.spec):
+                matches.append(1)
+        return matches
 
     def reducer(self, records, init=0):
         "Simpler reducer which collects all results from RDD.collect() records"
-        return {"nrecords":len(records)}
+        nrec = 0
+        for items in records:
+            for rec in items:
+                if  not rec:
+                    continue
+                nrec += 1
+        return {"nrecords":nrec}
