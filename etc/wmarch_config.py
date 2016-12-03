@@ -6,8 +6,10 @@ import os
 import socket
 from WMCore.Configuration import Configuration
 
+# globals
+MONGOURI = 'mongodb://localhost:8230'
+HDIR = 'hdfs:///cms/wmarchive/data'
 HOST = socket.gethostname().lower()
-# ROOTDIR = __file__.rsplit('/', 3)[0]
 ROOTDIR = os.getenv('WMA_STATIC_ROOT', os.getcwd())
 config = Configuration()
 
@@ -39,8 +41,9 @@ ui.static = ROOTDIR
 # REST interface
 data = views.section_('data')
 data.object = 'WMArchive.Service.RestApi.RestInterface'
-data.short_storage_uri = 'mongodb://localhost:8230'
-data.long_storage_uri = 'hdfs:///cms/wmarchive/data/current.avsc'
+data.short_storage_uri = MONGOURI
+data.hdir = HDIR
+data.long_storage_uri = '%s/current.avsc' % HDIR
 data.long_storage_thr = 1*30*24*60*60 # 1 month
 data.specmap = os.path.join(ROOTDIR, 'maps/qlmap.txt')
 data.wmauri = 'http://localhost:%s' % main.port
