@@ -74,6 +74,8 @@ class OptionParser():
                                default=x509(), dest="cert", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
+        self.parser.add_argument("--records-output", action="store",
+            dest="rout", default="", help="Output file for records")
 
 def x509():
     "Helper function to get x509 either from env or tmp file"
@@ -211,7 +213,7 @@ def import_(filename):
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
 
-def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=None):
+def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=None, yarn=None):
     """
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
@@ -275,6 +277,8 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
     if  verbose:
         spec['verbose'] = 1
         print("### spec", json.dumps(spec))
+    if  rout:
+        spec['output'] = rout
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
@@ -358,7 +362,7 @@ def main():
             hdir = hdirs
     else:
         hdir = opts.hdir
-    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
+    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.rout, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
         if  opts.wmaid:
