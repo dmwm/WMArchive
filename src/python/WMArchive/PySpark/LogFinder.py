@@ -30,6 +30,8 @@ import re
 import sys
 import json
 
+from WMArchive.Utils.Utils import write_records
+
 def match_value(keyval, value):
     "helper function to match value from spec with keyval"
     if hasattr(value, 'pattern'): # it is re.compile pattern
@@ -124,6 +126,9 @@ class MapReduce(object):
         self.ispec = ispec
         self.query = ''
         self.verbose = ispec.get('verbose', False)
+        self.output = ispec.get('output', '')
+        if  self.output:
+            del ispec['output']
         if  ispec:
             spec = ispec['spec']
             self.fields = ispec.get('fields', [])
@@ -188,6 +193,9 @@ class MapReduce(object):
             queries = self.ispec.get('queries', [])
             if  queries:
                 odict.update({'queries':queries})
+            if  self.output:
+                write_records(self.output, [odict])
+                return
             return json.dumps(odict)
         exts = [r.split('.')[-1] for r in out]
         if  len(set(exts)) > 1: # multiple extensions, we'll return non-root entries
