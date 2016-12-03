@@ -27,9 +27,13 @@ import argparse
 import datetime
 
 # WMArchive modules
+import WMArchive
 from WMArchive.Utils.Utils import htime, wmaHash, trange
 
-HDIR = 'hdfs:///cms/wmarchive/avro'
+try:
+    from wmarchive_config import HDIR
+except:
+    HDIR = 'hdfs:///cms/wmarchive/avro'
 
 class OptionParser():
     def __init__(self):
@@ -47,6 +51,8 @@ class OptionParser():
         msg = "python script with custom mapper/reducer functions"
         self.parser.add_argument("--script", action="store",
             dest="script", default="", help=msg)
+        self.parser.add_argument("--list-scripts", action="store_true",
+            dest="scripts", default="", help=msg)
         msg = "json file with query spec or valid json"
         self.parser.add_argument("--spec", action="store",
             dest="spec", default="", help=msg)
@@ -181,7 +187,13 @@ class SparkLogger(object):
 
 def import_(filename):
     "Import given filename"
-    path, name = os.path.split(filename)
+    if  os.path.isfile(filename):
+        path, name = os.path.split(filename)
+    else: # get filename from WMArchive PySpark area
+        _, name = os.path.split(filename)
+        path = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
+    if  not os.path.isfile(filename):
+        raise RuntimeError('Unable to load %s' % filename)
     name, ext = os.path.splitext(name)
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
@@ -295,11 +307,22 @@ def is_spec(data):
         return True
     return False
 
+def scripts():
+    "List available scripts"
+    sdir = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
+    for fname os.listdir(sdir):
+        if  fname.endswith('.py') and fname != '__init__.py':
+            print(fname)
+
 def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     time0 = time.time()
+
+    if  opts.scripts:
+        scripts()
+        sys.exit(0)
 
     todate = datetime.datetime.today()
     todate = int(todate.strftime("%Y%m%d"))
