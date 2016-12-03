@@ -185,6 +185,19 @@ class SparkLogger(object):
         "Print message via Spark Logger to warning stream"
         self.lprint('warning', msg)
 
+def get_script(name):
+    "Locate script for given name"
+    name = name if name.endswith('.py') else '%s.py' % name
+    if  os.path.isfile(name):
+        path, fname = os.path.split(name)
+    else: # get filename from WMArchive PySpark area
+        _, fname = os.path.split(name)
+        path = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
+    filename = os.path.join(path, fname)
+    if  not os.path.isfile(filename):
+        raise RuntimeError('Unable to load %s' % filename)
+    return filename
+
 def import_(filename):
     "Import given filename"
     if  os.path.isfile(filename):
@@ -203,6 +216,8 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
     """
+    if  script:
+        script = get_script(script)
     if  verbose:
         print("### schema", schema_file)
         print("### path", data_path)
@@ -258,6 +273,7 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
         else:
             spec = json.loads(spec_file)
     if  verbose:
+        spec['verbose'] = 1
         print("### spec", json.dumps(spec))
     if  script:
         obj = import_(script)
@@ -310,9 +326,9 @@ def is_spec(data):
 def scripts():
     "List available scripts"
     sdir = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
-    for fname os.listdir(sdir):
+    for fname in os.listdir(sdir):
         if  fname.endswith('.py') and fname != '__init__.py':
-            print(fname)
+            print(fname.split('.py')[0])
 
 def main():
     "Main function"

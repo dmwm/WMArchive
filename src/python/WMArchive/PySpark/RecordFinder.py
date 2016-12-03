@@ -43,16 +43,21 @@ def match(rec, spec):
 class MapReduce(object):
     def __init__(self, ispec=None):
         self.fields = []
+        self.verbose = ispec.get('verbose', None)
+        if  self.verbose:
+            del ispec['verbose']
         if  ispec:
             if  'spec' in ispec:
-                spec = ispec['spec']
+                self.spec = ispec['spec']
             if  'fields' in ispec:
                 self.fields = ispec['fields']
             if  'timerange' in ispec:
                 del ispec['timerange'] # this is not used for record search
-            self.spec = parse_spec(ispec)
+            self.spec = parse_spec(self.spec)
         else:
             self.spec = {}
+        if  self.verbose:
+            print("### SPEC", self.spec)
 
     def mapper(self, records):
         """
@@ -72,6 +77,8 @@ class MapReduce(object):
         "Simpler reducer which collects all results from RDD.collect() records"
         out = []
         nrec = 0
+        if  self.verbose:
+            print("### Mapper found %s matches" % len(records))
         for items in records:
             for rec in items:
                 if  rec:
