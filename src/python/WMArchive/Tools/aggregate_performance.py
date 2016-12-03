@@ -34,6 +34,8 @@ def parse_source(s):
 
     return s
 
+HDIR = 'hdfs:///cms/wmarchive/avro'
+
 class OptionParser():
     def __init__(self):
         "User based option parser"
@@ -46,7 +48,7 @@ class OptionParser():
                 help="The temporal precision of aggregation.")
         self.parser.add_argument('--use_myspark', action='store_true', \
                 help="Use legacy myspark script.")
-        schema = 'hdfs:///cms/wmarchive/avro/schemas/current.avsc'
+        schema = '%s/schemas/current.avsc' % HDIR
         self.parser.add_argument('--schema', action='store', \
                 default=schema, help="WMArchive schema, default=%s" % schema)
         self.parser.add_argument('--spec', action='store', \
@@ -67,31 +69,22 @@ def main():
     print("Aggregating {} performance data in {}...".format(args.precision.replace('y', 'i') + 'ly', args.source))
 
     if args.use_myspark:
-
         from WMArchive.PySpark import RecordAggregator
         aggregation_script = RecordAggregator.__file__.replace('.pyc', '.py')
         print("Using myspark aggregation script in {}.".format(aggregation_script))
 
         for day in args.source:
-            if  args.spec:
-                spec_file = args.spec
-                spec = json.load(open(spec_file))
-            else:
-                spec = make_spec(day)
-                spec_file = '/tmp/wma_agg.spec'
-                fobj = open(spec_file, 'w')
-                fobj.write(json.dumps(spec))
-                fobj.close()
-            print('Use spec=%s\n%s' % (spec_file, spec))
-            subprocess.call([ 'myspark', \
-                    '--spec=' + spec_file, \
-                    '--schema=' + args.schema, \
-                    '--script=' + aggregation_script ])
-
+            basedir = '%s/%s' % (HDIR, day)
+            files = os.popen("hadoop fs -ls %s | sed '1d;s/  */ /g' | cut -d\  -f8" % basedir).read().splitlines()
+            for fname in files:
+                print("myspark --hdir=%s --schema=%s --script=%s"\
+                        % (fname, args.schema, aggregation_script))
+                subprocess.call([ 'myspark', \
+                        '--hdir=' + fname, \
+                        '--schema=' + args.schema, \
+                        '--script=' + aggregation_script ])
     else:
-
         print("Using fwjr_aggregator aggregation script.")
-
         for source in args.source:
             subprocess.call([ 'fwjr_aggregator', '--hdir=' + source, \
                     '--precision=' + args.precision ])
