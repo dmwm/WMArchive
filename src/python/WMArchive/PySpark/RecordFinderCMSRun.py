@@ -9,7 +9,7 @@ information.
 
 import re
 
-from WMArchvie.Utils.Utils import write_records
+from WMArchive.Utils.Utils import write_records
 
 def parse_spec(spec):
     "Simple spec parser, it converts strings to patterns so far"
