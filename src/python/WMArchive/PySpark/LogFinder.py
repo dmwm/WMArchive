@@ -135,8 +135,8 @@ class MapReduce(object):
     def __init__(self, ispec=None):
         self.ispec = ispec
         self.query = ''
-        self.verbose = ispec.get('verbose', False)
-        self.output = ispec.get('output', '')
+        self.verbose = ispec.get('verbose', False) if ispec else False
+        self.output = ispec.get('output', '') if ispec else ''
         if  self.verbose:
             print("### ispec", ispec)
         if  self.output:
@@ -218,6 +218,10 @@ class MapReduce(object):
         "Make WMArchive spec from provided data"
         spec = {'query': data, 'timerange':self.timerange}
         sdict = dict(spec=spec, fields=self.fields)
+        if  self.verbose:
+            sdict['verbose'] = self.verbose
+        if  self.output:
+            sdict['output'] = self.output
         queries = self.ispec.get('queries', [])
         if  isinstance(data, list):
             for item in data:
