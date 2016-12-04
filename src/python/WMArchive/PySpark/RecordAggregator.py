@@ -55,7 +55,7 @@ def extract_stats(record, timeframe_precision="day"):
                 acquisitionEra = output.get('acquisitionEra')
                 if acquisitionEra is not None:
                     break
-        if exitCode is None or exitCode == '99999' or exitCode = 99999:
+        if exitCode is None or exitCode == '99999' or exitCode == 99999:
             for error in step['errors']:
                 exitCode = str(error.get('exitCode'))
                 exitStep = step['name']
