@@ -20,7 +20,7 @@ except:
 def parse_source(s):
 
     def path_from_day(day):
-        return '{year:04d}{month:02d}{day:02d}'.format(year=day.year, month=day.month, day=day.day)
+        return '{year:04d}/{month:02d}/{day:02d}'.format(year=day.year, month=day.month, day=day.day)
 
     if s == 'all':
         start_date = datetime.date(year=2016, month=6, day=1)
