@@ -157,7 +157,7 @@ class MapReduce(object):
         # spec here is redundant since our mapper and reducer does not use it
         self.spec = spec
         self.mongouri = MONGOURI
-        self.verbose = spec.get('verbose', False)
+        self.verbose = spec.get('verbose', False) if spec else False
         if  self.verbose:
             print("Starting FWJR aggregation...")
         self.start_time = time.time()
