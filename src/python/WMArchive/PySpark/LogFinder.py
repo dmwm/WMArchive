@@ -137,6 +137,8 @@ class MapReduce(object):
         self.query = ''
         self.verbose = ispec.get('verbose', False)
         self.output = ispec.get('output', '')
+        if  self.verbose:
+            print("### ispec", ispec)
         if  self.output:
             del ispec['output']
         if  ispec:

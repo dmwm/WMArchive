@@ -8,6 +8,7 @@ information.
 """
 
 import re
+import json
 
 def write_records(fname, records):
     "Write records to given file name"
