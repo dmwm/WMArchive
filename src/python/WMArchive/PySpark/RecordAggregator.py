@@ -1,15 +1,23 @@
+#-*- coding: ISO-8859-1 -*-
 """
+File       : RecordAggregator.py
+Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>, Nils Fischer <n dot fischer AT stud dot uni-heidelberg dot de>
+
 This is example how to write simple aggregator mapper and reducer functions for
 WMArchive/Tools/myspark.py tool. It collects information about cpu/time/read/write
 sizes of successfull FWJR jobs. Information is structured by agent host/site.
 """
 
-import json
-from datetime import datetime, timedelta
-from pymongo import MongoClient
-from bson import json_util
 import time
+import json
 from string import digits
+from datetime import datetime, timedelta
+
+try:
+    from pymongo import MongoClient
+    from bson import json_util
+except:
+    pass
 
 try:
     from wmarchi_config import MONGOURI
@@ -157,6 +165,7 @@ def aggregate_stats(stats, existing):
 
 class MapReduce(object):
     def __init__(self, spec=None):
+        self.name = __file__.split('/')[-1]
         # spec here is redundant since our mapper and reducer does not use it
         self.spec = spec
         self.mongouri = MONGOURI
@@ -165,31 +174,28 @@ class MapReduce(object):
             print("Starting FWJR aggregation...")
         self.start_time = time.time()
 
-    def mapper(self, records):
+    def mapper(self, pair):
         """
-        Function to extract necessary information from records during spark
-        collect process. It will be called by RDD.collect() object within spark.
+        Function to filter given pair from RDD, see myspark.py
         """
-        docs = []
-        for rec in records:
-            if  not rec:
-                continue
-            docs.append(rec)
-        return docs
+        return True
 
-    def reducer(self, records, init=0):
+    def reducer(self, records):
         "Simpler reducer which collects all results from RDD.collect() records"
         stats = {}
-        for items in records:
-            for record in items:
-                if  not record:
-                    continue
-                # Extract list of stats from record, generally one per step
-                rstats = extract_stats(record)
+        if  self.verbose:
+            print("### Mapper found %s matches" % len(records))
+        for record in records:
+            if  not record:
+                continue
+            if  isinstance(record, tuple):
+                record = record[0] # get record from (rec,key) pair of RDD
+            # Extract list of stats from record, generally one per step
+            rstats = extract_stats(record)
 
-                # Merge into document
-                scope_hash = get_scope_hash(rstats['scope'])
-                stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
+            # Merge into document
+            scope_hash = get_scope_hash(rstats['scope'])
+            stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
 
         # aggregate among all stats documents
         for scope_hash, rstats in stats.items():
@@ -200,17 +206,19 @@ class MapReduce(object):
         stats = stats.values()
         if  self.verbose:
             print("### total number of collected stats", len(stats))
-            with open('/tmp/wma_agg.json', 'w') as outfile:
-                # json.dump(document, outfile, default=json_util.default)
-                json.dump(stats, outfile, default=json_util.default)
+            with open('/tmp/wma_agg.json', 'w') as ostream:
+                ostream.write(json.dumps(stats))
 
         if  len(stats):
-            # Store in MongoDB
-            mongo_client = MongoClient(self.mongouri) # TODO: read from config
-            mongo_collection = mongo_client['aggregated']['performance']
-            mongo_collection.insert(stats)
-            if  self.verbose:
-                print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
+            try: # store to mongoDB
+                mongo_client = MongoClient(self.mongouri)
+                mongo_collection = mongo_client['aggregated']['performance']
+                mongo_collection.insert(stats)
+                if  self.verbose:
+                    print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
+            except Exception as exp:
+                print("WMArchive:ERROR, fail to store results to MongoDB")
+                print(str(exp))
 
         if  self.verbose:
             print("--- {} seconds ---".format(time.time() - self.start_time))
