@@ -133,6 +133,8 @@ class MapReduce(object):
             print("### Mapper found %s matches" % len(records))
         for rec in records:
                 if  rec:
+                    if  isinstance(rec, tuple):
+                        rec = rec[0] # take record from the pair
                     nrec += 1
                     out.append(select(rec))
         if  self.output:
