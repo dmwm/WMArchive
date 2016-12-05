@@ -64,6 +64,10 @@ def match(rec, spec):
                                     return True
     return False
 
+def valid_exitCode(exitCode):
+    "Check if exit code is valid"
+    return exitCode not in (None, 'None', 99999, '99999')
+
 def select(rec):
     "Return only selected information from the record"
     out = {}
@@ -78,13 +82,13 @@ def select(rec):
     for step in rec['steps']:
         if site is None:
             site = step.get('site')
-        if exitCode is None or exitCode == '99999' or exitCode == 99999:
+        if  not valid_exitCode(exitCode):
             for error in step['errors']:
-                exitCode = str(error.get('exitCode'))
+                exitCode = error.get('exitCode', None)
                 exitStep = step['name']
-                if exitCode:
+                if  valid_exitCode(exitCode):
                     break
-        if site is not None and exitCode is not None:
+        if  valid_exitCode(exitCode):
             break
     out['exitCode'] = exitCode
     out['exitStep'] = exitStep

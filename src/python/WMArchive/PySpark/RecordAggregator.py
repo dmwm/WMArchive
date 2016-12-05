@@ -22,6 +22,9 @@ def get_scope_hash(scope):
     """
     return str(hash(frozenset(scope.items())))
 
+def valid_exitCode(exitCode):
+    "Check if exit code is valid"
+    return exitCode not in (None, 'None', 99999, '99999')
 
 def extract_stats(record, timeframe_precision="day"):
 
@@ -55,13 +58,13 @@ def extract_stats(record, timeframe_precision="day"):
                 acquisitionEra = output.get('acquisitionEra')
                 if acquisitionEra is not None:
                     break
-        if exitCode is None or exitCode == '99999' or exitCode == 99999:
+        if  not valid_exitCode(exitCode):
             for error in step['errors']:
-                exitCode = str(error.get('exitCode'))
+                exitCode = error.get('exitCode', None)
                 exitStep = step['name']
-                if exitCode:
+                if  valid_exitCode(exitCode):
                     break
-        if site is not None and acquisitionEra is not None and exitCode is not None:
+        if site is not None and acquisitionEra is not None and valid_exitCode(exitCode):
             break
 
     stats = { 'scope': {
