@@ -16,15 +16,16 @@ import io
 import gzip
 
 # pydoop modules
-import pydoop.mapreduce.api as api
-import pydoop.mapreduce.pipes as pp
+try:
+    import pydoop.mapreduce.api as api
+    import pydoop.mapreduce.pipes as pp
+    import pydoop.hdfs as hdfs
+except: # wrap for sphinx
+    pass
 
 # avro modules
 import avro.schema
 import avro.io
-
-# hdfs pydoop modules
-import pydoop.hdfs as hdfs
 
 def read_avro(fname, schema):
     "Internal API to read data from HDFS files"

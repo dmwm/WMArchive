@@ -1,4 +1,8 @@
+#-*- coding: ISO-8859-1 -*-
 """
+File       : LogFinder.py
+Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
+
 This is example how to find CMS FWJR log file from provided LFN.
 The procedure:
 
@@ -133,6 +137,7 @@ def is_ext(uinput, ext):
 
 class MapReduce(object):
     def __init__(self, ispec=None):
+        self.name = __file__.split('/')[-1]
         self.ispec = ispec
         self.query = ''
         self.verbose = ispec.get('verbose', False) if ispec else False
@@ -166,38 +171,32 @@ class MapReduce(object):
             print("### query", self.query)
             print("### is_output", self.is_output, self.step_name, "is_log", self.is_log)
 
-    def mapper(self, records):
+    def mapper(self, pair):
         """
-        Function to find a record for a given spec during spark
-        collect process. It will be called by RDD.map() object within spark.
-        The spec of the class is a JSON query which we'll apply to records.
+        Function to filter given pair from RDD, see myspark.py
         """
-        matches = []
-        for rec in records:
-            if  not rec:
-                continue
-            if  self.is_lfn:
-                if  match_lfn(rec, self.query, self.is_output):
-                    matches.append(rec)
-            elif self.is_log:
-                if  match_log(rec, self.query):
-                    matches.append(rec)
-        return matches
+        rec, _ = pair # we receive a pair (record, key) from RDD
+        if  self.is_lfn:
+            return match_lfn(rec, self.query, self.is_output)
+        elif self.is_log:
+            return match_log(rec, self.query)
+        return False
 
-    def reducer(self, records, init=0):
+    def reducer(self, records):
         "Simpler reducer which collects all results from RDD.collect() records"
         out = []
         nrec = 0
         if  self.verbose:
             print("### reducer", len(records))
-        for items in records:
-            for rec in items:
-                if  not rec:
-                    continue
-                nrec += 1
-                data = extract_output(rec, self.step_name)
-                for item in data:
-                    out.append(item)
+        for rec in records:
+            if  not rec:
+                continue
+            if  isinstance(rec, tuple):
+                rec = rec[0]
+            nrec += 1
+            data = extract_output(rec, self.step_name)
+            for item in data:
+                out.append(item)
         if  self.verbose:
             print("### matches", nrec, " reducer", len(out))
         if  self.step_name == 'logCollect': # final step we'll return results

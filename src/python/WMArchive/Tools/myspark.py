@@ -9,8 +9,17 @@ Description: Example file to run basic spark job via pyspark
 This code is based on example provided at
 https://github.com/apache/spark/blob/master/examples/src/main/python/avro_inputformat.py
 
-PySpark APIs:
-https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
+PySpark APIs: https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
+
+myspark implements the following logic:
+    - it uses user provided spec file to extact conditions
+    - it loads user based MapReduce script with mapper/reducer methods
+    - if user based script ends with Counter suffix the reducer method
+      is ignored and .count() is applied to a mapper output
+    - the mapper method of the user-based class works as a filter. The avro RDD
+      passes all records as (rec, key) pairs. The mapper method should evaluate
+      the condition of the record to pass, while the reducer method collects
+      final results in a form suitable for end-user.
 """
 
 # system modules
@@ -221,10 +230,10 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=
     if  script:
         script = get_script(script)
     if  verbose:
-        print("### schema", schema_file)
-        print("### path", data_path)
-        print("### script", script)
-        print("### spec", spec_file)
+        print("### schema: %s" % schema_file)
+        print("### path  : %s" % data_path)
+        print("### script: %s" % script)
+        print("### spec  : %s" % spec_file)
     time0 = time.time()
     # pyspark modules
     from pyspark import SparkContext
@@ -276,7 +285,7 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=
             spec = json.loads(spec_file)
     if  verbose:
         spec['verbose'] = 1
-        print("### spec", json.dumps(spec))
+        print("### spec %s" % json.dumps(spec))
     if  rout:
         spec['output'] = rout
     if  script:
@@ -292,12 +301,20 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=
         count = 0
         while True:
             mro = obj.MapReduce(spec)
+            mname = mro.__dict__.get('name', '').split('.')[0]
+            print("### Load %s" % mname)
+            if  mname.lower().endswith('counter'):
+                out = avro_rdd.filter(mro.mapper).count()
+                if  rout:
+                    with open(rout, 'w') as ostream:
+                        ostream.write(out)
+                break
             # example of collecting records from mapper and
             # passing all of them to reducer function
             records = avro_rdd.filter(mro.mapper).collect()
             out = mro.reducer(records)
             if  verbose:
-                print("### Loop count", count)
+                print("### Loop count %s" % count)
             if  count > 3:
                 print("### WARNING, loop counter exceed its limit")
                 break

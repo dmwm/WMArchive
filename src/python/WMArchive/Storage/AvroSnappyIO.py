@@ -6,7 +6,7 @@ Description: Converts a set of JSONs into Avro files with Snappy conversion,
 Spark SQLContext is needed (or HiveContext)
 Usage      : this code can be used as following, write a script as:
 
-    .. code-block:: python
+    .. code-block::python
 
         # test_snappy.py
         import json
@@ -20,11 +20,14 @@ Usage      : this code can be used as following, write a script as:
         rec = json.load(open('fwjr_prod.json'))
         fwjr_array = [rec, rec]
         avro_snappy_IO.file_write("test-json2avro-snappy",fwjr_array, 1)
+
 To run the code use the following
-``spark-submit \
-    --packages com.databricks:spark-avro_2.10:2.0.1 \
-    --jars /usr/lib/avro/avro-mapred-hadoop2.jar \
-    test_snappy.py``
+
+    .. code-block::python
+        spark-submit \
+            --packages com.databricks:spark-avro_2.10:2.0.1 \
+            --jars /usr/lib/avro/avro-mapred-hadoop2.jar \
+            test_snappy.py
 """
 
 import json

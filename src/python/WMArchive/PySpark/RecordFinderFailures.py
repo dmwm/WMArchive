@@ -1,10 +1,10 @@
+#-*- coding: ISO-8859-1 -*-
 """
-This is example how to write mapper and reducer methods of MapReduce class for
-WMArchive/Tools/myspark.py tool. User should perform all necessary actions with
-given set of records and return back desired results. Here our mapper process
-records from avro files and collect results into a single dictionary. The
-reducer will collect results from all mappers and return back aggregated
-information.
+File       : RecordAggregator.py
+Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
+
+This is example of finding failures (exit codes) in FWJR for
+WMArchive/Tools/myspark.py tool.
 """
 
 import re
@@ -97,6 +97,7 @@ def select(rec):
         
 class MapReduce(object):
     def __init__(self, ispec=None):
+        self.name = __file__.split('/')[-1]
         self.fields = []
         self.verbose = ispec.get('verbose', None)
         self.output = ispec.get('output', '')
@@ -117,19 +118,12 @@ class MapReduce(object):
         if  self.verbose:
             print("### SPEC", self.spec)
 
-    def mapper(self, records):
+    def mapper(self, pair):
         """
-        Function to find a record for a given spec during spark
-        collect process. It will be called by RDD.map() object within spark.
-        The spec of the class is a JSON query which we'll apply to records.
+        Function to filter given pair from RDD, see myspark.py
         """
-        matches = []
-        for rec in records:
-            if  not rec:
-                continue
-            if  match(rec, self.spec):
-                matches.append(rec)
-        return matches
+        rec, _ = pair # we receive a pair of (record, key) from RDD
+        return match(rec, self.spec)
 
     def reducer(self, records):
         "Simpler reducer which collects all results from RDD.collect() records"
@@ -137,8 +131,7 @@ class MapReduce(object):
         nrec = 0
         if  self.verbose:
             print("### Mapper found %s matches" % len(records))
-        for items in records:
-            for rec in items:
+        for rec in records:
                 if  rec:
                     nrec += 1
                     out.append(select(rec))
