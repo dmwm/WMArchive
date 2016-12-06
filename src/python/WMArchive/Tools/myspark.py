@@ -37,7 +37,7 @@ import datetime
 
 # WMArchive modules
 import WMArchive
-from WMArchive.Utils.Utils import htime, wmaHash, trange
+from WMArchive.Utils.Utils import htime, wmaHash, range_dates
 
 try:
     from wmarchive_config import HDIR
@@ -373,7 +373,7 @@ def main():
         if  len(hdir) == 1:
             hdir = hdir[0]
             hdirs = []
-            for tval in trange(timerange):
+            for tval in range_dates(timerange):
                 if  hdir.find(tval) == -1:
                     hdirs.append(os.path.join(hdir, tval))
             hdir = hdirs
