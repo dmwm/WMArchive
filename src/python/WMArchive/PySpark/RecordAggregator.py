@@ -207,6 +207,13 @@ class MapReduce(object):
         if  self.verbose:
             print("### total number of collected stats", len(stats))
             with open('/tmp/wma_agg.json', 'w') as ostream:
+                for rec in stats:
+                    scope = rec['scope']
+                    sdate = scope['start_date']
+                    scope['start_date'] = sdate.isoformat()
+                    edate = scope['end_date']
+                    scope['end_date'] = edate.isoformat()
+                    rec['scope'] = scope
                 ostream.write(json.dumps(stats))
 
         if  len(stats):
