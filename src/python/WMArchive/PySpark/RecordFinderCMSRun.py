@@ -1,10 +1,9 @@
 #-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>
 """
-File       : RecordAggregator.py
-Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-
-This is example of Record Finder based on cmsRun step parameters for
-WMArchive/Tools/myspark.py tool.
+MapReduce module which can be used to find records based on any FWJR cmsRun step parameters.
+User must supply valid spec with valid cmsRun attribute, e.g.
+{"spec":{"prep_id":"SUS-RunIISummer16DR80Premix-00169", "timerange":[20161127,20161129]}, "fields":[]}
 """
 
 import re

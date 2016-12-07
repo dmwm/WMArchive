@@ -349,7 +349,9 @@ def scripts():
     sdir = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
     for fname in os.listdir(sdir):
         if  fname.endswith('.py') and fname != '__init__.py':
+            obj = import_(os.path.join(sdir, fname))
             print(fname.split('.py')[0])
+            print(obj.__doc__)
 
 def main():
     "Main function"

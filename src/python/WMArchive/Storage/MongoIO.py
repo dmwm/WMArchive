@@ -26,7 +26,7 @@ from bson.son import SON
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage
-from WMArchive.Utils.Regexp import PAT_UID
+from WMArchive.Utils.Regexp import PAT_UID, PAT_INT
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 
 def set_duplicates(docs):
@@ -77,6 +77,24 @@ class MongoStorage(Storage):
         self.jobs = self.mdb['jobs'] # separate collection for job results
         self.log(self.coll)
         self.chunk_size = chunk_size
+
+        # read error codes
+        fname = os.environ.get('WMARCHIVE_ERROR_CODES', '')
+        self.codes = {} # dict of numeric codes
+        if  fname:
+            with open(fname, 'r') as exit_codes_file:
+                data = json.load(exit_codes_file)
+                for key, val in data.items():
+                    if  PAT_INT.match(key):
+                        self.codes[int(key)] = val
+                    else:
+                        self.codes[key] = val
+
+        # read performance metrics
+        fname = os.environ.get('WMARCHIVE_PERF_METRICS', '')
+        if  fname:
+            with open(fname, 'r') as metrics_file:
+                self.metrics = json.load(metrics_file)
 
     def sconvert(self, spec, fields):
         "convert input spec/fields into ones suitable for MognoDB QL"
@@ -196,6 +214,7 @@ class MongoStorage(Storage):
         aggregated performance data as documented in https://github.com/knly/WMArchiveAggregation.
         """
         start_time = time.time()
+        verbose = kwargs.get('verbose', None)
 
         performance_data = self.client[os.environ.get('WMARCHIVE_PERF_DB', 'aggregated')][os.environ.get('WMARCHIVE_PERF_COLL', 'performance')]
 
@@ -280,7 +299,7 @@ class MongoStorage(Storage):
                     label = '$_id'
 
                 if metric == 'jobstate':
-                    aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
+                    query = scope + [
                         {
                             '$group': {
                                 '_id': { 'axis': group_id, 'jobstate': '$scope.jobstate' },
@@ -305,7 +324,8 @@ class MongoStorage(Storage):
                                 'jobstates': '$jobstates',
                             }
                         }
-                    ]))
+                    ]
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(query))
                 elif metric == 'data.exitcodes':
                     if  aggregation_key == 'exitcodes':
                         if  not 'exit' in filters.keys():
@@ -350,7 +370,7 @@ class MongoStorage(Storage):
                 else:
                     key = '%s' % aggregation_key
                     scope += [{"$match": {key:{"$gte":0}}}]
-                    aggregation_result = get_aggregation_result(performance_data.aggregate(scope + [
+                    quer = scope + [
                         {
                             '$group': {
                                 '_id': group_id,
@@ -366,14 +386,22 @@ class MongoStorage(Storage):
                                 'count': '$count',
                             }
                         }
-                    ]))
+                    ]
+                    aggregation_result = get_aggregation_result(performance_data.aggregate(query))
+                if  verbose:
+                    print("### metric", metric)
+                    print("### query", query)
+                    print("### result", len(aggregation_result))
+                    if  verbose>1:
+                        for row in aggregation_result:
+                            print(row)
 
                 if axis == '_summary':
                     aggregation_result = aggregation_result[0] if aggregation_result else None
 
                 visualizations[metric][axis] = aggregation_result
 
-        status = (get_aggregation_result(performance_data.aggregate(scope + [
+        query = scope + [
             {
                 '$group': {
                     '_id': None,
@@ -389,10 +417,14 @@ class MongoStorage(Storage):
                     'start_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$start_date' } },
                     'end_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$end_date' } },
                 }
-            }
-        ])) or [ {} ])[0]
+            }]
+        res = get_aggregation_result(performance_data.aggregate(query))
+        status = (res or [ {} ])[0]
+        if  verbose:
+            print("### query", query)
+            print("### status", status)
         status["time"] = time.time() - start_time
-        status.update((get_aggregation_result(performance_data.aggregate([
+        query = [
             {
                 '$group': {
                     '_id': None,
@@ -406,27 +438,26 @@ class MongoStorage(Storage):
                     'min_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$min_date' } },
                     'max_date': { '$dateToString': { 'format': ISO_DATE_FORMAT, 'date': '$max_date' } },
                 }
-            }
-        ])) or [ {} ])[0])
+            }]
+        res = get_aggregation_result(performance_data.aggregate(query))
+        status.update((res or [ {} ])[0])
+        if  verbose:
+            print("### query", query)
+            print("### status", status)
 
         # Collect supplementary data
         supplementaryData = {}
-        if "exitCode" in axes + suggestions:
-            try:
-                with open(os.environ.get('WMARCHIVE_ERROR_CODES', ''), 'r') as exit_codes_file:
-                    supplementaryData["exitCodes"] = json.load(exit_codes_file)
-            except:
-                traceback.print_exc()
-        if len(metrics) == 0:
-            try:
-                with open(os.environ.get('WMARCHIVE_PERF_METRICS', ''), 'r') as metrics_file:
-                    supplementaryData["metrics"] = json.load(metrics_file)
-            except:
-                traceback.print_exc()
+        if  "exitCode" in axes + suggestions:
+            supplementaryData["exitCodes"] = self.codes
+        if  len(metrics) == 0:
+            supplementaryData["metrics"] = self.metrics
 
-        return {
+        output = {
             "status": status,
             "suggestions": collected_suggestions,
             "visualizations": visualizations,
             "supplementaryData": supplementaryData,
         }
+        if  verbose>1:
+            print("### output", json.dumps(output))
+        return output

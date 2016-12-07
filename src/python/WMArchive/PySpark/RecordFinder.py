@@ -1,9 +1,9 @@
 #-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>
 """
-File       : RecordAggregator.py
-Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-
-This is example of record finder for WMArchive/Tools/myspark.py tool.
+MapReduce record finder module.
+User must supply valid spec with FWJR parameter, e.g.
+{"spec":{"task":"/amaltaro_StepChain_ReDigi3_HG1612_WMArchive_161130_192654_9283/DIGI","timerange":[20161130,20161202]}, "fields":[]}
 """
 
 import re

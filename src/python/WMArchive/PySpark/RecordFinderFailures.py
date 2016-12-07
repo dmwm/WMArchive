@@ -1,10 +1,9 @@
 #-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>
 """
-File       : RecordAggregator.py
-Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-
-This is example of finding failures (exit codes) in FWJR for
-WMArchive/Tools/myspark.py tool.
+MapReduce module to find failed records (records with non null exit codes).
+Used must supply valid spec with valid cmsRun attribute, e.g.
+{"spec":{"prep_id":"SUS-RunIISummer16DR80Premix-00169", "timerange":[20161127,20161129]}, "fields":[]}
 """
 
 import re
