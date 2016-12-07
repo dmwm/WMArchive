@@ -1,13 +1,9 @@
 #-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>
 """
-File       : RecordAggregator.py
-Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
-
-This is example of record counting for WMArchive/Tools/myspark.py tool.
-Even though we implemented full MapReduce functionality we don't
-need a reducer method here since myspark.py till do a job
-more efficiently. The counter should have Counter suffix in their
-file names, then myspark will apply .count() from the mapper.
+This is simple record counting module for WMArchive/Tools/myspark.py tool.
+User must supply valid spec file, e.g.
+{"spec":{"timerange":[20160601,20161203]}, "fields":[]}
 """
 
 import re

@@ -1,9 +1,10 @@
 #-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>
 """
-File       : LogFinder.py
-Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
+This MapReduce module defines logic how to find logArchive and logCollect tarballs.
+User must supply valid spec with lfn or log parameter, e.g.
+{"spec":{"lfn":"/store/mc/RunIISummer16MiniAODv2/DMV_NNPDF30_Vector_Mphi-500_Mchi-200_gSM-0p25_gDM-1p0_v2_13TeV-powheg/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/130000/9096A6B2-08AD-E611-8969-001E675A5244.root","timerange":[20161101,20161122]}, "fields":[]}
 
-This is example how to find CMS FWJR log file from provided LFN.
 The procedure:
 
 ### Simple use case

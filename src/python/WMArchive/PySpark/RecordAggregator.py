@@ -1,11 +1,8 @@
 #-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>, Nils Fischer <n dot fischer AT stud dot uni-heidelberg dot de>
 """
-File       : RecordAggregator.py
-Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>, Nils Fischer <n dot fischer AT stud dot uni-heidelberg dot de>
-
-This is example how to write simple aggregator mapper and reducer functions for
-WMArchive/Tools/myspark.py tool. It collects information about cpu/time/read/write
-sizes of successfull FWJR jobs. Information is structured by agent host/site.
+This MapReduce module implements aggregation over FWJR records fetched from HDFS.
+The information is aggregated across several metrics and structured by agent,host,site.
 """
 
 import time
