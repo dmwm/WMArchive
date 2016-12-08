@@ -83,12 +83,7 @@ class MongoStorage(Storage):
         self.codes = {} # dict of numeric codes
         if  fname:
             with open(fname, 'r') as exit_codes_file:
-                data = json.load(exit_codes_file)
-                for key, val in data.items():
-                    if  PAT_INT.match(key):
-                        self.codes[int(key)] = val
-                    else:
-                        self.codes[key] = val
+                self.codes = json.load(exit_codes_file)
 
         # read performance metrics
         fname = os.environ.get('WMARCHIVE_PERF_METRICS', '')
@@ -254,11 +249,33 @@ class MongoStorage(Storage):
         for scope_key in kwargs:
             if scope_key not in scope_keys or kwargs[scope_key] is None:
                 continue
-            filters[scope_key] = {
-                '$match': {
-                    'scope.' + scope_key: { '$regex': kwargs[scope_key] },
+            if  scope_key == 'exitCode':
+		# we need to handle exitCodes specially since they
+		# are stored in FWJR as int data-type, while on web UI
+		# we fetch them as strings in WMARCHIVE_ERROR_CODES json
+		# So, we take the exit code from kwargs which is a string pattern
+		# take its string value, and match both on int and str data-types
+		# in our records
+		val = kwargs[scope_key]
+		if  hasattr(val, "pattern"):
+		    val = val.pattern
+		val2 = val
+		if  PAT_INT.match(val):
+		    val2 = int(val)
+		filters[scope_key] = {
+		    '$match': {
+			'$or' : [
+			    {'scope.' + scope_key: val},
+			    {'scope.' + scope_key: val2}
+			]
+		    }
+		}
+            else:
+                filters[scope_key] = {
+                    '$match': {
+                        'scope.' + scope_key: { '$regex': kwargs[scope_key] },
+                    }
                 }
-            }
         scope += filters.values()
 
         # Collect suggestions
@@ -269,6 +286,10 @@ class MongoStorage(Storage):
                 },
             },
         ]))) for scope_key in suggestions }
+
+        # convert all exitCodes in suggestions to unique string to have them on web UI
+        data = collected_suggestions.get('exitCode', [])
+        collected_suggestions['exitCode'] = list(set([str(c) for c in data]))
 
         # Collect visualizations
         visualizations = {}
