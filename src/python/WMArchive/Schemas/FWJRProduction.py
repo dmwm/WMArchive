@@ -20,6 +20,10 @@ fwjr = \
               ],
  'PFNArrayRef': ['inputPFNs', 'outputPFNs', 'pfn'],  # list of keys whose value is referencing fileArray index
  
+ 'Campaign': 'TestCampaign',
+ 
+ 'PrepID': 'TestPrepID',
+ 
  'steps': [{'name': 'cmsRun1',
              #'analysis': {}, 
              #'cleanup': {},
