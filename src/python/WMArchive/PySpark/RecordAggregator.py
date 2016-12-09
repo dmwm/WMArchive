@@ -194,10 +194,6 @@ class MapReduce(object):
             scope_hash = get_scope_hash(rstats['scope'])
             stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
 
-        # aggregate among all stats documents
-        for scope_hash, rstats in stats.items():
-            stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
-
         # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
         # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
         stats = stats.values()
