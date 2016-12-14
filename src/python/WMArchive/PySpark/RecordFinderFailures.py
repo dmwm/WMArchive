@@ -49,6 +49,8 @@ def match(rec, spec):
         return False
     for key, val in spec.items():
         key = key.lower()
+        if  key == 'task':
+            return match_value(rec[key], val)
         for step in rec['steps']:
             if  step.get('name', '').lower().startswith('cmsrun'):
                 for output in step['output']:
