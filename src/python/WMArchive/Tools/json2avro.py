@@ -19,7 +19,7 @@ from WMArchive.Storage.AvroIO import AvroStorage
 class OptionParser(object):
     "User based option parser"
     def __init__(self):
-        self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
+        self.parser = argparse.ArgumentParser(prog='json2avro')
         self.parser.add_argument("--fin", action="store", \
             dest="fin", default="", help="Input JSON file")
         self.parser.add_argument("--schema", action="store", \
