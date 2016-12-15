@@ -41,15 +41,43 @@ def match_value(keyval, value):
             return True
     return False
 
+def match_cmsrun(rec, key, val):
+    "Match key, val pair in cmsRun portion of the record"
+    for step in rec['steps']:
+        if  step.get('name', '').lower().startswith('cmsrun'):
+            for output in step['output']:
+                for kkk, vvv in output.items():
+                    if  kkk.lower() == key:
+                        if  isinstance(vvv, list):
+                            for value in vvv:
+                                if  match_value(str(value), val):
+                                    return True
+                        else:
+                            if  match_value(str(vvv), val):
+                                return True
+
+def match_topkey(rec, key, val):
+    "Match key,val pair in top level keys of the record"
+    if key == 'lfn':
+        for lfn in rec['LFNArray']:
+            if match_value(lfn, val):
+                return True
+    elif key in rec:
+        return match_value(rec[key], val)
+    return False
+
 def match(rec, spec):
     "Find if record match given spec"
     for key, val in spec.items():
+        if  key in rec.keys(): # top level keys such as task
+            if  match_topkey(rec, key, val):
+                return True
         if key == 'lfn':
             for lfn in rec['LFNArray']:
-                if match_value(lfn, val):
+                if  match_value(lfn, val):
                     return True
-        elif key in rec:
-            return match_value(rec[key], val)
+        if  match_cmsrun(rec, key, val):
+            return True
     return False
 
 class MapReduce(object):
