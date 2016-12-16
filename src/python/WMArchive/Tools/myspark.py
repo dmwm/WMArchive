@@ -38,8 +38,11 @@ import datetime
 # WMArchive modules
 import WMArchive
 from WMArchive.Utils.Utils import htime, wmaHash, range_dates
-# stopmAMQ API
-from WMCore.Services.StompAMQ.StompAMQ import StompAMQ
+try:
+    # stopmAMQ API
+    from WMCore.Services.StompAMQ.StompAMQ import StompAMQ
+except ImportError:
+    StompAMQ = None
 
 try:
     from wmarchive_config import HDIR
@@ -409,7 +412,7 @@ def main():
     elif opts.amq:
         creds = credentials(opts.amq)
         host, port = creds['host_and_ports'].split(':')
-        if  creds:
+        if  creds and StompAMQ:
             print("### Send %s docs via StompAMQ" % len(results))
             amq = StompAMQ(creds['username'], creds['password'], \
                     creds['producer'], creds['topic'], [(host, port)])
