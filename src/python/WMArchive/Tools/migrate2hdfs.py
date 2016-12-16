@@ -16,7 +16,10 @@ import sys
 import argparse
 
 # pydoop modules
-import pydoop.hdfs as hdfs
+try:
+    import pydoop.hdfs as hdfs
+except: # wrap for sphinx
+    pass
 
 # WMArchive modules
 from WMArchive.Utils.Regexp import PAT_YYYYMMDD, PAT_YYYY, PAT_MM, PAT_DD

@@ -13,6 +13,7 @@ from __future__ import print_function, division
 
 # system modules
 import json
+import re
 import traceback
 from types import GeneratorType
 
@@ -22,12 +23,12 @@ import cherrypy
 # WMCore modules
 from WMCore.REST.Server import RESTEntity, restcall
 from WMCore.REST.Tools import tools
-from WMCore.REST.Validation import validate_str
+from WMCore.REST.Validation import validate_rx, validate_str, validate_strlist, validate_num
 from WMCore.REST.Format import JSONFormat
 
 # WMArchive modules
 from WMArchive.Service.Manager import WMArchiveManager
-from WMArchive.Utils.Regexp import PAT_UID, PAT_QUERY, PAT_INFO
+from WMArchive.Utils.Regexp import PAT_UID, PAT_QUERY, PAT_INFO, PAT_YYYYMMDD
 
 def results(result):
     "Return results as a list data type. Set proper status in case of failures"
@@ -38,7 +39,7 @@ def results(result):
     return result
 
 class WMAData(RESTEntity):
-    "REST interface for WMArchvie"
+    "REST interface for WMArchive"
     def __init__(self, app, api, config, mount):
         RESTEntity.__init__(self, app, api, config, mount)
         self.config = config
@@ -53,13 +54,38 @@ class WMAData(RESTEntity):
 
         """
         if  method == 'GET':
+
+            # Check for `performance` endpoint, documented in
+            # https://github.com/knly/WMArchiveAggregation
+            if len(param.args) == 1 and param.args[0] == 'performance':
+                safe.args.append(param.args[0])
+                param.args.remove(param.args[0])
+
+                # Validate arguments
+                validate_strlist('metrics[]', param, safe, re.compile(r'^[a-zA-Z.]+'))
+                validate_strlist('axes[]', param, safe, re.compile(r'^[a-zA-Z_]+'))
+                validate_strlist('suggestions[]', param, safe, re.compile(r'^[a-zA-Z]+'))
+                date_pattern = PAT_YYYYMMDD
+                validate_str('start_date', param, safe, date_pattern, optional=True)
+                validate_str('end_date', param, safe, date_pattern, optional=True)
+                validate_rx('workflow', param, safe, optional=True)
+                validate_rx('task', param, safe, optional=True)
+                validate_rx('host', param, safe, optional=True)
+                validate_rx('site', param, safe, optional=True)
+                validate_rx('jobtype', param, safe, optional=True)
+                validate_rx('jobstate', param, safe, optional=True)
+                validate_rx('acquisitionEra', param, safe, optional=True)
+                validate_rx('exitCode', param, safe, optional=True)
+                validate_rx('exitStep', param, safe, optional=True)
+                validate_str('_', param, safe, PAT_INFO, optional=True)
+
+                return True
+
             if 'query' in param.kwargs.keys():
                 validate_str('query', param, safe, PAT_QUERY, optional=True)
-            for key in ['status', 'jobs', 'adocs', '_']:
-                if  key in param.kwargs.keys():
+            for key in ['status', 'jobs', '_']:
+                if key in param.kwargs.keys():
                     validate_str(key, param, safe, PAT_INFO, optional=True)
-                    # underscore may come from ajax call via jQuery
-                    validate_str('_', param, safe, PAT_INFO, optional=True)
             # test if user provided uid
             if len(param.args) == 1 and PAT_UID.match(param.args[0]):
                 safe.args.append(param.args[0])
@@ -77,12 +103,16 @@ class WMAData(RESTEntity):
         Implement GET request with given uid or set of parameters
         All work is done by WMArchiveManager
         """
+        if 'performance' in args:
+            # documented in https://github.com/knly/WMArchiveAggregation
+            kwds['metrics'] = kwds.pop('metrics[]', None)
+            kwds['axes'] = kwds.pop('axes[]', None)
+            kwds['suggestions'] = kwds.pop('suggestions[]', None)
+            return results(dict(performance=self.mgr.performance(**kwds)))
         if  kwds.get('status', ''):
             return results(dict(status=self.mgr.status()))
         if  kwds.get('jobs', ''):
             return results(dict(jobs=self.mgr.jobs()))
-        if  kwds.get('adocs', ''):
-            return results(dict(adocs=self.mgr.adocs()))
         if  args and len(args) == 1: # requested uid
             return results(self.mgr.read(args[0], []))
         return results({'request': kwds, 'results': 'Not available'})

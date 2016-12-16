@@ -30,7 +30,10 @@ import avro.schema
 import avro.io
 
 # hdfs pydoop modules
-import pydoop.hdfs as hdfs
+try:
+    import pydoop.hdfs as hdfs
+except: # wrap for sphinx
+    pass
 
 # WMArchive modules
 from WMArchive.Storage.BaseIO import Storage

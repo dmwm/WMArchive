@@ -9,8 +9,17 @@ Description: Example file to run basic spark job via pyspark
 This code is based on example provided at
 https://github.com/apache/spark/blob/master/examples/src/main/python/avro_inputformat.py
 
-PySpark APIs:
-https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
+PySpark APIs: https://spark.apache.org/docs/0.9.0/api/pyspark/index.html
+
+myspark implements the following logic:
+    - it uses user provided spec file to extact conditions
+    - it loads user based MapReduce script with mapper/reducer methods
+    - if user based script ends with Counter suffix the reducer method
+      is ignored and .count() is applied to a mapper output
+    - the mapper method of the user-based class works as a filter. The avro RDD
+      passes all records as (rec, key) pairs. The mapper method should evaluate
+      the condition of the record to pass, while the reducer method collects
+      final results in a form suitable for end-user.
 """
 
 # system modules
@@ -24,28 +33,44 @@ import urllib
 import urllib2
 import httplib
 import argparse
+import datetime
 
 # WMArchive modules
-from WMArchive.Utils.Utils import htime, wmaHash
+import WMArchive
+from WMArchive.Utils.Utils import htime, wmaHash, range_dates
+# stopmAMQ API
+from WMCore.Services.StompAMQ.StompAMQ import StompAMQ
+
+try:
+    from wmarchive_config import HDIR
+except:
+    HDIR = 'hdfs:///cms/wmarchive/avro'
 
 class OptionParser():
     def __init__(self):
         "User based option parser"
         self.parser = argparse.ArgumentParser(prog='PROG')
-        msg = "Input data location on HDFS, e.g. hdfs:///path/data"
+        year = time.strftime("%Y", time.localtime())
+        hdir = HDIR
+        msg = "Input data location on HDFS, e.g. %s/%s" % (hdir, year)
         self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default="", help=msg)
-        msg = "Input schema, e.g. hdfs:///path/fwjr.avsc"
+            dest="hdir", default=hdir, help=msg)
+        schema = 'fwjr_prod.avsc'
+        msg = "Input schema, default %s/%s" % (hdir, schema)
         self.parser.add_argument("--schema", action="store",
-            dest="schema", default="", help=msg)
+            dest="schema", default="%s/%s" % (hdir, schema), help=msg)
         msg = "python script with custom mapper/reducer functions"
         self.parser.add_argument("--script", action="store",
             dest="script", default="", help=msg)
+        self.parser.add_argument("--list-scripts", action="store_true",
+            dest="scripts", default="", help=msg)
         msg = "json file with query spec or valid json"
         self.parser.add_argument("--spec", action="store",
             dest="spec", default="", help=msg)
         self.parser.add_argument("--yarn", action="store_true",
             dest="yarn", default=False, help="run job on analytics cluster via yarn resource manager")
+        self.parser.add_argument("--no-log4j", action="store_true",
+            dest="no-log4j", default=False, help="Disable spark log4j messages")
         msg = "store results into WMArchive, provide WMArchvie url"
         self.parser.add_argument("--store", action="store",
             dest="store", default="", help=msg)
@@ -60,6 +85,11 @@ class OptionParser():
                                default=x509(), dest="cert", help=msg)
         self.parser.add_argument("--verbose", action="store_true",
             dest="verbose", default=False, help="verbose output")
+        self.parser.add_argument("--records-output", action="store",
+            dest="rout", default="", help="Output file for records")
+        msg = "Send WMArchive results via StompAMQ to a broker, provide broker credentials in JSON file"
+        self.parser.add_argument("--amq", action="store",
+            dest="amq", default="", help=msg)
 
 def x509():
     "Helper function to get x509 either from env or tmp file"
@@ -171,18 +201,44 @@ class SparkLogger(object):
         "Print message via Spark Logger to warning stream"
         self.lprint('warning', msg)
 
+def get_script(name):
+    "Locate script for given name"
+    name = name if name.endswith('.py') else '%s.py' % name
+    if  os.path.isfile(name):
+        path, fname = os.path.split(name)
+    else: # get filename from WMArchive PySpark area
+        _, fname = os.path.split(name)
+        path = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
+    filename = os.path.join(path, fname)
+    if  not os.path.isfile(filename):
+        raise RuntimeError('Unable to load %s' % filename)
+    return filename
+
 def import_(filename):
     "Import given filename"
-    path, name = os.path.split(filename)
+    if  os.path.isfile(filename):
+        path, name = os.path.split(filename)
+    else: # get filename from WMArchive PySpark area
+        _, name = os.path.split(filename)
+        path = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
+    if  not os.path.isfile(filename):
+        raise RuntimeError('Unable to load %s' % filename)
     name, ext = os.path.splitext(name)
     ifile, filename, data = imp.find_module(name, [path])
     return imp.load_module(name, ifile, filename, data)
 
-def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=None):
+def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=None, yarn=None):
     """
     Main function to run pyspark job. It requires a schema file, an HDFS directory
     with data and optional script with mapper/reducer functions.
     """
+    if  script:
+        script = get_script(script)
+    if  verbose:
+        print("### schema: %s" % schema_file)
+        print("### path  : %s" % data_path)
+        print("### script: %s" % script)
+        print("### spec  : %s" % spec_file)
     time0 = time.time()
     # pyspark modules
     from pyspark import SparkContext
@@ -232,6 +288,11 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
             spec = json.load(open(spec_file))
         else:
             spec = json.loads(spec_file)
+    if  verbose:
+        spec['verbose'] = 1
+        print("### spec %s" % json.dumps(spec))
+    if  rout:
+        spec['output'] = rout
     if  script:
         obj = import_(script)
         logger.info("Use user-based script %s" % obj)
@@ -240,11 +301,33 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
                     % (script, obj))
             ctx.stop()
             return
-        mro = obj.MapReduce(spec)
-        # example of collecting records from mapper and
-        # passing all of them to reducer function
-        records = avro_rdd.map(mro.mapper).collect()
-        out = mro.reducer(records)
+        # we have a nested use case when one MR return WMArchive spec
+        # we'll loop in that case until we get non-spec output
+        count = 0
+        while True:
+            mro = obj.MapReduce(spec)
+            mname = mro.__dict__.get('name', '').split('.')[0]
+            print("### Load %s" % mname)
+            if  mname.lower().endswith('counter'):
+                out = avro_rdd.filter(mro.mapper).count()
+                if  rout:
+                    with open(rout, 'w') as ostream:
+                        ostream.write(out)
+                break
+            # example of collecting records from mapper and
+            # passing all of them to reducer function
+            records = avro_rdd.filter(mro.mapper).collect()
+            out = mro.reducer(records)
+            if  verbose:
+                print("### Loop count %s" % count)
+            if  count > 3:
+                print("### WARNING, loop counter exceed its limit")
+                break
+            if  is_spec(out):
+                spec = out
+            else:
+                break
+            count += 1
 
         # the map(f).reduce(f) example but it does not collect
         # intermediate records
@@ -257,15 +340,63 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, yarn=
         logger.info("Elapsed time %s" % htime(time.time()-time0))
     return out
 
+def credentials(fname=None):
+    "Read credentials from WMA_BROKER environment"
+    if  not fname:
+        fname = os.environ.get('WMA_BROKER', '')
+    if  not os.path.isfile(fname):
+        return {}
+    with open(fname, 'r') as istream:
+        data = json.load(istream)
+    return data
+
+def is_spec(data):
+    "Check if given data is WMArchive spec"
+    if  not isinstance(data, dict):
+        return False
+    std_keys = set(['spec', 'fields'])
+    if  set(data.keys()) & std_keys == std_keys:
+        return True
+    return False
+
+def scripts():
+    "List available scripts"
+    sdir = os.path.join('/'.join(WMArchive.__file__.split('/')[:-1]), 'PySpark')
+    for fname in os.listdir(sdir):
+        if  fname.endswith('.py') and fname != '__init__.py':
+            obj = import_(os.path.join(sdir, fname))
+            print(fname.split('.py')[0])
+            print(obj.__doc__)
+
 def main():
     "Main function"
     optmgr  = OptionParser()
     opts = optmgr.parser.parse_args()
     time0 = time.time()
-    hdir = opts.hdir.split()
-    if  len(hdir) == 1:
-        hdir = hdir[0]
-    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.yarn)
+
+    if  opts.scripts:
+        scripts()
+        sys.exit(0)
+
+    todate = datetime.datetime.today()
+    todate = int(todate.strftime("%Y%m%d"))
+    fromdate = datetime.datetime.today()-datetime.timedelta(days=1)
+    fromdate = int(fromdate.strftime("%Y%m%d"))
+    spec = json.load(open(opts.spec)) if opts.spec else {}
+    timerange = spec.get('spec', {}).get('timerange', [fromdate, todate])
+
+    if  opts.hdir == HDIR:
+        hdir = opts.hdir.split()
+        if  len(hdir) == 1:
+            hdir = hdir[0]
+            hdirs = []
+            for tval in range_dates(timerange):
+                if  hdir.find(tval) == -1:
+                    hdirs.append(os.path.join(hdir, tval))
+            hdir = hdirs
+    else:
+        hdir = opts.hdir
+    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.rout, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
         if  opts.wmaid:
@@ -275,9 +406,16 @@ def main():
         data['dtype'] = 'job'
         pdata = dict(job=data)
         postdata(opts.store, pdata, opts.ckey, opts.cert, opts.verbose)
+    elif opts.amq:
+        creds = credentials(opts.amq)
+        host, port = creds['host_and_ports'].split(':')
+        if  creds:
+            print("### Send %s docs via StompAMQ" % len(results))
+            amq = StompAMQ(creds['username'], creds['password'], \
+                    creds['producer'], creds['topic'], [(host, port)])
+            amq.send(results)
     else:
         print(results)
 
 if __name__ == '__main__':
     main()
-

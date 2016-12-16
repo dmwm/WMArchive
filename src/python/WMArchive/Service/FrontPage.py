@@ -36,6 +36,7 @@ class FrontPage(RESTFrontPage):
         :arg str mount: URL mount point."""
         mainroot = 'wmarchive' # entry point in access URL
         wpath = os.getenv('WMA_STATIC_ROOT', '')
+        print(wpath)
         if  not wpath:
             content = os.path.abspath(__file__).rsplit('/', 5)[0]
             xlib = (__file__.find("/xlib/") >= 0 and "x") or ""
@@ -56,5 +57,5 @@ class FrontPage(RESTFrontPage):
         roots = {mainroot: mdict, "templates": tdict, \
                 "js": jdict, "css": cdict, "images": idict}
         # location of frontpage in the root, e.g. wmarchive
-        frontpage = "%s/templates/wma.html" % mainroot
+        frontpage = "%s/templates/index.html" % mainroot
         RESTFrontPage.__init__(self, app, config, mount, frontpage, roots)

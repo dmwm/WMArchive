@@ -1,10 +1,9 @@
+#-*- coding: ISO-8859-1 -*-
+# Author: Valentin Kuznetsov <vkuznet AT gmail dot com>
 """
-This is example how to write mapper and reducer methods of MapReduce class for
-WMArchive/Tools/myspark.py tool. User should perform all necessary actions with
-given set of records and return back desired results. Here our mapper process
-records from avro files and collect results into a single dictionary. The
-reducer will collect results from all mappers and return back aggregated
-information.
+This is simple record counting module for WMArchive/Tools/myspark.py tool.
+User must supply valid spec file, e.g.
+{"spec":{"timerange":[20160601,20161203]}, "fields":[]}
 """
 
 import re
@@ -31,6 +30,8 @@ def match_value(keyval, value):
 
 def match(rec, spec):
     "Find if record match given spec"
+    if  not spec:
+        return True
     for key, val in spec.items():
         if key == 'lfn':
             for lfn in rec['LFNArray']:
@@ -42,35 +43,31 @@ def match(rec, spec):
 
 class MapReduce(object):
     def __init__(self, ispec=None):
+        self.name = __file__.split('/')[-1]
         self.fields = []
         if  ispec:
             if  'spec' in ispec:
-                spec = ispec['spec']
+                self.spec = ispec['spec']
             if  'fields' in ispec:
                 self.fields = ispec['fields']
-            if  'timerange' in ispec:
-                del ispec['timerange'] # this is not used for record search
-            self.spec = parse_spec(ispec)
+            if  'timerange' in self.spec:
+                del self.spec['timerange'] # this is not used for record search
+            self.spec = parse_spec(self.spec)
         else:
             self.spec = {}
 
-    def mapper(self, records):
+    def mapper(self, pair):
         """
-        Function to find a record for a given spec during spark
-        collect process. It will be called by RDD.map() object within spark.
-        The spec of the class is a JSON query which we'll apply to records.
+        Function to filter given pair, see myspark.py
         """
+        rec, _ = pair # we receive (record, key) from RDD
+        return match(rec, self.spec)
+
+    def reducer(self, records):
+        "Simpler reducer which collects all results from RDD.collect() records"
         nrec = 0
         for rec in records:
             if  not rec:
                 continue
-            if  not self.spec:
-                nrec += 1
-                continue
-            if  match(rec, self.spec):
-                nrec += 1
-        return nrec
-
-    def reducer(self, records, init=0):
-        "Simpler reducer which collects all results from RDD.collect() records"
-        return {"nrecords":len(records)}
+            nrec += 1
+        return {"nrecords":nrec}

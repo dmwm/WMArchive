@@ -20,10 +20,25 @@ import calendar
 import datetime
 
 # https://github.com/nvawda/bz2file
-from bz2file import BZ2File
+try:
+    from bz2file import BZ2File
+except:
+    pass
 
 # WMArchive modules
 from WMArchive.Utils.Regexp import PAT_YYYYMMDD, PAT_YYYY
+
+def write_records(fname, records):
+    "Write records to given file name"
+    count = 0
+    with open(fname, 'w') as ostream:
+        ostream.write('[\n')
+        for rec in records:
+            if  count:
+                ostream.write(",\n")
+            ostream.write(json.dumps(rec))
+            count += 1
+        ostream.write("]\n")
 
 def open_file(fname, mode='r'):
     """
@@ -70,6 +85,7 @@ def today():
 
 def hdate(date):
     "Transform given YYYYMMDD date into HDFS dir structure YYYY/MM/DD"
+    date = str(date)
     return '%s/%s/%s' % (date[0:4], date[4:6], date[6:8])
 
 def range_dates(trange):
