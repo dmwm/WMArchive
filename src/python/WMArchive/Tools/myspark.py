@@ -38,6 +38,8 @@ import datetime
 # WMArchive modules
 import WMArchive
 from WMArchive.Utils.Utils import htime, wmaHash, range_dates
+# stopmAMQ API
+from WMCore.Services.StompAMQ.StompAMQ import StompAMQ
 
 try:
     from wmarchive_config import HDIR
@@ -85,6 +87,9 @@ class OptionParser():
             dest="verbose", default=False, help="verbose output")
         self.parser.add_argument("--records-output", action="store",
             dest="rout", default="", help="Output file for records")
+        msg = "Send WMArchive results via StompAMQ to a broker, provide broker credentials in JSON file"
+        self.parser.add_argument("--amq", action="store",
+            dest="amq", default="", help=msg)
 
 def x509():
     "Helper function to get x509 either from env or tmp file"
@@ -335,6 +340,16 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=
         logger.info("Elapsed time %s" % htime(time.time()-time0))
     return out
 
+def credentials(fname=None):
+    "Read credentials from WMA_BROKER environment"
+    if  not fname:
+        fname = os.environ.get('WMA_BROKER', '')
+    if  not os.path.isfile(fname):
+        return {}
+    with open(fname, 'r') as istream:
+        data = json.load(istream)
+    return data
+
 def is_spec(data):
     "Check if given data is WMArchive spec"
     if  not isinstance(data, dict):
@@ -391,6 +406,14 @@ def main():
         data['dtype'] = 'job'
         pdata = dict(job=data)
         postdata(opts.store, pdata, opts.ckey, opts.cert, opts.verbose)
+    elif opts.amq:
+        creds = credentials(opts.amq)
+        host, port = creds['host_and_ports'].split(':')
+        if  creds:
+            print("### Send %s docs via StompAMQ" % len(results))
+            amq = StompAMQ(creds['username'], creds['password'], \
+                    creds['producer'], creds['topic'], [(host, port)])
+            amq.send(results)
     else:
         print(results)
 

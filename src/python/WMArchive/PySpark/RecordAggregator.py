@@ -159,6 +159,16 @@ def aggregate_stats(stats, existing):
 
     return stats
 
+def serialize_stats(stats):
+    "Serialize all parts of stats"
+    for rec in stats:
+        scope = rec['scope']
+        sdate = scope['start_date']
+        scope['start_date'] = sdate.isoformat()
+        edate = scope['end_date']
+        scope['end_date'] = edate.isoformat()
+        rec['scope'] = scope
+    return stats
 
 class MapReduce(object):
     def __init__(self, spec=None):
@@ -200,14 +210,7 @@ class MapReduce(object):
         if  self.verbose:
             print("### total number of collected stats", len(stats))
             with open('/tmp/wma_agg.json', 'w') as ostream:
-                for rec in stats:
-                    scope = rec['scope']
-                    sdate = scope['start_date']
-                    scope['start_date'] = sdate.isoformat()
-                    edate = scope['end_date']
-                    scope['end_date'] = edate.isoformat()
-                    rec['scope'] = scope
-                ostream.write(json.dumps(stats))
+                ostream.write(json.dumps(serialize_stats(stats)))
 
         if  len(stats):
             try: # store to mongoDB
@@ -223,4 +226,4 @@ class MapReduce(object):
         if  self.verbose:
             print("--- {} seconds ---".format(time.time() - self.start_time))
 
-        return stats
+        return serialize_stats(stats)
