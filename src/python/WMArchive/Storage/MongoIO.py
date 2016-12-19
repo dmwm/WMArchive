@@ -391,7 +391,7 @@ class MongoStorage(Storage):
                 else:
                     key = '%s' % aggregation_key
                     scope += [{"$match": {key:{"$gte":0}}}]
-                    quer = scope + [
+                    query = scope + [
                         {
                             '$group': {
                                 '_id': group_id,
