@@ -7,6 +7,7 @@ The information is aggregated across several metrics and structured by agent,hos
 
 import time
 import json
+import hashlib
 from string import digits
 from datetime import datetime, timedelta
 
@@ -25,7 +26,17 @@ def get_scope_hash(scope):
     """
     Hashes the scope dictionary to provide a key for the mapper and reducer.
     """
-    return str(hash(frozenset(scope.items())))
+    record = dict(scope) # make a copy
+    for key in ['start_date', 'end_date']:
+        if  key in record and isinstance(record[key], datetime):
+            record[key] = record[key].isoformat()
+    rec = json.JSONEncoder(sort_keys=True).encode(record)
+    keyhash = hashlib.md5()
+    try:
+        keyhash.update(rec)
+    except TypeError: # python3
+        keyhash.update(rec.encode('ascii'))
+    return keyhash.hexdigest()
 
 def valid_exitCode(exitCode):
     "Check if exit code is valid"
@@ -204,9 +215,14 @@ class MapReduce(object):
             scope_hash = get_scope_hash(rstats['scope'])
             stats[scope_hash] = aggregate_stats(rstats, existing=stats.get(scope_hash))
 
-        # Remove the scope hashes and only store a list of metrics, each with their `scope` attribute.
-        # This way we can store the data in MongoDB and later filter/aggregate using the `scope`.
+        # Store results
         stats = stats.values()
+
+        # Add hash to scope elements
+        for rec in stats:
+            rec['hash'] = get_scope_hash(rec['scope'])
+
+        # write results to external json file if necessary
         if  self.verbose:
             print("### total number of collected stats", len(stats))
             with open('/tmp/wma_agg.json', 'w') as ostream:
@@ -214,11 +230,18 @@ class MapReduce(object):
 
         if  len(stats):
             try: # store to mongoDB
-                mongo_client = MongoClient(self.mongouri)
-                mongo_collection = mongo_client['aggregated']['performance']
-                mongo_collection.insert(stats)
+                client = MongoClient(self.mongouri)
+                coll = client['aggregated']['performance']
+                coll.create_index("hash")
+                hashes = [d['hash'] for d in stats]
+                spec = {'hash':{'$in':hashes}}
+                existing_hashes = [d['hash'] for d in coll.find(spec)]
+                for doc in stats:
+                    if  doc['hash'] in existing_hashes:
+                        continue
+                    coll.insert(doc)
                 if  self.verbose:
-                    print("Aggregated performance metrics stored in MongoDB database {}.".format(mongo_collection))
+                    print("Aggregated performance metrics stored in MongoDB database {}.".format(coll))
             except Exception as exp:
                 print("WMArchive:ERROR, fail to store results to MongoDB")
                 print(str(exp))
