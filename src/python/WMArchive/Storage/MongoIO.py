@@ -211,6 +211,15 @@ class MongoStorage(Storage):
         start_time = time.time()
         verbose = kwargs.get('verbose', None)
 
+	# adjust end_date to make end_date inclusive since all records in aggregated.performance
+	# are stored as full day, e.g.
+	# "start_date" : ISODate("2016-12-21T00:00:00Z")
+	# "end_date" : ISODate("2016-12-22T00:00:00Z")
+	if  end_date:
+	    cdt = datetime.date(int(end_date[:4]), int(end_date[4:6]), int(end_date[6:]))
+	    ndt = cdt+datetime.timedelta(days=1)
+	    end_date = ndt.strftime('%Y%m%d')
+
         performance_data = self.client[os.environ.get('WMARCHIVE_PERF_DB', 'aggregated')][os.environ.get('WMARCHIVE_PERF_COLL', 'performance')]
 
         def get_aggregation_result(cursor_or_dict):
