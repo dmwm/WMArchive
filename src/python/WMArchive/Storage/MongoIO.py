@@ -248,7 +248,7 @@ class MongoStorage(Storage):
         if end_date is not None:
             timeframe_scope.append({
                 '$match': {
-                    'scope.end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 23, 59, 59) },
+                    'scope.end_date': { '$lte': datetime.datetime(int(end_date[0:4]), int(end_date[4:6]), int(end_date[6:8]), 0, 0, 0) },
                 }
             })
         scope += timeframe_scope
