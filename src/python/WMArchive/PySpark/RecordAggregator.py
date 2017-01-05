@@ -239,7 +239,16 @@ class MapReduce(object):
                 for doc in stats:
                     if  doc['hash'] in existing_hashes:
                         continue
-                    coll.insert(doc)
+                    try:
+                        coll.insert(doc)
+                    except InvalidDocument as exp:
+                        self.log('WARNING InvalidDocument: %s' % str(exp))
+                    except InvalidOperation as exp:
+                        self.log('WARNING InvalidOperation: %s' % str(exp))
+                    except DuplicateKeyError as exp:
+                        pass
+                    except Exception as exp:
+                        raise Exception(str(exp))
                 if  self.verbose:
                     print("Aggregated performance metrics stored in MongoDB database {}.".format(coll))
             except Exception as exp:

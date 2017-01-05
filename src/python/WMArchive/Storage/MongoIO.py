@@ -19,6 +19,7 @@ import time
 import traceback
 
 # Mongo modules
+import pymongo
 from pymongo import MongoClient
 from pymongo.errors import InvalidDocument, InvalidOperation, DuplicateKeyError
 from pymongo.son_manipulator import SONManipulator
@@ -128,8 +129,12 @@ class MongoStorage(Storage):
                 self.log('WARNING, duplicate record %s' % json.dumps(rec))
         for idx in range(0, len(data), self.chunk_size):
             docs = data[idx:idx+self.chunk_size]
+        for doc in data:
             try:
-                self.coll.insert(docs, continue_on_error=True)
+                if  pymongo.version.startswith('3.'): # pymongo 3.X
+                    self.coll.insert(doc, bypass_document_validation=True)
+                else:
+                    self.coll.insert(doc, continue_on_error=True)
             except InvalidDocument as exp:
                 self.log('WARNING InvalidDocument: %s' % str(exp))
             except InvalidOperation as exp:
