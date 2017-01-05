@@ -41,6 +41,7 @@ from pyspark.sql import Row
 from pyspark import StorageLevel
 
 # pymongo modules
+import pymongo
 from pymongo import MongoClient
 from bson import json_util
 
@@ -301,7 +302,10 @@ def main():
         mongo_client = MongoClient(opts.muri)
         dbname, collname = opts.dbname.split('.')
         mongo_collection = mongo_client[dbname][collname]
-        mongo_collection.insert(stats)
+        if  pymongo.version.startswith('3.'): # pymongo 3.X
+            mongo_collection.insert_many(stats)
+        else:
+            mongo_collection.insert(stats)
 
 if __name__ == '__main__':
     main()
