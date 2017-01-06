@@ -61,6 +61,15 @@ def extractFWJRids(docs):
         return ids
     return docs
 
+def find_dtype(doc):
+    "Based on given document return its document type"
+    meta = doc.get('meta_data', {})
+    if  meta and 'fwjr_id' in meta.keys():
+        return 'fwjr'
+    elif  meta and 'crab_id' in meta.keys():
+        return 'crab'
+    return 'Unkown'
+
 class WMArchiveManager(object):
     """
     Initialize WMArchive proxy server configuration. The given configuration
@@ -125,6 +134,8 @@ class WMArchiveManager(object):
                 doc['wmats'] = time.time()
             if  not doc.get('stype', ''):
                 doc['stype'] = self.sts.stype
+            if  not doc.get('dtype', ''):
+                doc['dtype'] = find_dtype(doc)
             yield doc
 
     def decode(self, docs):
