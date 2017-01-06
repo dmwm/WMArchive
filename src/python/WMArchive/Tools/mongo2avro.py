@@ -69,7 +69,7 @@ class OptionParser(object):
             help="timestamp below which records will be removed, YYYYMMDD \
             or number with suffix 'd' for days")
         self.parser.add_argument("--stype", action="store",\
-            dest="stype", default="avroio", help="Record storage type, default avroio")
+            dest="stype", default="avroio", help="Record storage type to clean-up, default avroio")
         self.parser.add_argument("--dtype", action="store",\
             dest="dtype", default="fwjr", help="Record document type, default fwjr")
 
@@ -148,14 +148,14 @@ def file_name(odir, mdir, thr, compress, close2midnight):
 
     return file_name(odir, mdir, thr, compress, close2midnight)
 
-def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight, stype, dtype):
+def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight, dtype):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
     mstg = MongoStorage(muri)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
     astg = AvroStorage(auri)
 
     # read data from MongoDB for given storage and document types
-    query = {'stype': stype, 'dtype': dtype}
+    query = {'stype': mstg.stype, 'dtype': dtype}
     mdocs = mstg.find(query, None) # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
@@ -215,7 +215,7 @@ def daemon(name, opts):
         print(tstamp(name), 'Migrate mongodb records to avro files')
         migrate(opts.muri, opts.odir, opts.mdir, \
                 opts.schema, thr, opts.compress, \
-                opts.chunk, opts.mthr, opts.stype, opts.dtype)
+                opts.chunk, opts.mthr, opts.dtype)
 
         print(tstamp(name), 'Cleanup MongoDB')
         cleanup(opts.muri, opts.tstamp, opts.stype, opts.dtype)
