@@ -69,7 +69,9 @@ class OptionParser(object):
             help="timestamp below which records will be removed, YYYYMMDD \
             or number with suffix 'd' for days")
         self.parser.add_argument("--stype", action="store",\
-            dest="stype", default="avroio", help="Record storage type to clean-up, default avroio")
+            dest="stype", default="avroio", help="Record storage type, default avroio")
+        self.parser.add_argument("--dtype", action="store",\
+            dest="dtype", default="fwjr", help="Record document type, default fwjr")
 
 def gen_file_name(odir, compress=''):
     "Generate new file name in given odir"
@@ -146,14 +148,14 @@ def file_name(odir, mdir, thr, compress, close2midnight):
 
     return file_name(odir, mdir, thr, compress, close2midnight)
 
-def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight):
+def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight, stype, dtype):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
     mstg = MongoStorage(muri)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
     astg = AvroStorage(auri)
 
-    # read data from MongoDB, returned mdocs is generator type
-    query = {'stype': mstg.stype}
+    # read data from MongoDB for given storage and document types
+    query = {'stype': stype, 'dtype': dtype}
     mdocs = mstg.find(query, None) # with no fields we'll get entire docs
 
     # loop over provided docs and write them into avro file on local file system
@@ -191,13 +193,13 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight):
         fname = file_name(odir, mdir, thr, compress, close2midnight)
     print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
 
-def cleanup(muri, tst, stype):
+def cleanup(muri, tst, stype, dtype):
     "Cleanup data in MongoDB (muri) for given timestamp (tst)"
     time0 = time.time()
     mstg = MongoStorage(muri)
     # remove records whose type is hdfsio, i.e. already migrated to HDFS,
     # and whose time stamp is less than provided one
-    query = {'stype': stype, 'wmats':{'$lt': dateformat(tst)}}
+    query = {'stype': stype, 'wmats':{'$lt': dateformat(tst)}, 'dtype': dtype}
     rdocs = mstg.ndocs(query)
     tdocs = time.time()-time0
     print(tstamp('mongo2avro'), 'found %s docs (in %s) to be removed' % (rdocs, elapsed_time(time0)))
@@ -212,10 +214,11 @@ def daemon(name, opts):
         time.sleep(opts.sleep)
         print(tstamp(name), 'Migrate mongodb records to avro files')
         migrate(opts.muri, opts.odir, opts.mdir, \
-                opts.schema, thr, opts.compress, opts.chunk, opts.mthr)
+                opts.schema, thr, opts.compress, \
+                opts.chunk, opts.mthr, opts.stype, opts.dtype)
 
         print(tstamp(name), 'Cleanup MongoDB')
-        cleanup(opts.muri, opts.tstamp, opts.stype)
+        cleanup(opts.muri, opts.tstamp, opts.stype, opts.dtype)
 
 def start_new_thread(name, func, args):
     "Wrapper around standard thread.strart_new_thread call"

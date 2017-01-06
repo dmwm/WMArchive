@@ -92,6 +92,9 @@ class MongoStorage(Storage):
             with open(fname, 'r') as metrics_file:
                 self.metrics = json.load(metrics_file)
 
+        # printout pymongo version
+        print(pymongo.version)
+
     def sconvert(self, spec, fields):
         "convert input spec/fields into ones suitable for MognoDB QL"
         return spec, fields
@@ -132,7 +135,7 @@ class MongoStorage(Storage):
         for doc in data:
             try:
                 if  pymongo.version.startswith('3.'): # pymongo 3.X
-                    self.coll.insert(doc, bypass_document_validation=True)
+                    self.coll.insert(doc)
                 else:
                     self.coll.insert(doc, continue_on_error=True)
             except InvalidDocument as exp:

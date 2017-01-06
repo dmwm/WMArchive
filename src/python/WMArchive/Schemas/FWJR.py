@@ -24,6 +24,7 @@ def schema(fout):
     fwjr['wmaid'] = ''
     fwjr['wmats'] = 0.
     fwjr['stype'] = ''
+    fwjr['dtype'] = 'fwjr'
     if  fout:
         with open(fout, 'w') as ostream:
             ostream.write(json.dumps(fwjr))
