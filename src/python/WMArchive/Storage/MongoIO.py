@@ -93,7 +93,7 @@ class MongoStorage(Storage):
                 self.metrics = json.load(metrics_file)
 
         # printout pymongo version
-        print(pymongo.version)
+        print("### pymongo.version %s" % pymongo.version)
 
     def sconvert(self, spec, fields):
         "convert input spec/fields into ones suitable for MognoDB QL"
