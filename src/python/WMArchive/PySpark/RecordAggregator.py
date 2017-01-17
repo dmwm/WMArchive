@@ -175,10 +175,10 @@ def serialize_stats(stats):
     for rec in stats:
         scope = rec['scope']
         sdate = scope['start_date']
-        if hasattr(sdate, isoformat):
+        if hasattr(sdate, 'isoformat'):
             scope['start_date'] = sdate.isoformat()
         edate = scope['end_date']
-        if hasattr(edate, isoformat):
+        if hasattr(edate, 'isoformat'):
             scope['end_date'] = edate.isoformat()
         rec['scope'] = scope
     return stats
