@@ -285,7 +285,7 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=
     #
     # in more general way we write mapper/reducer functions which will be
     # executed by Spark via collect call
-    spec = None
+    spec = {}
     if  spec_file:
         if  os.path.isfile(spec_file):
             spec = json.load(open(spec_file))
