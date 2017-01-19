@@ -227,8 +227,11 @@ class MapReduce(object):
         # write results to external json file if necessary
         if  self.verbose:
             print("### total number of collected stats", len(stats))
-            with open('/tmp/wma_agg.json', 'w') as ostream:
-                ostream.write(json.dumps(serialize_stats(stats)))
+            # VK 20170117: I can't write to external file since
+            # serialize_stats(stats) will change docs, in particular
+            # it will change start_date/end_date from dateformat into string
+#             with open('/tmp/wma_agg.json', 'w') as ostream:
+#                 ostream.write(json.dumps(serialize_stats(stats)))
 
         if  len(stats):
             try: # store to mongoDB
