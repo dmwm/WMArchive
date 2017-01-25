@@ -412,11 +412,17 @@ def main():
     elif opts.amq:
         creds = credentials(opts.amq)
         host, port = creds['host_and_ports'].split(':')
+        port = int(port)
         if  creds and StompAMQ:
             print("### Send %s docs via StompAMQ" % len(results))
             amq = StompAMQ(creds['username'], creds['password'], \
                     creds['producer'], creds['topic'], [(host, port)])
-            amq.send(results)
+            data = []
+            for doc in results:
+                hid = doc.get("hash", 1)
+                data.append(amq.make_notification(doc, hid))
+            results = amq.send(data)
+            print("### results from AMQ", len(results))
     else:
         print(results)
 
