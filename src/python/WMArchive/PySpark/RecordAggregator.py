@@ -190,7 +190,7 @@ class MapReduce(object):
         self.spec = spec
         self.mongouri = MONGOURI
         self.verbose = spec.get('verbose', False) if spec else False
-        self.precision = 'day'
+        self.precision = spec.get('precision', 'day')
         if  self.verbose:
             print("Starting FWJR aggregation...")
         self.start_time = time.time()
