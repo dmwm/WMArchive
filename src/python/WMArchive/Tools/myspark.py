@@ -385,7 +385,14 @@ def main():
     todate = int(todate.strftime("%Y%m%d"))
     fromdate = datetime.datetime.today()-datetime.timedelta(days=1)
     fromdate = int(fromdate.strftime("%Y%m%d"))
-    spec = json.load(open(opts.spec)) if opts.spec else {}
+    spec = {}
+    try:
+        if  os.path.isfile(opts.spec):
+            spec = json.load(open(opts.spec))
+        else:
+            spec = json.loads(opts.spec)
+    except Exception as exp:
+        pass
     timerange = spec.get('spec', {}).get('timerange', [fromdate, todate])
 
     if  opts.hdir == HDIR:
