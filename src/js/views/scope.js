@@ -39,6 +39,20 @@ app.ScopeView = Backbone.View.extend({
 
 });
 
+// helper function to reload page with appropriate MongoDB collection, either
+// day or hour
+function aggLoad(col)
+{
+    url=window.location.href;
+    if url.indexOf("agg_col") > 0 {
+        url = url.replace("day", col);
+        url = url.replace("hour", col);
+    } else {
+        url=window.location.href+'agg_col='+col;
+    }
+    window.location.href=url;
+}
+
 app.ScopeStatusView = Backbone.View.extend({
 
   className: 'status',
@@ -60,7 +74,9 @@ app.ScopeStatusView = Backbone.View.extend({
         statusDescription += "<br>from " + moment(status.start_date).format('lll') + " to " + moment(status.end_date).format('lll');
       }
       statusDescription += ".<br/>";
-      statusDescription += "Collection: <input type=\"button\" name=\"agg_col\" value=\"Daily\"> | <input type=\"button\" name=\"agg_col\" value=\"Hourly\">"
+      b1 = " <input type=\"button\" name=\"agg_col\" value=\"Daily\" onclick=aggLoad('day')>";
+      b2 = " <input type=\"button\" name=\"agg_col\" value=\"Hourly\" onclick=aggLoad('hour')>";
+      statusDescription += "Collection: " + b1 + " | " + b2;
       this.$el.html(this.template({ status: statusDescription }));
     }
     return this;
