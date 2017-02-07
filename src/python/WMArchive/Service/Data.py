@@ -77,6 +77,8 @@ class WMAData(RESTEntity):
                 validate_rx('acquisitionEra', param, safe, optional=True)
                 validate_rx('exitCode', param, safe, optional=True)
                 validate_rx('exitStep', param, safe, optional=True)
+                validate_rx('aggCol', param, safe, optional=True)
+                validate_rx('aggDB', param, safe, optional=True)
                 validate_str('_', param, safe, PAT_INFO, optional=True)
 
                 return True
