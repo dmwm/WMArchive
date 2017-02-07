@@ -81,8 +81,8 @@ def main():
             files = os.popen("hadoop fs -ls %s | sed '1d;s/  */ /g' | cut -d\  -f8" % basedir).read().splitlines()
             spec = {'precision': args.precision}
             for fname in files:
-                print("myspark --hdir=%s --schema=%s --script=%s"\
-                        % (fname, args.schema, aggregation_script))
+                print("myspark --hdir=%s --schema=%s --spec=%s --script=%s"\
+                        % (fname, args.schema, json.dumps(spec), aggregation_script))
                 subprocess.call([ 'myspark', \
                         '--hdir=' + fname, \
                         '--schema=' + args.schema, \

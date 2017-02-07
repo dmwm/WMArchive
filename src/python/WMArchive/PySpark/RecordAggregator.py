@@ -5,6 +5,7 @@ This MapReduce module implements aggregation over FWJR records fetched from HDFS
 The information is aggregated across several metrics and structured by agent,host,site.
 """
 
+import os
 import time
 import json
 import hashlib
@@ -236,8 +237,11 @@ class MapReduce(object):
 
         if  len(stats):
             try: # store to mongoDB
+                agg_db = os.environ.get('WMARCHIVE_PERF_DB', kwargs.get('aggDB', 'aggregated'))
+                agg_col = os.environ.get('WMARCHIVE_PERF_COLL', kwargs.get('aggCol', 'performance'))
                 client = MongoClient(self.mongouri)
-                coll = client['aggregated']['performance']
+                coll = client[agg_db][agg_col]
+                print("### RecordAggregator stores results to", coll)
                 coll.create_index("hash")
                 hashes = [d['hash'] for d in stats]
                 spec = {'hash':{'$in':hashes}}
