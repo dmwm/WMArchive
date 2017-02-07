@@ -68,6 +68,8 @@ class WMAData(RESTEntity):
                 date_pattern = PAT_YYYYMMDD
                 validate_str('start_date', param, safe, date_pattern, optional=True)
                 validate_str('end_date', param, safe, date_pattern, optional=True)
+                validate_str('aggCol', param, safe, PAT_QUERY, optional=True)
+                validate_str('aggDB', param, safe, PAT_QUERY, optional=True)
                 validate_rx('workflow', param, safe, optional=True)
                 validate_rx('task', param, safe, optional=True)
                 validate_rx('host', param, safe, optional=True)
@@ -77,8 +79,6 @@ class WMAData(RESTEntity):
                 validate_rx('acquisitionEra', param, safe, optional=True)
                 validate_rx('exitCode', param, safe, optional=True)
                 validate_rx('exitStep', param, safe, optional=True)
-                validate_rx('aggCol', param, safe, optional=True)
-                validate_rx('aggDB', param, safe, optional=True)
                 validate_str('_', param, safe, PAT_INFO, optional=True)
 
                 return True
