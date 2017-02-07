@@ -44,11 +44,11 @@ app.ScopeView = Backbone.View.extend({
 function aggLoad(col)
 {
     url=window.location.href;
-    if url.indexOf("agg_col") > 0 {
+    if (url.indexOf("aggCol") > 0) {
         url = url.replace("day", col);
         url = url.replace("hour", col);
     } else {
-        url=window.location.href+'agg_col='+col;
+        url=window.location.href+'&aggCol='+col;
     }
     window.location.href=url;
 }
@@ -74,8 +74,8 @@ app.ScopeStatusView = Backbone.View.extend({
         statusDescription += "<br>from " + moment(status.start_date).format('lll') + " to " + moment(status.end_date).format('lll');
       }
       statusDescription += ".<br/>";
-      b1 = " <input type=\"button\" name=\"agg_col\" value=\"Daily\" onclick=aggLoad('day')>";
-      b2 = " <input type=\"button\" name=\"agg_col\" value=\"Hourly\" onclick=aggLoad('hour')>";
+      b1 = " <input type=\"button\" name=\"aggCol\" value=\"Daily\" onclick=aggLoad('day')>";
+      b2 = " <input type=\"button\" name=\"aggCol\" value=\"Hourly\" onclick=aggLoad('hour')>";
       statusDescription += "Collection: " + b1 + " | " + b2;
       this.$el.html(this.template({ status: statusDescription }));
     }
