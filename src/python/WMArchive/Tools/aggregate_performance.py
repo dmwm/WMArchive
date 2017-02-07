@@ -74,18 +74,19 @@ def main():
     if args.use_myspark:
         from WMArchive.PySpark import RecordAggregator
         aggregation_script = RecordAggregator.__file__.replace('.pyc', '.py')
-        aggregation_script.precision = args.precision
         print("Using myspark aggregation script in {}.".format(aggregation_script))
 
         for day in args.source:
             basedir = '%s/%s' % (HDIR, day)
             files = os.popen("hadoop fs -ls %s | sed '1d;s/  */ /g' | cut -d\  -f8" % basedir).read().splitlines()
+            spec = {'precision': args.precision}
             for fname in files:
                 print("myspark --hdir=%s --schema=%s --script=%s"\
                         % (fname, args.schema, aggregation_script))
                 subprocess.call([ 'myspark', \
                         '--hdir=' + fname, \
                         '--schema=' + args.schema, \
+                        '--spec=' + json.dumps(spec), \
                         '--script=' + aggregation_script ])
     else:
         print("Using fwjr_aggregator aggregation script.")
