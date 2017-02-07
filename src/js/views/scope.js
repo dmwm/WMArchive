@@ -59,7 +59,8 @@ app.ScopeStatusView = Backbone.View.extend({
       if (status.start_date != null && status.end_date != null) {
         statusDescription += "<br>from " + moment(status.start_date).format('lll') + " to " + moment(status.end_date).format('lll');
       }
-      statusDescription += ".";
+      statusDescription += ".<br/>";
+      statusDescription += "Collection: <input type=\"button\" name=\"agg_col\" value=\"Daily\"> | <input type=\"button\" name=\"agg_col\" value=\"Hourly\">"
       this.$el.html(this.template({ status: statusDescription }));
     }
     return this;

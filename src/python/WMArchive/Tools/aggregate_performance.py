@@ -46,7 +46,7 @@ class OptionParser():
                 description="Run performance aggregations over the FWJR database.")
         self.parser.add_argument('source', type=parse_source, \
                 help="The FWJR data to aggregate over. Provide either a date formatted like YYYY-MM-DD, a number of days ago, e.g. 0 for today or 1 for yesterday, a path in the HDFS such as /cms/wmarchive/avro/2016/08/30 or 'all'.")
-        self.parser.add_argument('--precision', '-p', \
+        self.parser.add_argument('--precision', \
                 choices=[ 'hour', 'day', 'week', 'month' ], required=True, \
                 help="The temporal precision of aggregation.")
         self.parser.add_argument('--use_myspark', action='store_true', \
@@ -74,6 +74,7 @@ def main():
     if args.use_myspark:
         from WMArchive.PySpark import RecordAggregator
         aggregation_script = RecordAggregator.__file__.replace('.pyc', '.py')
+        aggregation_script.precision = args.precision
         print("Using myspark aggregation script in {}.".format(aggregation_script))
 
         for day in args.source:

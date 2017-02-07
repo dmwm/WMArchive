@@ -190,6 +190,7 @@ class MapReduce(object):
         self.spec = spec
         self.mongouri = MONGOURI
         self.verbose = spec.get('verbose', False) if spec else False
+        self.precision = 'day'
         if  self.verbose:
             print("Starting FWJR aggregation...")
         self.start_time = time.time()
@@ -211,7 +212,7 @@ class MapReduce(object):
             if  isinstance(record, tuple):
                 record = record[0] # get record from (rec,key) pair of RDD
             # Extract list of stats from record, generally one per step
-            rstats = extract_stats(record)
+            rstats = extract_stats(record, self.precision)
 
             # Merge into document
             scope_hash = get_scope_hash(rstats['scope'])
