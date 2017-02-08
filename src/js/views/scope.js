@@ -45,9 +45,10 @@ function aggLoad(col)
 {
     url=window.location.href;
     if (url.indexOf("aggCol") > 0) {
-        url = url.replace("performance", col);
-        url = url.replace("day", col);
-        url = url.replace("hour", col);
+        att = "aggCol="+col;
+        url = url.replace("aggCol=performance", att);
+        url = url.replace("aggCol=day", att);
+        url = url.replace("aggCol=hour", att);
     } else {
         url=window.location.href+'&aggCol='+col;
     }
