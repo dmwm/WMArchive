@@ -238,7 +238,7 @@ class MapReduce(object):
         if  len(stats):
             try: # store to mongoDB
                 agg_db = os.environ.get('WMARCHIVE_PERF_DB', 'aggregated')
-                agg_col = os.environ.get('WMARCHIVE_PERF_COLL', 'performance')
+                agg_col = os.environ.get('WMARCHIVE_PERF_COLL', 'day')
                 client = MongoClient(self.mongouri)
                 coll = client[agg_db][agg_col]
                 print("### RecordAggregator stores results to", coll)

@@ -33,7 +33,7 @@ app.Scope = Backbone.Model.extend({
     start_date: moment().subtract(30, 'days'),
     end_date: moment(),
     aggDB: "aggregated", // mongoDB name for aggregated records
-    aggCol: "performance", // mongoDB collection for aggregated records
+    aggCol: "day", // mongoDB collection for aggregated records
     workflow: null,
     task: null,
     step: null,

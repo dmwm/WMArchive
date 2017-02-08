@@ -229,7 +229,7 @@ class MongoStorage(Storage):
 	    end_date = ndt.strftime('%Y%m%d')
 
         agg_db = os.environ.get('WMARCHIVE_PERF_DB', kwargs.get('aggDB', 'aggregated'))
-        agg_col = os.environ.get('WMARCHIVE_PERF_COLL', kwargs.get('aggCol', 'performance'))
+        agg_col = os.environ.get('WMARCHIVE_PERF_COLL', kwargs.get('aggCol', 'day'))
         performance_data = self.client[agg_db][agg_col]
 
         def get_aggregation_result(cursor_or_dict):
