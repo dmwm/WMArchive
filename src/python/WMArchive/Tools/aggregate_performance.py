@@ -88,14 +88,14 @@ def main():
                 print("myspark --hdir=%s --schema=%s --spec=%s --script=%s %s"\
                         % (fname, args.schema, json.dumps(spec), aggregation_script, amq))
                 if amq:
-                    subprocess.call([ 'myspark ', \
+                    subprocess.call([ 'myspark', \
                             '--amq=' + amq, \
                             '--hdir=' + fname, \
                             '--schema=' + args.schema, \
                             '--spec=' + json.dumps(spec), \
                             '--script=' + aggregation_script], env=my_env)
                 else:
-                    subprocess.call([ 'myspark ', \
+                    subprocess.call([ 'myspark', \
                             '--hdir=' + fname, \
                             '--schema=' + args.schema, \
                             '--spec=' + json.dumps(spec), \
