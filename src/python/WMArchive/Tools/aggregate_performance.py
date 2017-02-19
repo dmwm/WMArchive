@@ -83,15 +83,23 @@ def main():
             my_env = os.environ.copy()
             amq = ''
             if  os.getenv('WMARCHIVE_AMQ_BROKER'):
-                amq = '--amq=%s' % os.getenv('WMARCHIVE_AMQ_BROKER')
+                amq = os.getenv('WMARCHIVE_AMQ_BROKER')
             for fname in files:
                 print("myspark --hdir=%s --schema=%s --spec=%s --script=%s %s"\
                         % (fname, args.schema, json.dumps(spec), aggregation_script, amq))
-                subprocess.call([ 'myspark %s' % amq, \
-                        '--hdir=' + fname, \
-                        '--schema=' + args.schema, \
-                        '--spec=' + json.dumps(spec), \
-                        '--script=' + aggregation_script], env=my_env)
+                if amq:
+                    subprocess.call([ 'myspark ', \
+                            '--amq=' + amq, \
+                            '--hdir=' + fname, \
+                            '--schema=' + args.schema, \
+                            '--spec=' + json.dumps(spec), \
+                            '--script=' + aggregation_script], env=my_env)
+                else:
+                    subprocess.call([ 'myspark ', \
+                            '--hdir=' + fname, \
+                            '--schema=' + args.schema, \
+                            '--spec=' + json.dumps(spec), \
+                            '--script=' + aggregation_script], env=my_env)
     else:
         print("Using fwjr_aggregator aggregation script.")
         for source in args.source:
