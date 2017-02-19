@@ -87,11 +87,11 @@ def main():
             for fname in files:
                 print("myspark --hdir=%s --schema=%s --spec=%s --script=%s %s"\
                         % (fname, args.schema, json.dumps(spec), aggregation_script, amq))
-                subprocess.call([ 'myspark', \
+                subprocess.call([ 'myspark %s' % amq, \
                         '--hdir=' + fname, \
                         '--schema=' + args.schema, \
                         '--spec=' + json.dumps(spec), \
-                        '--script=' + aggregation_script + amq], env=my_env)
+                        '--script=' + aggregation_script], env=my_env)
     else:
         print("Using fwjr_aggregator aggregation script.")
         for source in args.source:
