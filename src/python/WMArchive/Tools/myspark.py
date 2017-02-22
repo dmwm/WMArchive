@@ -431,7 +431,7 @@ def main():
             results = amq.send(data)
             print("### results from AMQ", len(results))
     else:
-        print(results)
+        print("### agg. results", len(results))
 
 if __name__ == '__main__':
     main()
