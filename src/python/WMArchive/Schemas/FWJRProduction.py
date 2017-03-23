@@ -72,6 +72,7 @@ fwjr = \
                          'processingStr': 'RECOCOSD_TaskChain_Data_pile_up_test',
                          'processingVer': 1,
                          'runs': [{'lumis': [164, 165],
+                                   'eventsPerLumi': [100, 150],
                                    'runNumber': 160960}],
                          'size': 647376,
                          'validStatus': 'PRODUCTION',
