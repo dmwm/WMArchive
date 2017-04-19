@@ -76,14 +76,19 @@ class WMArchiveManager(object):
     file will provide details of proxy server, agent information, etc.
     """
     def __init__(self, config=None):
+        # define DB names to work with. These names should correspond to
+        # dtype of documents we assign, see find_dtype and encode method
+        self.dbnames = ['fwjr', 'crab']
         # Short-Term Storage
-        self.sts = STSManager(config.short_storage_uri)
+        self.sts = {}
+        for dbname in self.dbnames:
+            self.sts[dbname] = STSManager(config.short_storage_uri, dbname=dbname)
         # Long-Term Storage
         self.tls_thr = config.long_storage_thr
         if  LTS: # we'll use this module if it's loaded
             self.lts = LTSManager(config.long_storage_uri, config.wmauri, config.yarn)
         else: # fallback
-            self.lts = self.sts
+            self.lts = self.sts['fwjr']
         self.specmap = {}
         with open(config.specmap, 'r') as istream:
             cdict = {}
@@ -96,18 +101,24 @@ class WMArchiveManager(object):
     def status(self):
         "Return current status about WMArchive queue"
         sdict = {}
-        sdict.update(self.sts.status())
-        if  self.lts != self.sts:
-            sdict.update(self.lts.status())
+        for dbname in self.dbnames:
+            sdict.update(self.sts[dbname].status())
+        sdict.update(self.lts.status())
         return sdict
 
     def jobs(self):
         "Return jobs from WMArchive STS"
-        return self.sts.jobs()
+        jobs = {}
+        for dbname in self.dbnames:
+            jobs[dbname] = self.sts[dbname].jobs()
+        return jobs
 
     def performance(self, **kwargs):
         "Return stats docs from WMArchive STS"
-        return self.sts.performance(**kwargs)
+        perf = {}
+        for dbname in self.dbnames:
+            perf[dbname] = self.sts[dbname].performance(**kwargs)
+        return perf
 
     def qmap(self, mgr, spec, fields):
         "Map user based spec into WMArhchive storage QL"
@@ -128,14 +139,15 @@ class WMArchiveManager(object):
         Yield encoded documents to the client.
         """
         for doc in docs:
+            dtype = find_dtype(doc)
             if  not doc.get('wmaid', ''):
                 doc['wmaid'] = wmaHash(doc)
             if  not doc.get('wmats', 0):
                 doc['wmats'] = time.time()
-            if  not doc.get('stype', ''):
-                doc['stype'] = self.sts.stype
             if  not doc.get('dtype', ''):
-                doc['dtype'] = find_dtype(doc)
+                doc['dtype'] = dtype
+            if  not doc.get('stype', ''):
+                doc['stype'] = self.sts[dtype].stype # here dtype is dbname in STS
             yield doc
 
     def decode(self, docs):
@@ -160,7 +172,8 @@ class WMArchiveManager(object):
             if  not isinstance(data, list):
                 raise HTTPError(500, "WMArchive exception, invalid data format: %s" % type(data))
             docs = [r for r in self.encode(data)]
-            ids = self.sts.write(docs)
+            dtype = docs[0]['dtype']
+            ids = self.sts[dtype].write(docs)
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
         except WriteError as exp:
@@ -187,8 +200,9 @@ class WMArchiveManager(object):
         Send request to proxy server to read data for given query.
         Yield list of found documents or None.
         """
+        dbname = spec.get('dtype', 'fwjr')
         result = {'input': {'spec': spec, 'fields': fields},
-                  'results': [], 'storage': self.sts.stype, 'status': 'ok'}
+                  'results': [], 'storage': self.sts[dbname].stype, 'status': 'ok'}
         # convert given spec into query suitable for sts/lts
         if  isinstance(spec, dict):
             try:
@@ -203,7 +217,7 @@ class WMArchiveManager(object):
 
             # based on given time range define which manager
             # we'll use for data look-up
-            mgr = self.sts
+            mgr = self.sts[dbname]
             if  use_lts(trange, self.tls_thr):
                 spec['timerange'] = trange # put back timerange for HDFS hdir constraint
                 mgr = self.lts
@@ -213,7 +227,7 @@ class WMArchiveManager(object):
         else:
             # if spec is a list, it means user look-up docs by wmaids
             # they represents results of LTS data look-up
-            mgr = self.sts
+            mgr = self.sts[dbname]
         status = 'ok'
         reason = None
         try:

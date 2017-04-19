@@ -18,10 +18,10 @@ from WMArchive.Storage.AvroIO import AvroStorage
 
 class STSManager(object):
     "Short-Term Storage manager based on Mongo/File/Avro storage back-end"
-    def __init__(self, uri):
+    def __init__(self, uri, dbname='fwjr'):
         "ctor with STS uri"
         if  uri.startswith('mongo'):
-            self.mgr = MongoStorage(uri)
+            self.mgr = MongoStorage(uri, dbname)
         elif uri.startswith('file'):
             self.mgr = FileStorage(uri)
         elif uri.startswith('avro'):

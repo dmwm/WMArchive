@@ -41,6 +41,8 @@ class OptionParser(object):
         self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
         self.parser.add_argument("--mongo", action="store",\
             dest="muri", default="", help="MongoDB URI")
+        self.parser.add_argument("--dbname", action="store",\
+            dest="dbname", default="fwjr", help="MongoDB name, e.g. fwjr or crab")
         self.parser.add_argument("--schema", action="store",\
             dest="schema", default="", help="Avro schema file")
         self.parser.add_argument("--odir", action="store",\
@@ -148,9 +150,9 @@ def file_name(odir, mdir, thr, compress, close2midnight):
 
     return file_name(odir, mdir, thr, compress, close2midnight)
 
-def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight, dtype):
+def migrate(muri, dbname, odir, mdir, avsc, thr, compress, chunk, close2midnight, dtype):
     "Write data from MongoDB (muri) to avro file(s) on local file system"
-    mstg = MongoStorage(muri)
+    mstg = MongoStorage(muri, dbname)
     auri = avsc if avsc.startswith('avroio:') else 'avroio:%s' % avsc
     astg = AvroStorage(auri)
 
@@ -193,10 +195,10 @@ def migrate(muri, odir, mdir, avsc, thr, compress, chunk, close2midnight, dtype)
         fname = file_name(odir, mdir, thr, compress, close2midnight)
     print(tstamp('mongo2avro'), "wrote %s docs out of %s" % (len(wmaids), total))
 
-def cleanup(muri, tst, stype, dtype):
+def cleanup(muri, dbname, tst, stype, dtype):
     "Cleanup data in MongoDB (muri) for given timestamp (tst)"
     time0 = time.time()
-    mstg = MongoStorage(muri)
+    mstg = MongoStorage(muri, dbname)
     # remove records whose type is hdfsio, i.e. already migrated to HDFS,
     # and whose time stamp is less than provided one
     query = {'stype': stype, 'wmats':{'$lt': dateformat(tst)}, 'dtype': dtype}
@@ -213,12 +215,12 @@ def daemon(name, opts):
     while True:
         time.sleep(opts.sleep)
         print(tstamp(name), 'Migrate mongodb records to avro files')
-        migrate(opts.muri, opts.odir, opts.mdir, \
+        migrate(opts.muri, opts.dbname, opts.odir, opts.mdir, \
                 opts.schema, thr, opts.compress, \
                 opts.chunk, opts.mthr, opts.dtype)
 
         print(tstamp(name), 'Cleanup MongoDB')
-        cleanup(opts.muri, opts.tstamp, opts.stype, opts.dtype)
+        cleanup(opts.muri, opts.dbname, opts.tstamp, opts.stype, opts.dtype)
 
 def start_new_thread(name, func, args):
     "Wrapper around standard thread.strart_new_thread call"
