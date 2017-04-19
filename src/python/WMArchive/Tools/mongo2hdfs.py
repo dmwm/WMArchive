@@ -23,12 +23,14 @@ class OptionParser(object):
         self.parser = argparse.ArgumentParser(prog='mongo2hdfs')
         self.parser.add_argument("--mongo", action="store",\
             dest="muri", default="", help="MongoDB URI")
+        self.parser.add_argument("--dbname", action="store",\
+            dest="dbname", default="fwjr", help="MongoDB name, fwjr or crab")
         self.parser.add_argument("--hdfs", action="store",\
             dest="huri", default="", help="HDFS URI")
 
-def migrate(muri, huri):
+def migrate(muri, dbname, huri):
     "Migrate data from MongoDB (muri) to HDFS (huri)"
-    mstg = MongoStorage(muri)
+    mstg = MongoStorage(muri, dbname)
     hstg = HdfsStorage(huri)
 
     # read data from MongoDB
@@ -66,7 +68,7 @@ def main():
     "Main function"
     optmgr = OptionParser()
     opts = optmgr.parser.parse_args()
-    migrate(opts.muri, opts.huri)
+    migrate(opts.muri, opts.dbname, opts.huri)
 
 if __name__ == '__main__':
     main()
