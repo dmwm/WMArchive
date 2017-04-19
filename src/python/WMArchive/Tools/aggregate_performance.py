@@ -51,7 +51,10 @@ class OptionParser():
                 help="The temporal precision of aggregation.")
         self.parser.add_argument('--use_myspark', action='store_true', \
                 help="Use legacy myspark script.")
-        schema = '%s/schemas/current.avsc' % HDIR
+        hdir = 'hdfs:///cms/wmarchive/avro/fwjr'
+        self.parser.add_argument('--hdir', action='store', \
+                default=hdir, help="WMArchive hdir, default=%s" % hdir)
+        schema = '%s/schemas/current.avsc' % hdir
         self.parser.add_argument('--schema', action='store', \
                 default=schema, help="WMArchive schema, default=%s" % schema)
         self.parser.add_argument('--spec', action='store', \
@@ -77,7 +80,7 @@ def main():
         print("Using myspark aggregation script in {}.".format(aggregation_script))
 
         for day in args.source:
-            basedir = '%s/%s' % (HDIR, day)
+            basedir = '%s/%s' % (args.hdir, day)
             files = os.popen("hadoop fs -ls %s | sed '1d;s/  */ /g' | cut -d\  -f8" % basedir).read().splitlines()
             spec = {'precision': args.precision}
             my_env = os.environ.copy()
