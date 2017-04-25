@@ -165,6 +165,7 @@ class WMArchiveManager(object):
         """
         reason = ''
         status = 'ok'
+        stype = 'unknown'
         ids = []
         if  isinstance(data, dict):
             data = [data]
@@ -174,6 +175,7 @@ class WMArchiveManager(object):
             docs = [r for r in self.encode(data)]
             dtype = docs[0]['dtype']
             ids = self.sts[dtype].write(docs)
+            stype = self.sts[dtype].stype
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
         except WriteError as exp:
@@ -190,7 +192,7 @@ class WMArchiveManager(object):
             ids = extractFWJRids(data)
             raise HTTPError(500, 'WMArhchive exception, ids=%s, exception=%s'\
                     % (ids, str(exp)))
-        result = {'stype': self.sts.stype, 'ids': ids, 'status': status}
+        result = {'stype': stype, 'ids': ids, 'status': status}
         if  reason:
             result['reason'] = reason
         return result
