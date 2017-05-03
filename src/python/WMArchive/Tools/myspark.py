@@ -434,6 +434,8 @@ def main():
             print("### results from AMQ", len(results))
     else:
         print("### agg. results", len(results))
+        for doc in results:
+            print(doc)
 
 if __name__ == '__main__':
     main()
