@@ -91,4 +91,4 @@ class MapReduce(object):
         self.counters['count'] = count
         self.counters['minRecord'] = minRecord
         self.counters['maxRecord'] = maxRecord
-        return self.counters
+        return [self.counters]

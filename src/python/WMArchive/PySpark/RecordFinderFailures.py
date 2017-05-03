@@ -140,7 +140,7 @@ class MapReduce(object):
                     out.append(select(rec))
         if  self.output:
             write_records(self.output, out)
-        return {"nrecords":nrec}
+        return out
 
 def test(fname):
     records = json.load(open(fname))
