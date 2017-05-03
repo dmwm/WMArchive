@@ -208,11 +208,11 @@ class MapReduce(object):
             if  self.output:
                 write_records(self.output, [odict])
                 return
-            return json.dumps(odict)
+            return [odict]
         exts = [r.split('.')[-1] for r in out]
         if  len(set(exts)) > 1: # multiple extensions, we'll return non-root entries
             out = [r for r in out if not r.endswith('root')]
-        return self.make_spec(out)
+        return [self.make_spec(out)]
 
     def make_spec(self, data):
         "Make WMArchive spec from provided data"

@@ -70,4 +70,4 @@ class MapReduce(object):
             if  not rec:
                 continue
             nrec += 1
-        return {"nrecords":nrec}
+        return [{"nrecords":nrec}]
