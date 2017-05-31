@@ -83,6 +83,7 @@ class WMArchiveManager(object):
         self.sts = {}
         for dbname in self.dbnames:
             self.sts[dbname] = STSManager(config.short_storage_uri, dbname=dbname)
+        self.sts_agg = STSManager(config.short_storage_uri, dbname='aggregated')
         # Long-Term Storage
         self.tls_thr = config.long_storage_thr
         if  LTS: # we'll use this module if it's loaded
@@ -115,10 +116,7 @@ class WMArchiveManager(object):
 
     def performance(self, **kwargs):
         "Return stats docs from WMArchive STS"
-        perf = {}
-        for dbname in self.dbnames:
-            perf[dbname] = self.sts[dbname].performance(**kwargs)
-        return perf
+        return self.sts_agg.performance(**kwargs)
 
     def qmap(self, mgr, spec, fields):
         "Map user based spec into WMArhchive storage QL"

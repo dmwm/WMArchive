@@ -435,7 +435,12 @@ def main():
     else:
         print("### number of results", len(results))
         for doc in results:
-            print(json.dumps(doc))
+            if '_id' in doc:
+                del doc['_id'] # delete ObjectID from MongoDB
+            try:
+                print(json.dumps(doc))
+            except:
+                print(doc)
 
 if __name__ == '__main__':
     main()
