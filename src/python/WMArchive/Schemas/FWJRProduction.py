@@ -3,6 +3,8 @@
 fwjr = \
 {'meta_data': {'agent_ver': '1.0.14.pre5',
                'fwjr_id': '1-0',
+               'crab_id': 'crab',
+               'crab_exit_code': 101,
                'host': 'test.fnal.gov',
                'jobtype': "Processing",
                'jobstate': "success", 
