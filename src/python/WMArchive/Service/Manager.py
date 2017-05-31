@@ -64,11 +64,13 @@ def extractFWJRids(docs):
 def find_dtype(doc):
     "Based on given document return its document type"
     meta = doc.get('meta_data', {})
+    # look-up first crab docs
+    if  meta and 'crab_id' in meta.keys():
+        return 'crab'
+    # if no crab docs found look-up fwjr one
     if  meta and 'fwjr_id' in meta.keys():
         return 'fwjr'
-    elif  meta and 'crab_id' in meta.keys():
-        return 'crab'
-    return 'Unkown'
+    return 'Unknown'
 
 class WMArchiveManager(object):
     """
