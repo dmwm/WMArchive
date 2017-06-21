@@ -139,7 +139,12 @@ def file_name(odir, mdir, thr, compress, close2midnight):
     # check if we close to midnight, if so, we'll check migration dir and
     # if it does not have any entries we'll move existing files into mdir
     if  low_production(mdir, close2midnight):
-        move_file(fname, mdir)
+        for name in files:
+            move_file(name, mdir)
+        # and pause here for a time that we'll pass the midnight
+        hhmm = int(time.strftime("%H%M", time.localtime()))
+        sleep_time = (2401-hhmm)*60 # 2401 represents one minute after midnight
+        time.sleep(sleep_time)
         return file_name(odir, mdir, thr, compress, close2midnight)
 
     if  size < thr:
