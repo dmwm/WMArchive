@@ -32,6 +32,7 @@ except Exception as exp:
     LTS = False
 from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp, dateformat
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+from Utils.ProcessStats import processStatus, threadStack
 
 def trange_check(trange):
     "Check correctnes of trange values"
@@ -100,13 +101,22 @@ class WMArchiveManager(object):
                 self.specmap[pair[0]] = pair[1] # lfn:LFNArray
         msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" % (self.sts, self.lts, self.specmap)
         print(tstamp("WMArchiveManager::init"), msg)
+        self.time0 = time.time()
+        self.read_access = 0
+        self.write_access = 0
 
     def status(self):
         "Return current status about WMArchive queue"
-        sdict = {}
+        sdict = {'server': processStatus()}
+        sdict['server'].update({'uptime': time.time()-self.time0,
+                                'read_access':self.read_access,
+                                'write_access': self.write_access})
+        sdict.update(threadStack())
+        sts = {}
         for dbname in self.dbnames:
-            sdict.update(self.sts[dbname].status())
-        sdict.update(self.lts.status())
+            sts.update({dbname: self.sts[dbname].status()})
+        sdict.update({'sts':sts})
+        sdict.update({'lts':self.lts.status()})
         return sdict
 
     def jobs(self):
@@ -163,6 +173,7 @@ class WMArchiveManager(object):
         Write given data chunk (list of WM documents) into proxy server.
         Return true or false of write operation.
         """
+        self.write_access += 1
         reason = ''
         status = 'ok'
         stype = 'unknown'
@@ -202,6 +213,7 @@ class WMArchiveManager(object):
         Send request to proxy server to read data for given query.
         Yield list of found documents or None.
         """
+        self.read_access += 1
         dbname = spec.get('dtype', 'fwjr')
         result = {'input': {'spec': spec, 'fields': fields},
                   'results': [], 'storage': self.sts[dbname].stype, 'status': 'ok'}
