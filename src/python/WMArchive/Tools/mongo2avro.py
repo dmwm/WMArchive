@@ -140,6 +140,7 @@ def file_name(odir, mdir, thr, compress, close2midnight):
     # if it does not have any entries we'll move existing files into mdir
     if  low_production(mdir, close2midnight):
         for name in files:
+            name = os.path.join(odir, name)
             move_file(name, mdir)
         # and pause here for a time that we'll pass the midnight
         hhmm = int(time.strftime("%H%M", time.localtime()))
