@@ -5516,4 +5516,12 @@ svg .filled {
   .heatmap .heatmap-item {
     cursor: pointer; }
 
+.active-div {
+  font-weight: bold;
+  border-style: solid;
+  border-bottom: thick solid #ff0000;
+  border-left: thick solid #ff0000;
+}
+.inactive-div {
+}
 /*# sourceMappingURL=main.css.map */

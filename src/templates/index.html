@@ -119,6 +119,9 @@
     // Setup router
     app.router = new app.Router();
     Backbone.history.start({ pushState: true, root: "/wmarchive/web/" });
+
+    // adjust web page to highlight the view we are in
+    highlightView();
   </script>
 
 </body>
