@@ -61,7 +61,13 @@ def extract_stats(record, timeframe_precision="day"):
         start_date = datetime(year=timestamp.year, month=timestamp.month, day=timestamp.day, hour=timestamp.hour)
         end_date = start_date + timedelta(hours=1)
 
-    taskname_components = record['task'].split('/')
+    task = record['task']
+    if '/' in task: # FWJR task name /a/b/c
+        taskname_components = task.split('/')
+    elif ':' in task: # CRAB task name 123:abc
+        taskname_components = task.split(':')
+    else: # default
+        taskname_components = 'workflow-NA', 'task-NA'
 
     site = None
     acquisitionEra = None
