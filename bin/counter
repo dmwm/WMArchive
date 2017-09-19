@@ -20,6 +20,7 @@ do
     files=`hadoop fs -ls hdfs:///cms/wmarchive/avro/$srv/$year/$month | awk '{print $8}' | grep hdfs`
     for f in $files;
     do
+        tst=`echo $f | awk '{z=split($1,a,"/"); print ""a[z-2]""a[z-1]""a[z]""}'`
         out=`$cmd --hdir=$f 2> /dev/null`
         echo "$tst $out"
     done
