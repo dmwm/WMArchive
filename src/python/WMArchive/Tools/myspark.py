@@ -431,16 +431,19 @@ def main():
                     del doc['_id'] # delete ObjectID from MongoDB
                 data.append(amq.make_notification(doc, hid))
             results = amq.send(data)
-            print("### results from AMQ", len(results))
+            print("### results from AMQ %s" % len(results))
     else:
-        print("### number of results", len(results))
-        for doc in results:
-            if '_id' in doc:
-                del doc['_id'] # delete ObjectID from MongoDB
-            try:
-                print(json.dumps(doc))
-            except:
-                print(doc)
+        if isinstance(results, list):
+            print("### number of results %s" % len(results))
+            for doc in results:
+                if '_id' in doc:
+                    del doc['_id'] # delete ObjectID from MongoDB
+                try:
+                    print(json.dumps(doc))
+                except:
+                    print(doc)
+        else:
+            print("### number of results %s", results)
 
 if __name__ == '__main__':
     main()
