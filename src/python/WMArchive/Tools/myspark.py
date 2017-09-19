@@ -444,7 +444,7 @@ def main():
                 except:
                     print(doc)
         else:
-            print("### number of results %s" % results)
+            print(results)
 
 if __name__ == '__main__':
     main()

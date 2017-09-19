@@ -1,6 +1,11 @@
 #!/bin/bash
+# Author: Valentin Kuznetsov <vkuznet AT gmail [DOT] com>
+# this script allows to count number of documents (crab or fwjr ones)
+# in a given year and month(s). The counting is done via myspark job with RecordCounter script
 if [ $# -ne 3 ]; then
-    echo "Usage: counter <crab|fwjr> <year> <month or 'm1 m2 m3'>"
+    echo "Usage: counter <crab|fwjr> <year> <month or 'month1 month2 month3 ...'>"
+    echo "Example: counter crab 2017 9 # count crab docs for Sept of 2017"
+    echo "Example: counter fwjr 2017 \"7 8 9\" # count fwjr docs for Jul-Sept of 2017"
     exit 0
 fi
 
@@ -20,6 +25,7 @@ do
     files=`hadoop fs -ls hdfs:///cms/wmarchive/avro/$srv/$year/$month | awk '{print $8}' | grep hdfs`
     for f in $files;
     do
+        tst=`echo $f | awk '{z=split($1,a,"/"); print ""a[z-2]""a[z-1]""a[z]""}'`
         out=`$cmd --hdir=$f 2> /dev/null`
         echo "$tst $out"
     done
