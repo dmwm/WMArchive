@@ -4,7 +4,6 @@ if [ $# -ne 3 ]; then
     exit 0
 fi
 
-source /data/srv/current/apps/wmarchive/etc/profile.d/init.sh
 cmd="myspark --script=RecordCounter --spec={}"
 
 srv=$1
