@@ -310,7 +310,8 @@ def run(schema_file, data_path, script=None, spec_file=None, verbose=None, rout=
         while True:
             mro = obj.MapReduce(spec)
             mname = mro.__dict__.get('name', '').split('.')[0]
-            print("### Load %s" % mname)
+            if verbose:
+                print("### Load %s" % mname)
             if  mname.lower().endswith('counter'):
                 out = avro_rdd.filter(mro.mapper).count()
                 if  rout:
@@ -443,7 +444,7 @@ def main():
                 except:
                     print(doc)
         else:
-            print("### number of results %s", results)
+            print("### number of results %s" % results)
 
 if __name__ == '__main__':
     main()
