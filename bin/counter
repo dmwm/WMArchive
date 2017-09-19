@@ -1,0 +1,27 @@
+#!/bin/bash
+if [ $# -ne 3 ]; then
+    echo "Usage: counter <crab|fwjr> <year> <month or 'm1 m2 m3'>"
+    exit 0
+fi
+
+source /data/srv/current/apps/wmarchive/etc/profile.d/init.sh
+cmd="myspark --script=RecordCounter --spec={}"
+
+srv=$1
+year=$2
+months=$3
+dates=`seq 11 18`
+for m in $months;
+do
+    if [ $m -gt 9 ]; then
+        month=$m
+    else
+        month="0$m"
+    fi
+    files=`hadoop fs -ls hdfs:///cms/wmarchive/avro/$srv/$year/$month | awk '{print $8}' | grep hdfs`
+    for f in $files;
+    do
+        out=`$cmd --hdir=$f 2> /dev/null`
+        echo "$tst $out"
+    done
+done
