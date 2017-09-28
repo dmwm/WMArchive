@@ -112,7 +112,11 @@ fwjr = \
                        "MinEventTime": 0.0,
                        "MaxEventTime": 0.0,
                        'EventThroughput': 0.0,
-                       'TotalLoopCPU': 0.0
+                       'TotalLoopCPU': 0.0,
+                       'TotalInitTime': 0.0,
+                       'TotalInitCPU': 0.0,
+                       'NumberOfThreads': 0.0,
+                       'NumberOfStreams': 0.0
                    }
               },
               'site': 'T2_CH_CERN',
