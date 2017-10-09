@@ -115,8 +115,8 @@ fwjr = \
                        'TotalLoopCPU': 0.0,
                        'TotalInitTime': 0.0,
                        'TotalInitCPU': 0.0,
-                       'NumberOfThreads': 0.0,
-                       'NumberOfStreams': 0.0
+                       'NumberOfThreads': 0,
+                       'NumberOfStreams': 0
                    }
               },
               'site': 'T2_CH_CERN',
