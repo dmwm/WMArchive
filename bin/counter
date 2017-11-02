@@ -14,7 +14,7 @@ cmd="myspark --script=RecordCounter --spec={}"
 srv=$1
 year=$2
 months=$3
-dates=`seq 11 18`
+schema=hdfs:///cms/wmarchive/avro/schema.avsc
 for m in $months;
 do
     if [ $m -gt 9 ]; then
@@ -26,7 +26,7 @@ do
     for f in $files;
     do
         tst=`echo $f | awk '{z=split($1,a,"/"); print ""a[z-2]""a[z-1]""a[z]""}'`
-        out=`$cmd --hdir=$f 2> /dev/null`
+        out=`$cmd --schema=$schema --hdir=$f 2> /dev/null`
         echo "$tst $out"
     done
 done
