@@ -20,7 +20,7 @@ import traceback
 
 # Mongo modules
 import pymongo
-from pymongo import MongoClient
+# from pymongo import MongoClient
 from pymongo.errors import InvalidDocument, InvalidOperation, DuplicateKeyError
 from pymongo.son_manipulator import SONManipulator
 from bson.son import SON
@@ -29,6 +29,7 @@ from bson.son import SON
 from WMArchive.Storage.BaseIO import Storage
 from WMArchive.Utils.Regexp import PAT_UID, PAT_INT
 from WMArchive.Utils.Exceptions import WriteError, ReadError
+from WMArchive.Utils.PyMongo import db_connection
 
 def set_duplicates(docs):
     "Return duplicates FWJR ids within given set of docs"
@@ -70,7 +71,8 @@ class MongoStorage(Storage):
     def __init__(self, uri, dbname='fwjr', collname='db', chunk_size=1000):
         "ctor with mongo uri: mongodb://host:port"
         Storage.__init__(self, uri)
-        self.client = MongoClient(uri, w=1)
+#         self.client = MongoClient(uri, w=1)
+        self.client = db_connection(uri)
         self.mdb = self.client[dbname]
         self.mdb.add_son_manipulator(WMASONManipulator())
         self.collname = collname

@@ -192,3 +192,25 @@ def htime(seconds):
 def elapsed_time(time0):
     "Return elapsed time from given time stamp"
     return htime(time.time()-time0)
+
+# Singletons in python
+# http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+
+# Singleton class
+#class Singleton(object):
+#    "Implement Singleton behavior"
+#    def __new__(cls, *args, **kwargs):
+#        "Define single instance and return it back"
+#        if  not hasattr(cls, '_instance'):
+#            cls._instance = object.__new__(cls, *args, **kwargs)
+#        return cls._instance
+
+# Singleton metaclass
+class Singleton(type):
+    "Implement Singleton behavior as metaclass"
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        "Define single instance and return it back"
+        if  cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]

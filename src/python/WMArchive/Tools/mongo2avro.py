@@ -20,6 +20,7 @@ import shutil
 import argparse
 import itertools
 import threading
+import traceback
 
 # try to use psutil for memory monitoring
 PSUTIL = False
@@ -221,9 +222,13 @@ def daemon(name, opts):
     while True:
         time.sleep(opts.sleep)
         print(tstamp(name), 'Migrate mongodb records to avro files')
-        migrate(opts.muri, opts.dbname, opts.odir, opts.mdir, \
-                opts.schema, thr, opts.compress, \
-                opts.chunk, opts.mthr, opts.dtype)
+        try:
+            migrate(opts.muri, opts.dbname, opts.odir, opts.mdir, \
+                    opts.schema, thr, opts.compress, \
+                    opts.chunk, opts.mthr, opts.dtype)
+        except:
+            traceback.print_exc()
+            pass
 
         print(tstamp(name), 'Cleanup MongoDB')
         cleanup(opts.muri, opts.dbname, opts.tstamp, opts.stype, opts.dtype)
