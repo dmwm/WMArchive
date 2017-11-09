@@ -130,8 +130,8 @@ class MongoStorage(Storage):
                        self.log(json.dumps(rec))
         if  sts_dup:
             self.log("WARNING, found %s duplicates in STS:" % len(sts_dup))
-            for rec in sts_dup:
-                self.log('WARNING, duplicate record %s' % json.dumps(rec))
+#             for rec in sts_dup:
+#                 self.log('WARNING, duplicate record %s' % json.dumps(rec))
         for idx in range(0, len(data), self.chunk_size):
             docs = data[idx:idx+self.chunk_size]
         for doc in data:
