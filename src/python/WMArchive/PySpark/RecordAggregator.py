@@ -165,7 +165,8 @@ def aggregate_stats(stats, existing):
         if type(d) is dict or type(dd) is dict:
             paths = []
             for subkey in set(map(lambda k: k.replace('_N', ''), (d or {}).keys()) + map(lambda k: k.replace('_N', ''), (dd or {}).keys())):
-                paths += map(lambda path: [ key ] + path, get_paths(d.get(subkey), dd.get(subkey), subkey))
+                if d and dd:
+                    paths += map(lambda path: [ key ] + path, get_paths(d.get(subkey), dd.get(subkey), subkey))
             return paths
         else:
             return [ [ key ] ]
