@@ -129,7 +129,7 @@ class MongoStorage(Storage):
                     if rec['wmaid'] == wid:
                        self.log(json.dumps(rec))
         if  sts_dup:
-            self.log("WARNING, found %s duplicates in STS:" % len(sts_dup))
+            self.log("WARNING, found %s duplicates in %s STS:" % (len(sts_dup), self.coll))
 #             for rec in sts_dup:
 #                 self.log('WARNING, duplicate record %s' % json.dumps(rec))
         for idx in range(0, len(data), self.chunk_size):
