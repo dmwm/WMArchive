@@ -35,6 +35,10 @@ class OptionParser(object):
         self.parser.add_argument("--dry-run", action="store_true",\
                 dest="dryrun", default="", \
                 help="Construct query for DB but do not execute it, i.e. dry-run")
+        dbname = 'aggregated.fwjr'
+        self.parser.add_argument("--dbname", action="store",\
+                dest="dbname", default=dbname, \
+                help="aggregated dbname, default {}".format(dbname))
 
 def min_date(interval):
     "Convert given interval into timestamp"
@@ -53,10 +57,13 @@ def main():
     args = optmgr.parser.parse_args()
 
     mongo_client = MongoClient(args.muri)
-    performance_data = mongo_client['aggregated']['performance']
+    dbname, dbcoll = 'aggregated', 'fwjr'
+    if opts.dbname:
+        dbname, dbcoll = opts.dbname.split('.')
+    performance_data = mongo_client[dbname][dbcoll]
 
     mdate = min_date(args.interval)
-    print("Removing all data earlier than {}...".format(mdate))
+    print("Removing all data from {}.{} earlier than {}...".format(dbname, dbcoll, mdate))
     spec = {'scope.end_date': {'$lte': mdate}}
     if  args.dryrun:
         print "MongoDB query: {}".format(spec)

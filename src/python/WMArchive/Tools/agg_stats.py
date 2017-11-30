@@ -14,6 +14,10 @@ class OptionParser(object):
         today = datetime.today().strftime('%Y%m%d')
         self.parser.add_argument("--date", action="store",\
             dest="date", default=today, help="date (YYYYMMDD), default today")
+        dbname = 'aggregated.fwjr'
+        self.parser.add_argument("--dbname", action="store",\
+                dest="dbname", default=dbname, \
+                help="aggregated dbname, default {}".format(dbname))
 
 def main():
     "Main function"
@@ -21,7 +25,10 @@ def main():
     opts = optmgr.parser.parse_args()
 
     client = MongoClient(opts.muri)
-    coll = client['aggregated']['performance']
+    dbname, dbcoll = 'aggregated', 'fwjr'
+    if opts.dbname:
+        dbname, dbcoll = opts.dbname.split('.')
+    coll = client[dbname][dbcoll]
 
     date = datetime.strptime(opts.date, '%Y%m%d')
     spec = {"scope.start_date": date}
