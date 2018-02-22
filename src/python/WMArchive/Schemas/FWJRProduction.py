@@ -6,6 +6,8 @@ fwjr = \
                'crab_id': 'crab',
                'crab_exit_code': 101,
                'host': 'test.fnal.gov',
+               # TODO: need to specify other fields: total_cpu, hs06, etc
+               'wn_name': "testhost1234.cern.ch",
                'jobtype': "Processing",
                'jobstate': "success", 
                'ts': 1456500229},
