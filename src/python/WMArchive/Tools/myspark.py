@@ -55,10 +55,10 @@ class OptionParser():
         self.parser = argparse.ArgumentParser(prog='PROG')
         year = time.strftime("%Y", time.localtime())
         hdir = HDIR
-        msg = "Input data location on HDFS, e.g. %s/%s" % (hdir, year)
+        msg = "Input data location on HDFS, e.g. %s/fwjr/%s" % (hdir, year)
         self.parser.add_argument("--hdir", action="store",
-            dest="hdir", default=hdir, help=msg)
-        schema = 'fwjr_prod.avsc'
+            dest="hdir", default='%s/fwjr' % hdir, help=msg)
+        schema = 'schema.avsc'
         msg = "Input schema, default %s/%s" % (hdir, schema)
         self.parser.add_argument("--schema", action="store",
             dest="schema", default="%s/%s" % (hdir, schema), help=msg)
@@ -382,6 +382,7 @@ def main():
         scripts()
         sys.exit(0)
 
+    verbose = opts.verbose
     todate = datetime.datetime.today()
     todate = int(todate.strftime("%Y%m%d"))
     fromdate = datetime.datetime.today()-datetime.timedelta(days=1)
@@ -395,19 +396,21 @@ def main():
     except Exception as exp:
         pass
     timerange = spec.get('spec', {}).get('timerange', [fromdate, todate])
+    if timerange and verbose:
+        print("### TimeRang: %s" % timerange)
 
-    if  opts.hdir == HDIR:
-        hdir = opts.hdir.split()
-        if  len(hdir) == 1:
-            hdir = hdir[0]
+    hdir = opts.hdir
+    if  timerange:
+        if  len(hdir.split()) == 1:
+            hdir = hdir.split()[0]
             hdirs = []
             for tval in range_dates(timerange):
                 if  hdir.find(tval) == -1:
                     hdirs.append(os.path.join(hdir, tval))
             hdir = hdirs
-    else:
-        hdir = opts.hdir
-    results = run(opts.schema, hdir, opts.script, opts.spec, opts.verbose, opts.rout, opts.yarn)
+    if verbose:
+        print("### HDIR: %s" % hdir)
+    results = run(opts.schema, hdir, opts.script, opts.spec, verbose, opts.rout, opts.yarn)
     if  opts.store:
         data = {"results":results,"ts":time.time(),"etime":time.time()-time0}
         if  opts.wmaid:
@@ -416,7 +419,7 @@ def main():
             data['wmaid'] = wmaHash(data)
         data['dtype'] = 'job'
         pdata = dict(job=data)
-        postdata(opts.store, pdata, opts.ckey, opts.cert, opts.verbose)
+        postdata(opts.store, pdata, opts.ckey, opts.cert, verbose)
     elif opts.amq:
         creds = credentials(opts.amq)
         host, port = creds['host_and_ports'].split(':')
