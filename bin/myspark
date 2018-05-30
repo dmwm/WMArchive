@@ -15,7 +15,7 @@ wmaroot=`python -c "import WMArchive; print '/'.join(WMArchive.__file__.split('/
 
 # allow to disable spark output, client should setup his/her own log4j.properties
 # via WMA_LOG4J environment variable
-conf=""
+conf="--conf spark.authenticate.secret=wmarchive"
 # look if we requested to show full log output
 if [[ "$@" =~ "--no-log4j" ]]; then
     conf=" --conf spark.ui.showConsoleProgress=false "
