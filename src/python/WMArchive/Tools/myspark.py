@@ -24,6 +24,7 @@ myspark implements the following logic:
 
 # system modules
 import os
+import re
 import sys
 import imp
 import pwd
@@ -401,7 +402,8 @@ def main():
 
     hdir = opts.hdir
     if  timerange:
-        if  len(hdir.split()) == 1:
+        pat=re.compile(".*/20[0-9][0-9].*")
+        if  len(hdir.split()) == 1 and not pat.match(hdir):
             hdir = hdir.split()[0]
             hdirs = []
             for tval in range_dates(timerange):
