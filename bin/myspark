@@ -15,7 +15,8 @@ wmaroot=`python -c "import WMArchive; print '/'.join(WMArchive.__file__.split('/
 
 # allow to disable spark output, client should setup his/her own log4j.properties
 # via WMA_LOG4J environment variable
-conf="--conf spark.authenticate.secret=wmarchive"
+conf="--conf spark.authenticate.secret=wmarchive --conf spark.driver.port=5001 --conf spark.blockManager.port=5101 --conf spark.ui.port=5201"
+
 # look if we requested to show full log output
 if [[ "$@" =~ "--no-log4j" ]]; then
     conf=" --conf spark.ui.showConsoleProgress=false "
@@ -24,10 +25,68 @@ if [[ "$@" =~ "--no-log4j" ]]; then
     fi
 fi
 
+# read spark options from configuration file if it exists
+# the SPARK_OPTIONS file should provide <option=value> line for every option
+# spark.network.timeout=120s
+# spark.rpc.numRetries=3
+if [ -n "$SPARK_OPTIONS" ]; then
+    conf="$conf `cat $SPARK_OPTIONS | awk '{ORS=" "; print "--conf "$0""}'`"
+fi
+
+# from https://cern.service-now.com/service-portal/view-request.do?n=RQF0876659
+# we can specify in jar files as following (before Spark 2.0):
+# --packages com.databricks:spark-csv_2.11:1.6.0
+
 # set avro jars
-avrojar=/usr/lib/avro/avro-mapred.jar
-sparkexjar=/usr/lib/spark/examples/lib/spark-examples-1.6.0-cdh5.7.0-hadoop2.6.0-cdh5.7.0.jar
-sparkexjar=`ls /usr/lib/spark/examples/lib/spark-examples* | tail -1`
+spark2=`spark-submit --version 2>&1 | grep "version 2"`
+if [ -n "$spark2" ]; then
+    echo "Using spark 2.X"
+    jars=""
+    conf="$conf --packages com.databricks:spark-avro_2.11:4.0.0"
+else
+    echo "Using spark 1.X"
+    csvjar=/afs/cern.ch/user/v/valya/public/spark/spark-csv-assembly-1.4.0.jar
+    avrojar=/afs/cern.ch/user/v/valya/public/spark/avro-mapred-1.7.6-cdh5.7.6.jar
+    jars="$csvjar,$avrojar"
+    if [ -f /usr/hdp/spark-2/examples/jars/spark-examples_2.11-2.3.2.jar ]; then
+        sparkexjar=/usr/hdp/spark-2/examples/jars/spark-examples_2.11-2.3.2.jar
+        jars="$jars,$sparkexjar"
+    else
+        sparkexjar=`ls /usr/lib/spark/examples/lib/spark-examples* 2> /dev/null | tail -1`
+        if [ -n "$sparkexjar" ]; then
+            jars="$jars,$sparkexjar"
+        else
+            sparkexjar=/afs/cern.ch/user/v/valya/public/spark/spark-examples-1.6.0-cdh5.15.1-hadoop2.6.0-cdh5.15.1.jar
+            jars="$jars,$sparkexjar"
+        fi
+    fi
+    mapreduce=/eos/project/s/swan/public/hadoop-mapreduce-client-core-2.6.0-cdh5.7.6.jar
+    if [ ! -f $mapreduce ]; then
+        mapreduce=/usr/lib/hadoop-mapreduce/hadoop-mapreduce-client-core-2.6.0-cdh5.7.6.jar
+    fi
+fi
+
+if [ -n "$jars" ]; then
+    jars="--jars $jars"
+fi
+
+# determine if we can load CVMFS
+# https://cern.service-now.com/service-portal/article.do?n=KB0005361
+cvmfs=""
+ctest=`echo $args | grep -- "--cvmfs"`
+if [ -n "`hostname -s | grep ^lxplus`" ] || [ -n "$ctest" ]; then
+    if [ -f /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-centos7-gcc62-opt/setup.sh ] && \
+       [ -f /cvmfs/sft.cern.ch/lcg/etc/hadoop-confext/hadoop-setconf.sh ]; then
+        echo "Enable CVMFS ..."
+        source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-centos7-gcc62-opt/setup.sh
+        source /cvmfs/sft.cern.ch/lcg/etc/hadoop-confext/hadoop-setconf.sh analytix
+        cvmfs="true"
+    fi
+fi
+# source proper environemnt for it-hadoop-client machines
+if [ -n "`hostname -s | grep ithdp`" ]; then
+    source hadoop-setconf.sh analytix
+fi
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ "$1" == "-help" ]; then
     # run help
@@ -40,7 +99,7 @@ elif [[  $1 =~ -?-yarn(-cluster)?$ ]]; then
     # Temp solution to have a wrapper for python27 on spark cluster
     # once CERN IT will resolve python version we can remove PYSPARK_PYTHON
     PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
-        spark-submit --jars $avrojar,$sparkexjar \
+        spark-submit $jars \
             --master yarn-client \
             --driver-class-path '/usr/lib/hive/lib/*' \
             --driver-java-options '-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*' \
@@ -54,7 +113,7 @@ else
     # Modify with local[*] to use all the available cores in the node
     #   optionally increase driver memory with --driver-memory 2G (default 1G)
     PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
-    spark-submit --jars $avrojar,$sparkexjar \
+    spark-submit $jars \
         --executor-memory $((`nproc`/4))G \
         --driver-memory 4G \
         --master local[$((`nproc`/4))] \
