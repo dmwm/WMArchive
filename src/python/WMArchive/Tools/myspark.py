@@ -41,7 +41,7 @@ import WMArchive
 from WMArchive.Utils.Utils import htime, wmaHash, range_dates
 try:
     # stopmAMQ API
-    from WMCore.Services.StompAMQ.StompAMQ import StompAMQ
+    from CMSMonitoring.StompAMQ import StompAMQ
 except ImportError:
     StompAMQ = None
 
@@ -429,7 +429,9 @@ def main():
         if  creds and StompAMQ:
             print("### Send %s docs via StompAMQ" % len(results))
             amq = StompAMQ(creds['username'], creds['password'], \
-                    creds['producer'], creds['topic'], [(host, port)])
+                    creds['producer'], creds['topic'], \
+                    validation_schema=None, \
+                    host_and_ports=[(host, port)])
             data = []
             for doc in results:
                 hid = doc.get("hash", 1)
