@@ -106,9 +106,10 @@ elif [[  $1 =~ -?-yarn(-cluster)?$ ]]; then
     PYSPARK_PYTHON='/afs/cern.ch/user/v/valya/public/python27' \
         spark-submit $jars \
             --master yarn-client \
-            --driver-class-path '/usr/lib/hive/lib/*' \
-            --driver-java-options '-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*' \
             $conf $wmaroot/Tools/myspark.py ${1+"$@"}
+#            --driver-class-path '/usr/lib/hive/lib/*' \
+#            --driver-java-options '-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*' \
+#            $conf $wmaroot/Tools/myspark.py ${1+"$@"}
 else
     # submit spark job with our file, please note
     # that user may increase memory options if necessary
@@ -122,9 +123,10 @@ else
         --executor-memory $((`nproc`/4))G \
         --driver-memory 4G \
         --master local[$((`nproc`/4))] \
-        --driver-class-path '/usr/lib/hive/lib/*' \
-        --driver-java-options '-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*' \
         $conf $wmaroot/Tools/myspark.py ${1+"$@"}
+#        --driver-class-path '/usr/lib/hive/lib/*' \
+#        --driver-java-options '-Dspark.executor.extraClassPath=/usr/lib/hive/lib/*' \
+#        $conf $wmaroot/Tools/myspark.py ${1+"$@"}
 # Original example
 # submit spark job with our file, please note
 # that user may increase memory options if necessary
