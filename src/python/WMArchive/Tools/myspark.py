@@ -437,7 +437,8 @@ def main():
                 hid = doc.get("hash", 1)
                 if '_id' in doc:
                     del doc['_id'] # delete ObjectID from MongoDB
-                data.append(amq.make_notification(doc, hid))
+                notification, _, _ = amq.make_notification(doc, hid)
+                data.append(notification)
             results = amq.send(data)
             print("### results from AMQ %s" % len(results))
     else:
