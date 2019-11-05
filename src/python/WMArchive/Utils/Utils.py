@@ -201,8 +201,11 @@ def cms_filter(doc, attrs=None):
         rec['task'] = doc['task']
         rec['campaign'] = doc['Campaign']
         for row in doc['steps']:
-            rec['site'] = row['site']
-            for err in row['errors']:
+            site = row.get('site', '')
+            if not site:
+                return
+            rec['site'] = site
+            for err in row.get('errors', []):
                 rec['exitCode'] = err.get('exitCode', -1)
             for out in row['output']:
                 rec['dataset'] = out.get('outputDataset', '')
