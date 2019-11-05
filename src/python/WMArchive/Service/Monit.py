@@ -21,6 +21,9 @@ try:
 except ImportError:
     StompAMQ = None
 
+# WMArchive modules
+from WMArchive.Utils.Utils import cms_filter
+
 def credentials(fname=None):
     "Read credentials from WMA_BROKER environment"
     if  not fname:
@@ -30,26 +33,6 @@ def credentials(fname=None):
     with open(fname, 'r') as istream:
         data = json.load(istream)
     return data
-
-def cms_filter(doc, attrs=None):
-    "Function providing CMS filter"
-    rec = {}
-    if not attrs:
-        # we will assume Jen's use case
-        rec['task'] = doc['task']
-        rec['campaign'] = doc['Campaign']
-        for row in doc['steps']:
-            rec['site'] = row['site']
-            for err in row['errors']:
-                rec['exitCode'] = err.get('exitCode', -1)
-            for out in row['output']:
-                rec['dataset'] = out.get('outputDataset', '')
-                yield rec
-        return
-    for attr in attrs:
-        if attr in doc:
-            rec[attr] = doc[attr]
-    yield rec
 
 class MonitManager(object):
     "Monit manager based on CMSMonitoring StompAMQ module"

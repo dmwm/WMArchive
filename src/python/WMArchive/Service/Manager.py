@@ -24,6 +24,7 @@ from cherrypy import HTTPError
 
 # WMArchive modules
 from WMArchive.Service.Monit import MonitManager
+from WMArchive.Service.NATS import NATSManager
 from WMArchive.Service.STS import STSManager
 try:
     from WMArchive.Service.LTS import LTSManager
@@ -107,6 +108,8 @@ class WMArchiveManager(object):
         self.write_access = 0
         # Monit manager
         self.monit = MonitManager(config.monit_credentials, config.monit_attributes)
+        # NATS manager
+        self.nats = NATSManager(config.nats_server, config.nats_pub, config.nats_topics)
 
     def status(self):
         "Return current status about WMArchive queue"
@@ -192,7 +195,8 @@ class WMArchiveManager(object):
             stype = self.sts[dtype].stype
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
-            self.monit.write(docs) # write docs to MONIT
+            self.monit.write(docs)   # write docs to MONIT
+            self.nats.publish(docs)  # publish documents to NATS server if possible
         except WriteError as exp:
             reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
             print(reason)

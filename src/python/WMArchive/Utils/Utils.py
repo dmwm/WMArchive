@@ -193,6 +193,26 @@ def elapsed_time(time0):
     "Return elapsed time from given time stamp"
     return htime(time.time()-time0)
 
+def cms_filter(doc, attrs=None):
+    "Function providing CMS filter"
+    rec = {}
+    if not attrs:
+        # we will assume Jen's use case
+        rec['task'] = doc['task']
+        rec['campaign'] = doc['Campaign']
+        for row in doc['steps']:
+            rec['site'] = row['site']
+            for err in row['errors']:
+                rec['exitCode'] = err.get('exitCode', -1)
+            for out in row['output']:
+                rec['dataset'] = out.get('outputDataset', '')
+                yield rec
+        return
+    for attr in attrs:
+        if attr in doc:
+            rec[attr] = doc[attr]
+    yield rec
+
 # Singletons in python
 # http://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
 
