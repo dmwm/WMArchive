@@ -35,11 +35,21 @@ def cms_filter(doc, attrs=None):
     "Function providing CMS filter"
     rec = {}
     if not attrs:
-        return doc
+        # we will assume Jen's use case
+        rec['task'] = doc['task']
+        rec['campaign'] = doc['Campaign']
+        for row in doc['steps']:
+            rec['site'] = row['site']
+            for err in row['errors']:
+                rec['exitCode'] = err.get('exitCode', -1)
+            for out in row['output']:
+                rec['dataset'] = out.get('outputDataset', '')
+                yield rec
+        return
     for attr in attrs:
         if attr in doc:
             rec[attr] = doc[attr]
-    return rec
+    yield rec
 
 class MonitManager(object):
     "Monit manager based on CMSMonitoring StompAMQ module"
@@ -64,8 +74,8 @@ class MonitManager(object):
         docs = []
         for doc in data:
             hid = doc.get("hash", 1)
-            doc = cms_filter(doc, self.attrs)
-            notification, _, _ = self.amq.make_notification(doc, hid)
-            docs.append(notification)
+            for rec in cms_filter(doc, self.attrs):
+                notification, _, _ = self.amq.make_notification(rec, hid)
+                docs.append(notification)
         result = self.amq.send(docs)
         return result
