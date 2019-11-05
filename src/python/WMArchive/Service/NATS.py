@@ -68,6 +68,8 @@ class NATSManager(object):
                     if not subject:
                         continue
                     nats(subject, nats_encoder(rec), server=self.server, pub=self.pub)
+                    # send to default cms-wma topic too
+                    nats('cms-wma', nats_encoder(rec), server=self.server, pub=self.pub)
             return
         for topic in self.topics:
             for doc in data:
