@@ -10,6 +10,7 @@ Description: python implementation of NATS publisher based on external tool
 
 # system modules
 import os
+import re
 import sys
 import argparse
 import subprocess
@@ -72,9 +73,14 @@ class NATSManager(object):
                     nats('cms-wma', nats_encoder(rec), server=self.server, pub=self.pub)
             return
         for topic in self.topics:
+            pat = re.compile(topic)
             for doc in data:
                 for rec in cms_filter(doc):
-                    nats(topic, nats_encoder(rec), server=self.server, pub=self.pub)
+                    msg = nats_encoder(rec)
+                    if msg.find(topic) != -1 or pat.match(msg):
+                        nats(topic, nats_encoder(rec), server=self.server, pub=self.pub)
+                    # send to cms-wma by default
+                    nats('cms-wma', nats_encoder(rec), server=self.server, pub=self.pub)
 
 def test():
     "Main function"
