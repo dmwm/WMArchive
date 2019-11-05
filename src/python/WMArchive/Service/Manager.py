@@ -101,15 +101,17 @@ class WMArchiveManager(object):
             for line in istream.readlines():
                 pair = line.replace('\n', '').split(',')
                 self.specmap[pair[0]] = pair[1] # lfn:LFNArray
-        msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" % (self.sts, self.lts, self.specmap)
-        print(tstamp("WMArchiveManager::init"), msg)
-        self.time0 = time.time()
-        self.read_access = 0
-        self.write_access = 0
         # Monit manager
         self.monit = MonitManager(config.monit_credentials, config.monit_attributes)
         # NATS manager
         self.nats = NATSManager(config.nats_server, config.nats_pub, config.nats_topics)
+        msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" \
+                % (self.sts, self.lts, self.specmap)
+        msg += '\nMonit %s, NATS %s' % (self.monit, self.nats)
+        print(tstamp("WMArchiveManager::init"), msg)
+        self.time0 = time.time()
+        self.read_access = 0
+        self.write_access = 0
 
     def status(self):
         "Return current status about WMArchive queue"
