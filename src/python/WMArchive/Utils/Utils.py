@@ -198,9 +198,9 @@ def cms_filter(doc, attrs=None):
     rec = {}
     if not attrs:
         # we will assume Jen's use case
-        rec['task'] = doc['task']
-        rec['campaign'] = doc['Campaign']
-        for row in doc['steps']:
+        rec['task'] = doc.get('task', '')
+        rec['campaign'] = doc.get('Campaign', '')
+        for row in doc.get('steps', []):
             site = row.get('site', '')
             if not site:
                 return
