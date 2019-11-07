@@ -23,7 +23,7 @@ def nats(subject, msg, server=None, pub=None):
     if not pub:
         pub = os.getenv('NATS_PUB', '')
         if not pub:
-            print('No publication tool found, exit NATS...')
+            #print('No publication tool found, exit NATS...')
             return
     if not os.path.exists(pub):
         print("Unable to locate {} on local file system".format(pub))
@@ -31,7 +31,7 @@ def nats(subject, msg, server=None, pub=None):
     if not server:
         server = os.getenv('NATS_SERVER', '')
         if not server:
-            print('No NATS server found, exit NATS...')
+            #print('No NATS server found, exit NATS...')
             return
     cmd = '{} -s {} {} "{}"'.format(pub, server, subject, msg)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, env=os.environ)
