@@ -104,7 +104,10 @@ class WMArchiveManager(object):
         # Monit manager
         self.monit = MonitManager(config.monit_credentials, config.monit_attributes)
         # NATS manager
-        self.nats = NATSManager(config.nats_server, config.nats_pub, config.nats_topics)
+        if hasattr(config, 'use_nats') and config.use_nats:
+            self.nats = NATSManager(config.nats_server, topics=config.nats_topics)
+        else:
+            self.nats = None
         msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" \
                 % (self.sts, self.lts, self.specmap)
         msg += '\nMonit %s, NATS %s' % (self.monit, self.nats)
@@ -198,7 +201,8 @@ class WMArchiveManager(object):
             if  not ids and len(data): # somehow we got empty list for given data
                 status = 'unknown'
             self.monit.write(docs)   # write docs to MONIT
-            self.nats.publish(docs)  # publish documents to NATS server if possible
+            if self.nats:
+                self.nats.publish(docs)  # publish documents to NATS server if possible
         except WriteError as exp:
             reason = tstamp("WMArchiveManager::write") + " exception: %s" % str(exp)
             print(reason)
