@@ -12,7 +12,7 @@ Description: python implementation of NATS publisher based on external tool
 import os
 import re
 import sys
-import argparse
+import random
 import subprocess
 
 # WMArchive modules
@@ -64,7 +64,7 @@ class NATSManager(object):
     """
     def __init__(self, server=None, topics=None, attrs=None, default_topic='cms-wma', stdout=False):
         self.topics = topics
-        self.server = server
+        self.server = server.split(',')
         self.def_topic = default_topic
         self.stdout = stdout
         self.attrs = attrs
@@ -113,7 +113,8 @@ class NATSManager(object):
             else:
                 print("{}: {}".format(subject, msg))
         else:
-            tornado.ioloop.IOLoop.current().run_sync(lambda: nats(self.server, subject, msg))
+            server = random.randint(0, len(self.server))
+            tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
 
 def nats_pub(subject, msg, server=None, pub=None):
     "NATS publisher via external NATS_PUB tool"
