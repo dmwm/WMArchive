@@ -119,7 +119,10 @@ class NATSManager(object):
             else:
                 print("{}: {}".format(subject, msg))
         else:
-            server = random.randint(0, len(self.server))
+            if len(self.server) > 1:
+                server = self.server[random.randint(0, len(self.server)-1)]
+            else:
+                server = self.server[0]
             tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
 
 def nats_pub(subject, msg, server=None, pub=None):
