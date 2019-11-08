@@ -110,7 +110,8 @@ class WMArchiveManager(object):
             self.nats = None
         msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" \
                 % (self.sts, self.lts, self.specmap)
-        msg += '\nMonit %s, NATS %s' % (self.monit, self.nats)
+        msg += '\nMonit {}'.format(self.monit)
+        msg += '\nNATS {}'.format(self.nats)
         print(tstamp("WMArchiveManager::init"), msg)
         self.time0 = time.time()
         self.read_access = 0

@@ -64,13 +64,19 @@ class NATSManager(object):
     """
     def __init__(self, server=None, topics=None, attrs=None, default_topic='cms-wma', stdout=False):
         self.topics = topics
-        self.server = server.split(',')
+        self.server = []
+        for srv in server.split(','):
+            if not srv.startswith('nats://'):
+                srv = 'nats://{}'.format(srv)
+            if not srv.endswith(':4222'):
+                srv = '{}:4222'.format(srv)
+            self.server.append(srv)
         self.def_topic = default_topic
         self.stdout = stdout
         self.attrs = attrs
 
-    def repr(self):
-        print('NATSManager@{}, server={} topics={} def_topic={} attrs={} stdout={}'.format(self, self.server, self.topics, self.def_topic, self.attrs, self.stdout))
+    def __repr__(self):
+        return 'NATSManager@{}, servers={} topics={} def_topic={} attrs={} stdout={}'.format(hex(id(self)), self.server, self.topics, self.def_topic, self.attrs, self.stdout)
 
     def publish(self, data):
         "Publish given set of docs to topics"
@@ -177,7 +183,7 @@ def test():
     print(doc, rec)
 
     data = [{'site':'Site_TEST', 'attr':str(i), 'task':'task-%s'%i} for i in range(10)]
-    server = 'nats://test.host.com'
+    server = '127.0.0.1,127.0.0.2'
     attrs = ['site', 'attr', 'task']
     mgr = NATSManager(server, attrs=attrs, stdout=True)
     print("Test NATSManager", mgr)
