@@ -80,23 +80,17 @@ class NATSManager(object):
 
     def publish(self, data):
         "Publish given set of docs to topics"
-        cms_msgs = []
         if not self.topics:
-            # we will use input docs to get list of sites
-            sdict = {}
             for doc in data:
                 for rec in cms_filter(doc, self.attrs):
-                    subject = rec.get('site', '')
-                    if not subject:
-                        continue
                     msg = nats_encoder(rec)
-                    sdict.setdefault(subject, []).append(msg)
-                    cms_msgs.append(msg)
-            for topic, msgs in sdict.items():
-                self.send(topic, msgs)
-            # always send all messages to default topic
-            self.send(self.def_topic, cms_msgs)
+                    # publish to all values of the record
+                    for topic in rec.values():
+                        self.send(topic, msg)
+                    # send message to default topic
+                    self.send(self.def_topic, msg)
             return
+        cms_msgs = []
         for topic in self.topics:
             top_msgs = []
             pat = re.compile(topic)
