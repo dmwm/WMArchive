@@ -41,8 +41,16 @@ def nats(server, subject, msg=None):
             yield nc.publish(subject, item)
     else:
         yield nc.publish(subject, msg)
-    # do not close, since it will not send it over
+
+    # we will not use nc.close since it does not work somehow
     #yield nc.close()
+    # instead we'll drain nc and works async in the background
+
+    # Drain gracefully closes the connection, allowing all subscribers to
+    # handle any pending messages inflight that the server may have sent.
+    yield nc.drain()
+    # Drain works async in the background
+    yield tornado.gen.sleep(1)
 
 def nats_encoder(doc):
     "CMS NATS message encoder"
