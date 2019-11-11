@@ -86,11 +86,20 @@ class NATSManager(object):
                     msg = nats_encoder(rec)
                     # publish to all values of the record
                     for key, val in rec.items():
-                        if key == 'exitCode':
+                        if key == 'exitCode' and val != "":
                             self.send(key, msg)  # send all exit codes to single topic
                             self.send(val, msg)  # send individual exit code to its own topic
+                        elif key == 'site' and val != "":
+                            subject = val.replace('_', '.') # use NATS '.' wildcard
+                            self.send(subject, msg)
+                        elif key == 'task' and val != "":
+                            subject = val.replace('/', '.') # use NATS '.' wildcard
+                            self.send(subject, msg)
+                        elif key == 'dataset' and val != "":
+                            subject = val.replace('/', '.') # use NATS '.' wildcard
                         else:
-                            self.send(key, msg)  # send all to invidiaul topics
+                            if val != "":
+                                self.send(val, msg)  # send all to invidiaul topics
                     # send message to default topic
                     self.send(self.def_topic, msg)
             return
