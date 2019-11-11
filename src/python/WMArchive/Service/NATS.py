@@ -94,9 +94,9 @@ class NATSManager(object):
                             self.send(subject, msg)
                         elif key == 'task' and val != "":
                             subject = val.replace('/', '.') # use NATS '.' wildcard
+                            if subject.startswith('.'):
+                                subject = subject[1:]
                             self.send(subject, msg)
-                        elif key == 'dataset' and val != "":
-                            subject = val.replace('/', '.') # use NATS '.' wildcard
                         else:
                             if val != "":
                                 self.send(val, msg)  # send all to invidiaul topics
