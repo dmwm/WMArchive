@@ -85,8 +85,12 @@ class NATSManager(object):
                 for rec in cms_filter(doc, self.attrs):
                     msg = nats_encoder(rec)
                     # publish to all values of the record
-                    for topic in rec.values():
-                        self.send(topic, msg)
+                    for key, val in rec.items():
+                        if key == 'exitCode':
+                            self.send(key, msg)  # send all exit codes to single topic
+                            self.send(val, msg)  # send individual exit code to its own topic
+                        else:
+                            self.send(key, msg)  # send all to invidiaul topics
                     # send message to default topic
                     self.send(self.def_topic, msg)
             return
