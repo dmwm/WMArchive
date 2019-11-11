@@ -96,7 +96,7 @@ class NATSManager(object):
                     for key, val in rec.items():
                         if key == 'exitCode' and val != "":
                             self.send(key, msg)  # send all exit codes to single topic
-                            self.send(val, msg)  # send individual exit code to its own topic
+                            self.send(str(val), msg)  # send individual exit code to its own topic
                         elif key == 'site' and val != "":
                             subject = val.replace('_', '.') # use NATS '.' wildcard
                             self.send(subject, msg)
@@ -138,7 +138,10 @@ class NATSManager(object):
                 server = self.server[random.randint(0, len(self.server)-1)]
             else:
                 server = self.server[0]
-            tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
+            try:
+                tornado.ioloop.IOLoop.current().run_sync(lambda: nats(server, subject, msg))
+            except Exception as exp:
+                print("Failed to send docs to NATS, error: {}".format(str(exp)))
 
 def nats_pub(subject, msg, server=None, pub=None):
     "NATS publisher via external NATS_PUB tool"
