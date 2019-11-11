@@ -42,15 +42,12 @@ def nats(server, subject, msg=None):
     else:
         yield nc.publish(subject, msg)
 
-    # we will not use nc.close since it does not work somehow
-    #yield nc.close()
-    # instead we'll drain nc and works async in the background
-
     # Drain gracefully closes the connection, allowing all subscribers to
     # handle any pending messages inflight that the server may have sent.
     yield nc.drain()
     # Drain works async in the background
-    yield tornado.gen.sleep(1)
+    #yield tornado.gen.sleep(1)
+    yield nc.close()
 
 def nats_encoder(doc):
     "CMS NATS message encoder"
@@ -88,28 +85,36 @@ class NATSManager(object):
 
     def publish(self, data):
         "Publish given set of docs to topics"
+        all_msgs = []
+        mdict = {}
         if not self.topics:
             for doc in data:
                 for rec in cms_filter(doc, self.attrs):
                     msg = nats_encoder(rec)
-                    # publish to all values of the record
                     for key, val in rec.items():
                         if key == 'exitCode' and val != "":
-                            self.send(key, msg)  # send all exit codes to single topic
-                            self.send(str(val), msg)  # send individual exit code to its own topic
+                            mdict.setdefault(key, []).append(msg)
+                            mdict.setdefault(str(val), []).append(msg)
                         elif key == 'site' and val != "":
-                            subject = val.replace('_', '.') # use NATS '.' wildcard
-                            self.send(subject, msg)
+                            # collect site wilcards, use NATS '.' wildcard
+                            subject = val.replace('_', '.')
+                            mdict.setdefault(subject, []).append(msg)
                         elif key == 'task' and val != "":
-                            subject = val.replace('/', '.') # use NATS '.' wildcard
+                            # collect task wilcards, use NATS '.' wildcard
+                            subject = val.replace('/', '.')
                             if subject.startswith('.'):
                                 subject = subject[1:]
-                            self.send(subject, msg)
+                            mdict.setdefault(subject, []).append(msg)
                         else:
                             if val != "":
-                                self.send(val, msg)  # send all to invidiaul topics
-                    # send message to default topic
-                    self.send(self.def_topic, msg)
+                                # collect messages on invidual topics
+                                mdict.setdefault(str(val), []).append(msg)
+                    all_msgs.append(msg)
+            # send all messages from collected mdict
+            for key, msgs in mdict.items():
+                self.send(key, msgs)
+            # send message to default topic
+            self.send(self.def_topic, all_msgs)
             return
         cms_msgs = []
         for topic in self.topics:
