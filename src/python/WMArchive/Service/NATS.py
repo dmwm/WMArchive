@@ -49,16 +49,16 @@ def nats(server, subject, msg=None):
     #yield tornado.gen.sleep(1)
     yield nc.close()
 
-def nats_encoder(doc):
+def nats_encoder(doc, sep='   '):
     "CMS NATS message encoder"
     keys = sorted(doc.keys())
-    msg = '___'.join(['{}:{}'.format(k, doc[k]) for k in keys])
+    msg = sep.join(['{}:{}'.format(k, doc[k]) for k in keys])
     return msg
 
-def nats_decoder(msg):
+def nats_decoder(msg, sep='   '):
     "CMS NATS message decoder"
     rec = {}
-    for pair in msg.split('___'):
+    for pair in msg.split(sep):
         arr = pair.split(':')
         rec.update({arr[0]:arr[1]})
     return rec
@@ -67,9 +67,10 @@ class NATSManager(object):
     """
     NATSManager provide python interface to NATS server
     """
-    def __init__(self, server=None, topics=None, attrs=None, default_topic='cms-wma', stdout=False):
+    def __init__(self, server=None, topics=None, attrs=None, sep='   ', default_topic='cms-wma', stdout=False):
         self.topics = topics
         self.server = []
+        self.sep = sep
         for srv in server.split(','):
             if not srv.startswith('nats://'):
                 srv = 'nats://{}'.format(srv)
@@ -90,7 +91,7 @@ class NATSManager(object):
         if not self.topics:
             for doc in data:
                 for rec in cms_filter(doc, self.attrs):
-                    msg = nats_encoder(rec)
+                    msg = nats_encoder(rec, self.sep)
                     for key, val in rec.items():
                         if key == 'exitCode' and val != "":
                             mdict.setdefault(key, []).append(msg)
@@ -122,7 +123,7 @@ class NATSManager(object):
             pat = re.compile(topic)
             for doc in data:
                 for rec in cms_filter(doc, self.attrs):
-                    msg = nats_encoder(rec)
+                    msg = nats_encoder(rec, self.sep)
                     if msg.find(topic) != -1 or pat.match(msg):
                         top_msgs.append(msg) # topic specific messages
                     cms_msgs.append(msg) # cms-wma messages
@@ -170,10 +171,11 @@ def nats_pub(subject, msg, server=None, pub=None):
 
 class NATSManager_pub(object):
     "NATS manager for WMArchive"
-    def __init__(self, server=None, pub=None, topics=None):
+    def __init__(self, server=None, pub=None, topics=None, sep='   '):
         self.topics = topics
         self.server = server
         self.pub = pub
+        self.sep = sep
 
     def publish(self, data):
         "Publish given set of docs to topics"
@@ -184,26 +186,27 @@ class NATSManager_pub(object):
                     subject = rec.get('site', '')
                     if not subject:
                         continue
-                    nats_pub(subject, nats_encoder(rec), server=self.server, pub=self.pub)
+                    nats_pub(subject, nats_encoder(rec, self.sep), server=self.server, pub=self.pub)
                     # send to default cms-wma topic too
-                    nats_pub('cms-wma', nats_encoder(rec), server=self.server, pub=self.pub)
+                    nats_pub('cms-wma', nats_encoder(rec, self.sep), server=self.server, pub=self.pub)
             return
         for topic in self.topics:
             pat = re.compile(topic)
             for doc in data:
                 for rec in cms_filter(doc):
-                    msg = nats_encoder(rec)
+                    msg = nats_encoder(rec, self.sep)
                     if msg.find(topic) != -1 or pat.match(msg):
-                        nats_pub(topic, nats_encoder(rec), server=self.server, pub=self.pub)
+                        nats_pub(topic, nats_encoder(rec, self.sep), server=self.server, pub=self.pub)
                     # send to cms-wma by default
-                    nats_pub('cms-wma', nats_encoder(rec), server=self.server, pub=self.pub)
+                    nats_pub('cms-wma', nats_encoder(rec, self.sep), server=self.server, pub=self.pub)
 
 def test():
     "Test function"
     subject = 'cms-wma'
     msg = 'test from python'
     doc = {'site':'1', 'attr':'1'}
-    msg = nats_encoder(doc)
+    sep = '   '
+    msg = nats_encoder(doc, sep)
     print(msg)
     rec = nats_decoder(msg)
     print(doc, rec)
