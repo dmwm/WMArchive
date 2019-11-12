@@ -198,17 +198,17 @@ def cms_filter(doc, attrs=None):
     rec = {}
     if not attrs:
         # we will assume Jen's use case
-        rec['task'] = doc.get('task', '')
-        rec['campaign'] = doc.get('Campaign', '')
+        rec['task'] = doc.get('task', 'NA')
+        rec['campaign'] = doc.get('Campaign', 'NA')
         for row in doc.get('steps', []):
-            site = row.get('site', '')
+            site = row.get('site', 'NA')
             if not site:
                 return
             rec['site'] = site
             for err in row.get('errors', []):
                 rec['exitCode'] = err.get('exitCode', -1)
             for out in row['output']:
-                rec['dataset'] = out.get('outputDataset', '')
+                rec['dataset'] = out.get('outputDataset', 'NA')
                 yield rec
         return
     for attr in attrs:
