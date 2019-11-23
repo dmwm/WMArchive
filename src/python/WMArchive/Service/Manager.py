@@ -24,7 +24,7 @@ from cherrypy import HTTPError
 
 # WMArchive modules
 from WMArchive.Service.Monit import MonitManager
-from WMArchive.Service.NATS import NATSManager
+# from WMArchive.Service.NATS import NATSManager
 from WMArchive.Service.STS import STSManager
 try:
     from WMArchive.Service.LTS import LTSManager
@@ -35,6 +35,7 @@ except Exception as exp:
 from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp, dateformat
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 from Utils.ProcessStats import processStatus, threadStack
+from CMSMonitoring.NATS import NATSManager
 
 def trange_check(trange):
     "Check correctnes of trange values"
