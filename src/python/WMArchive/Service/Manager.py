@@ -32,7 +32,7 @@ try:
 except Exception as exp:
     print("WARNING, unable to load LTS", str(exp))
     LTS = False
-from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp, dateformat
+from WMArchive.Utils.Utils import wmaHash, tstamp, check_tstamp, dateformat, cms_filter
 from WMArchive.Utils.Exceptions import WriteError, ReadError
 from Utils.ProcessStats import processStatus, threadStack
 from CMSMonitoring.NATS import NATSManager
@@ -106,7 +106,7 @@ class WMArchiveManager(object):
         self.monit = MonitManager(config.monit_credentials, config.monit_attributes)
         # NATS manager
         if hasattr(config, 'use_nats') and config.use_nats:
-            self.nats = NATSManager(config.nats_server, topics=config.nats_topics)
+            self.nats = NATSManager(config.nats_server, topics=config.nats_topics, cms_filter=cms_filter)
         else:
             self.nats = None
         msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" \
