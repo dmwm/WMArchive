@@ -108,7 +108,7 @@ class WMArchiveManager(object):
         self.monit = MonitManager(config.monit_credentials, config.monit_attributes)
         # NATS manager
         if hasattr(config, 'use_nats') and config.use_nats:
-            self.nats = NATSManager(config.nats_server, topics=config.nats_topics, cms_filter=cms_filter)
+            self.nats = NATSManager(config.nats_server, topics=config.nats_topics, default_topic='cms.wmarchive', cms_filter=cms_filter)
         else:
             self.nats = None
         msg = "Short-Term Storage %s, Long-Term Storage %s, specmap %s" \
