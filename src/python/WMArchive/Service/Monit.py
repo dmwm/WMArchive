@@ -17,7 +17,7 @@ import json
 
 # CMSMonitoring modules
 try:
-    from CMSMonitoring import StompAMQ
+    from CMSMonitoring.StompAMQ import StompAMQ
 except ImportError:
     StompAMQ = None
 
@@ -54,11 +54,14 @@ class MonitManager(object):
         "Write API for MonitManager"
         if not self.amq:
             return "No StompAMQ module found"
-        docs = []
-        for doc in data:
-            hid = doc.get("hash", 1)
-            for rec in cms_filter(doc, self.attrs):
-                notification, _, _ = self.amq.make_notification(rec, hid)
-                docs.append(notification)
-        result = self.amq.send(docs)
-        return result
+        try:
+            docs = []
+            for doc in data:
+                hid = doc.get("hash", 1)
+                for rec in cms_filter(doc, self.attrs):
+                    notification, _, _ = self.amq.make_notification(rec, hid)
+                    docs.append(notification)
+            result = self.amq.send(docs)
+            return result
+        except Exception as exc:
+            print("Fail to send data to AMQ", str(exc))
