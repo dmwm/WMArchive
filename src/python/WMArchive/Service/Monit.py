@@ -39,11 +39,15 @@ class MonitManager(object):
     def __init__(self, fname=None, attrs=None):
         self.attrs = attrs # our attributes to filter and send to MONIT
         # read our credentials
-        creds = credentials(fname)
-        # create instance of StompAMQ object with your credentials
+        self.creds = credentials(fname)
         self.amq = None
-        if StompAMQ and creds:
-            host, port = creds['host_and_ports'].split(':')
+        self.initStompAMQ()
+
+    def initStompAMQ():
+        "initialize StompAMQ instance"
+        # create instance of StompAMQ object with your credentials
+        if StompAMQ and self.creds:
+            host, port = self.creds['host_and_ports'].split(':')
             port = int(port)
             self.amq = StompAMQ(creds['username'], creds['password'],
                                 creds['producer'], creds['topic'],
@@ -65,3 +69,4 @@ class MonitManager(object):
             return result
         except Exception as exc:
             print("Fail to send data to AMQ", str(exc))
+            self.initStompAMQ()
