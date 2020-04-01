@@ -43,11 +43,11 @@ class MonitManager(object):
         self.amq = None
         self.initStompAMQ()
 
-    def initStompAMQ():
-        "initialize StompAMQ instance"
+    def initStompAMQ(self):
         # create instance of StompAMQ object with your credentials
-        if StompAMQ and self.creds:
-            host, port = self.creds['host_and_ports'].split(':')
+        creds = self.creds
+        if StompAMQ and creds:
+            host, port = creds['host_and_ports'].split(':')
             port = int(port)
             self.amq = StompAMQ(creds['username'], creds['password'],
                                 creds['producer'], creds['topic'],
