@@ -51,7 +51,6 @@ class MonitManager(object):
             amq = StompAMQ(creds['username'], creds['password'],
                            creds['producer'], creds['topic'],
                            validation_schema=None,
-                           validation_loglevel=logging.DEBUG,
                            host_and_ports=[(host, port)])
             return amq
 
