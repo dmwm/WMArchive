@@ -14,6 +14,7 @@ from __future__ import print_function, division
 # system modules
 import os
 import json
+import logging
 
 # CMSMonitoring modules
 try:
@@ -40,33 +41,33 @@ class MonitManager(object):
         self.attrs = attrs # our attributes to filter and send to MONIT
         # read our credentials
         self.creds = credentials(fname)
-        self.amq = None
-        self.initStompAMQ()
 
-    def initStompAMQ(self):
-        # create instance of StompAMQ object with your credentials
+    def getStompAMQ(self):
+        "return StompAMQ instance"
         creds = self.creds
         if StompAMQ and creds:
             host, port = creds['host_and_ports'].split(':')
             port = int(port)
-            self.amq = StompAMQ(creds['username'], creds['password'],
-                                creds['producer'], creds['topic'],
-                                validation_schema=None,
-                                host_and_ports=[(host, port)])
+            amq = StompAMQ(creds['username'], creds['password'],
+                           creds['producer'], creds['topic'],
+                           validation_schema=None,
+                           validation_loglevel=logging.DEBUG,
+                           host_and_ports=[(host, port)])
+            return amq
 
     def write(self, data):
         "Write API for MonitManager"
-        if not self.amq:
+        amq = self.getStompAMQ()
+        if not amq:
             return "No StompAMQ module found"
         try:
             docs = []
             for doc in data:
                 hid = doc.get("hash", 1)
                 for rec in cms_filter(doc, self.attrs):
-                    notification, _, _ = self.amq.make_notification(rec, hid)
+                    notification, _, _ = amq.make_notification(rec, hid)
                     docs.append(notification)
-            result = self.amq.send(docs)
+            result = amq.send(docs)
             return result
         except Exception as exc:
             print("Fail to send data to AMQ", str(exc))
-            self.initStompAMQ()
