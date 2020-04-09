@@ -13,6 +13,7 @@ from __future__ import print_function, division
 
 # system modules
 import os
+import sys
 import json
 import logging
 
@@ -37,10 +38,11 @@ def credentials(fname=None):
 
 class MonitManager(object):
     "Monit manager based on CMSMonitoring StompAMQ module"
-    def __init__(self, fname=None, attrs=None):
+    def __init__(self, fname=None, attrs=None, thr=0):
         self.attrs = attrs # our attributes to filter and send to MONIT
         # read our credentials
         self.creds = credentials(fname)
+        self.thr = thr if thr else 1<<20 # default 1MB
 
     def getStompAMQ(self):
         "return StompAMQ instance"
@@ -62,10 +64,16 @@ class MonitManager(object):
         try:
             docs = []
             for doc in data:
+                size = sys.getsizeof(doc)
+                if size > self.thr:
+                    print("WARNING: doc is too large to be send to MONIT, size: %s", size)
+                    print(json.dumps(doc))
+                    continue
                 hid = doc.get("hash", 1)
-                for rec in cms_filter(doc, self.attrs):
-                    notification, _, _ = amq.make_notification(rec, hid)
-                    docs.append(notification)
+                if '_id' in doc:
+                    del doc['_id'] # delete MongoDB ObjectID
+                notification, _, _ = amq.make_notification(rec, hid)
+                docs.append(notification)
             result = amq.send(docs)
             return result
         except Exception as exc:
