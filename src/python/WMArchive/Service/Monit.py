@@ -72,7 +72,7 @@ class MonitManager(object):
                 hid = doc.get("hash", 1)
                 if '_id' in doc:
                     del doc['_id'] # delete MongoDB ObjectID
-                notification, _, _ = amq.make_notification(rec, hid)
+                notification, _, _ = amq.make_notification(doc, hid)
                 docs.append(notification)
             result = amq.send(docs)
             return result
