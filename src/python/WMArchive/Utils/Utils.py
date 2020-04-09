@@ -11,6 +11,7 @@ Description: WMArchive utilities
 from __future__ import print_function, division
 
 # system modules
+import sys
 import bz2
 import gzip
 import time
@@ -18,6 +19,9 @@ import json
 import hashlib
 import calendar
 import datetime
+
+from gc import get_referents
+from types import ModuleType, FunctionType
 
 # https://github.com/nvawda/bz2file
 try:
@@ -237,3 +241,35 @@ class Singleton(type):
         if  cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+# code taken from WMCore:
+# https://github.com/dmwm/WMCore/blob/master/src/python/Utils/Utilities.py#L159
+# so far I'd like to reduce WMCore dependency and remove it completely
+def getSize(obj):
+    """
+    _getSize_
+    Function to traverse an object and calculate its total size in bytes
+    :param obj: a python object
+    :return: an integer representing the total size of the object
+    Code extracted from Stack Overflow:
+    https://stackoverflow.com/questions/449560/how-do-i-determine-the-size-of-an-object-in-python
+    """
+    # Custom objects know their class.
+    # Function objects seem to know way too much, including modules.
+    # Exclude modules as well.
+    BLACKLIST = type, ModuleType, FunctionType
+
+    if isinstance(obj, BLACKLIST):
+        raise TypeError('getSize() does not take argument of type: '+ str(type(obj)))
+    seen_ids = set()
+    size = 0
+    objects = [obj]
+    while objects:
+        need_referents = []
+        for obj in objects:
+            if not isinstance(obj, BLACKLIST) and id(obj) not in seen_ids:
+                seen_ids.add(id(obj))
+                size += sys.getsizeof(obj)
+                need_referents.append(obj)
+        objects = get_referents(*need_referents)
+    return size

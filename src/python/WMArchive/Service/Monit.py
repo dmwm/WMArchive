@@ -24,7 +24,7 @@ except ImportError:
     StompAMQ = None
 
 # WMArchive modules
-from WMArchive.Utils.Utils import cms_filter
+from WMArchive.Utils.Utils import getSize
 
 def credentials(fname=None):
     "Read credentials from WMA_BROKER environment"
@@ -64,7 +64,7 @@ class MonitManager(object):
         try:
             docs = []
             for doc in data:
-                size = sys.getsizeof(doc)
+                size = getSize(doc)
                 if size > self.thr:
                     print("WARNING: doc is too large to be send to MONIT, size: %s", size)
                     print(json.dumps(doc))
