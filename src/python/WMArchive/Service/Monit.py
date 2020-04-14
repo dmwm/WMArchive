@@ -15,6 +15,7 @@ from __future__ import print_function, division
 import os
 import sys
 import json
+import time
 import logging
 
 # CMSMonitoring modules
@@ -42,7 +43,7 @@ class MonitManager(object):
         self.attrs = attrs # our attributes to filter and send to MONIT
         # read our credentials
         self.creds = credentials(fname)
-        self.thr = thr if thr else 1<<20 # default 1MB
+        self.thr = thr if thr else 10<<20 # default 10MB
 
     def getStompAMQ(self):
         "return StompAMQ instance"
@@ -64,15 +65,17 @@ class MonitManager(object):
         try:
             docs = []
             for doc in data:
+                if '_id' in doc:
+                    del doc['_id'] # delete MongoDB ObjectID
                 size = getSize(doc)
                 if size > self.thr:
-                    print("WARNING: doc is too large to be send to MONIT, size: %s", size)
+                    print("WARNING: doc is too large to be send to MONIT, size: %s" % size)
                     print(json.dumps(doc))
                     continue
                 hid = doc.get("hash", 1)
-                if '_id' in doc:
-                    del doc['_id'] # delete MongoDB ObjectID
-                notification, _, _ = amq.make_notification(doc, hid)
+                producer = "wmarchive"
+                tstamp = int(time.time())*1000
+                notification, _, _ = amq.make_notification(doc, hid, producer=producer, ts=tstamp)
                 docs.append(notification)
             result = amq.send(docs)
             return result
