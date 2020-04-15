@@ -75,7 +75,7 @@ class MonitManager(object):
                 hid = doc.get("hash", 1)
                 producer = "wmarchive"
                 tstamp = int(time.time())*1000
-                notification, _, _ = amq.make_notification(doc, hid, producer=producer, ts=tstamp)
+                notification, _, _ = amq.make_notification(doc, hid, producer=producer, ts=tstamp, dataSubfield="")
                 docs.append(notification)
             result = amq.send(docs)
             return result
