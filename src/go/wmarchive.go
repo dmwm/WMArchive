@@ -89,7 +89,7 @@ func StompConnection() (*stomp.Conn, error) {
 	if err != nil {
 		log.Printf("Unable to connect to %s, error %v", Config.StompURI, err)
 	}
-	if Config.Verbose {
+	if Config.Verbose > 0 {
 		log.Printf("connected to StompAMQ server %s %v", Config.StompURI, conn)
 	}
 	return conn, err
@@ -109,7 +109,7 @@ func sendDataToStomp(data []byte) {
 			}
 			stompConn, err = StompConnection()
 		} else {
-			if Config.Verbose {
+			if Config.Verbose > 0 {
 				log.Printf("send data to StompAMQ endpoint %s", Config.Endpoint)
 			}
 			return
@@ -127,7 +127,7 @@ func processRequest(r *http.Request) error {
 	data, err := json.Marshal(rec)
 
 	// dump message to our log
-	if Config.Verbose {
+	if Config.Verbose > 0 {
 		log.Println("New record", string(data))
 	}
 
