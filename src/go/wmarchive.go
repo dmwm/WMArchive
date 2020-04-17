@@ -160,18 +160,18 @@ func server(serverCrt, serverKey string) {
 	http.Handle(base+"/js/", http.StripPrefix(base+"/js/", http.FileServer(http.Dir(Config.Jscripts))))
 	http.Handle(base+"/images/", http.StripPrefix(base+"/images/", http.FileServer(http.Dir(Config.Images))))
 	// the request handler
-	http.HandleFunc(fmt.Sprintf("%s/", Config.Base), PostHandler)
+	http.HandleFunc(fmt.Sprintf("%s", Config.Base), PostHandler)
 
 	// start HTTP or HTTPs server based on provided configuration
 	addr := fmt.Sprintf(":%d", Config.Port)
 	if serverCrt != "" && serverKey != "" {
 		//start HTTPS server which require user certificates
 		server := &http.Server{Addr: addr}
-		log.Printf("Starting HTTPs server on %s", addr)
+		log.Printf("Starting HTTPs server on %s%s", addr, Config.Base)
 		log.Fatal(server.ListenAndServeTLS(serverCrt, serverKey))
 	} else {
 		// Start server without user certificates
-		log.Printf("Starting HTTP server on %s", addr)
+		log.Printf("Starting HTTP server on %s%s", addr, Config.Base)
 		log.Fatal(http.ListenAndServe(addr, nil))
 	}
 }
