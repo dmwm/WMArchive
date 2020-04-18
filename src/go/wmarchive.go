@@ -96,11 +96,17 @@ func StompConnection() (*stomp.Conn, error) {
 }
 
 func sendDataToStomp(data []byte) {
+	var err error
 	for i := 0; i < Config.StompIterations; i++ {
+		stompConn, err = StompConnection()
+		if err != nil {
+			log.Printf("Unable to get Stomp connection, %v", err)
+			continue
+		}
 		err := stompConn.Send(Config.Endpoint, Config.ContentType, data)
 		if err != nil {
 			if i == Config.StompIterations-1 {
-				log.Printf("unable to send data to %s, data %s, error %v, iteration %d", Config.Endpoint, string(data), err, i)
+				log.Printf("unable to send data to %s, error %v, iteration %d", Config.Endpoint, err, i)
 			} else {
 				log.Printf("unable to send data to %s, error %v, iteration %d", Config.Endpoint, err, i)
 			}
@@ -127,7 +133,7 @@ func processRequest(r *http.Request) error {
 	data, err := json.Marshal(rec)
 
 	// dump message to our log
-	if Config.Verbose > 0 {
+	if Config.Verbose > 1 {
 		log.Println("New record", string(data))
 	}
 
