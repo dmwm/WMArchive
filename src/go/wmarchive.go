@@ -90,7 +90,7 @@ func StompConnection() (*stomp.Conn, error) {
 		log.Printf("Unable to connect to %s, error %v", Config.StompURI, err)
 	}
 	if Config.Verbose > 0 {
-		log.Printf("connected to StompAMQ server %s %v", Config.StompURI, conn)
+		log.Printf("connected to StompAMQ server %s", Config.StompURI)
 	}
 	return conn, err
 }
@@ -130,7 +130,9 @@ func processRequest(r *http.Request) error {
 		log.Println(err)
 		return err
 	}
-	data, err := json.Marshal(rec)
+	wmaRec := make(Record)
+	wmaRec["data"] = rec
+	data, err := json.Marshal(wmaRec)
 
 	// dump message to our log
 	if Config.Verbose > 1 {
