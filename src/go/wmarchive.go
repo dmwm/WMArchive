@@ -9,8 +9,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/go-stomp/stomp"
+	"github.com/google/uuid"
 
 	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
 	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
@@ -96,14 +99,13 @@ func StompConnection() (*stomp.Conn, error) {
 }
 
 func sendDataToStomp(data []byte) {
-	var err error
 	for i := 0; i < Config.StompIterations; i++ {
-		stompConn, err = StompConnection()
+		stompConn, err := StompConnection()
 		if err != nil {
-			log.Printf("Unable to get Stomp connection, %v", err)
+			log.Printf("Unable to get connection, %v", err)
 			continue
 		}
-		err := stompConn.Send(Config.Endpoint, Config.ContentType, data)
+		err = stompConn.Send(Config.Endpoint, Config.ContentType, data)
 		if err != nil {
 			if i == Config.StompIterations-1 {
 				log.Printf("unable to send data to %s, error %v, iteration %d", Config.Endpoint, err, i)
@@ -122,6 +124,12 @@ func sendDataToStomp(data []byte) {
 		}
 	}
 }
+func genUUID() string {
+	uuidWithHyphen := uuid.New()
+	uuid := strings.Replace(uuidWithHyphen.String(), "-", "", -1)
+	return uuid
+}
+
 func processRequest(r *http.Request) error {
 	defer r.Body.Close()
 	var rec Record
@@ -130,18 +138,34 @@ func processRequest(r *http.Request) error {
 		log.Println(err)
 		return err
 	}
-	wmaRec := make(Record)
-	wmaRec["data"] = rec
-	data, err := json.Marshal(wmaRec)
+	if v, ok := rec["data"]; ok {
+		docs := v.([]interface{})
+		for _, rrr := range docs {
+			uid := genUUID()
+			r := rrr.(map[string]interface{})
+			producer := "wmarchive"
+			metadata := make(Record)
+			metadata["timestamp"] = time.Now().Unix() * 1000
+			metadata["producer"] = producer
+			metadata["_id"] = uid
+			metadata["uuid"] = uid
+			r["metadata"] = metadata
+			data, err := json.Marshal(r)
+			if err != nil {
+				log.Println("Unable to marshal, error: %v", err)
+				continue
+			}
 
-	// dump message to our log
-	if Config.Verbose > 1 {
-		log.Println("New record", string(data))
-	}
+			// dump message to our log
+			if Config.Verbose > 1 {
+				log.Println("New record", string(data))
+			}
 
-	// send data to Stomp endpoint
-	if Config.Endpoint != "" {
-		sendDataToStomp(data)
+			// send data to Stomp endpoint
+			if Config.Endpoint != "" {
+				sendDataToStomp(data)
+			}
+		}
 	}
 
 	return nil
