@@ -98,11 +98,16 @@ func StompConnection() (*stomp.Conn, error) {
 	return conn, err
 }
 
-func sendDataToStomp(data []byte) {
+func sendDataToStomp(data []byte) error {
+	var err error
+	//     var stompConn *stomp.Conn
 	for i := 0; i < Config.StompIterations; i++ {
-		stompConn, err := StompConnection()
+		stompConn, err = StompConnection()
 		if err != nil {
 			log.Printf("Unable to get connection, %v", err)
+			if stompConn != nil {
+				stompConn.Disconnect()
+			}
 			continue
 		}
 		err = stompConn.Send(Config.Endpoint, Config.ContentType, data)
@@ -115,14 +120,18 @@ func sendDataToStomp(data []byte) {
 			if stompConn != nil {
 				stompConn.Disconnect()
 			}
-			stompConn, err = StompConnection()
+			//             stompConn, err = StompConnection()
 		} else {
+			if stompConn != nil {
+				stompConn.Disconnect()
+			}
 			if Config.Verbose > 0 {
 				log.Printf("send data to StompAMQ endpoint %s", Config.Endpoint)
 			}
-			return
+			return nil
 		}
 	}
+	return err
 }
 func genUUID() string {
 	uuidWithHyphen := uuid.New()
@@ -130,14 +139,16 @@ func genUUID() string {
 	return uuid
 }
 
-func processRequest(r *http.Request) error {
+func processRequest(r *http.Request) ([]Record, error) {
+	var out []Record
 	defer r.Body.Close()
 	var rec Record
 	err := json.NewDecoder(r.Body).Decode(&rec)
 	if err != nil {
-		log.Println(err)
-		return err
+		log.Println("Unable to decode input request", err)
+		return out, err
 	}
+	var ids []string
 	if v, ok := rec["data"]; ok {
 		docs := v.([]interface{})
 		for _, rrr := range docs {
@@ -163,12 +174,32 @@ func processRequest(r *http.Request) error {
 
 			// send data to Stomp endpoint
 			if Config.Endpoint != "" {
-				sendDataToStomp(data)
+				err := sendDataToStomp(data)
+				if err == nil {
+					ids = append(ids, uid)
+				} else {
+					record := make(Record)
+					record["result"] = "fail"
+					record["reason"] = fmt.Sprintf("Unable to send data to MONIT, error: %v", err)
+					record["ids"] = ids
+					out = append(out, record)
+					return out, err
+				}
 			}
 		}
 	}
 
-	return nil
+	record := make(Record)
+	if len(ids) > 0 {
+		record["result"] = "ok"
+		record["ids"] = ids
+	} else {
+		record["result"] = "empty"
+		record["ids"] = ids
+		record["reason"] = "no input data is provided"
+	}
+	out = append(out, record)
+	return out, nil
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
@@ -176,12 +207,25 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	err := processRequest(r)
+	out, err := processRequest(r)
 	if err != nil {
+		log.Println(r.Method, r.URL.Path, r.RemoteAddr, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	data, err := json.Marshal(out)
+	if err == nil {
+		if Config.Verbose > 0 {
+			log.Println(r.Method, r.URL.Path, r.RemoteAddr, string(data))
+		} else {
+			log.Println(r.Method, r.URL.Path, r.RemoteAddr)
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(data)
+		return
+	}
+	log.Println(r.Method, r.URL.Path, r.RemoteAddr, err)
+	w.WriteHeader(http.StatusInternalServerError)
 }
 
 // http server implementation
@@ -217,6 +261,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to parse config file %s, error: %v", config, err)
 	}
+	// log time, filename, and line number
+	if Config.Verbose > 0 {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetFlags(log.LstdFlags)
+	}
+
 	_, e1 := os.Stat(Config.ServerCrt)
 	_, e2 := os.Stat(Config.ServerKey)
 	if e1 == nil && e2 == nil {
