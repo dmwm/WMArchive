@@ -214,17 +214,27 @@ func PostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data, err := json.Marshal(out)
+	var headers []interface{}
+	headers = append(headers, r.Method)
+	headers = append(headers, r.URL.Path)
+	headers = append(headers, r.RemoteAddr)
+	for _, h := range []string{"User-Agent", "Cms-Authn-Dn", "X-Forwarded-For"} {
+		if v, ok := r.Header[h]; ok {
+			headers = append(headers, v)
+		}
+	}
 	if err == nil {
 		if Config.Verbose > 0 {
-			log.Println(r.Method, r.URL.Path, r.RemoteAddr, string(data))
+			headers = append(headers, string(data))
 		} else {
-			log.Println(r.Method, r.URL.Path, r.RemoteAddr)
 		}
+		log.Println(headers...)
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
 		return
 	}
-	log.Println(r.Method, r.URL.Path, r.RemoteAddr, err)
+	headers = append(headers, err)
+	log.Println(headers...)
 	w.WriteHeader(http.StatusInternalServerError)
 }
 
