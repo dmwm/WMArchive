@@ -1,5 +1,17 @@
 package main
 
+// wmarchive - Go implementation of WMArchive service for CMS
+//
+// Copyright (c) 2020 - Valentin Kuznetsov <vkuznet@gmail.com>
+//
+// The WMArchive service accepts POST requests with data structure in the following way:
+// {"data": [{data-record}, {data-record}, ...]}
+// curl -X POST -H "Content-Type: application/json" -d@d.json <URL>/wmarchive/data
+// Each data-record follows WMArchive schema defined at
+// https://github.com/dmwm/WMArchive/blob/master/src/python/WMArchive/Schemas/FWJRProduction.py
+// but for this service the structure of data-record is irrelevant (we only need to follow
+// schema when we inject the data in ES).
+
 import (
 	"encoding/json"
 	"errors"
@@ -139,14 +151,25 @@ func genUUID() string {
 	return uuid
 }
 
-func processRequest(r *http.Request) ([]Record, error) {
+func processRequest(r *http.Request) (Record, error) {
 	var out []Record
 	defer r.Body.Close()
 	var rec Record
-	err := json.NewDecoder(r.Body).Decode(&rec)
+	// it is better to read whole body instead of using json decoder
+	//     err := json.NewDecoder(r.Body).Decode(&rec)
+	// since we can print body later for debugging purposes
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println("Unable to decode input request", err)
-		return out, err
+		log.Println("Unable to read request body", err)
+	}
+	err = json.Unmarshal(body, &rec)
+	if err != nil {
+		if Config.Verbose > 0 {
+			log.Printf("Unable to decode input request, error %v, request %+v\n%+v\n", err, r, string(body))
+		} else {
+			log.Printf("Unable to decode input request, error %v\n", err)
+		}
+		return rec, err
 	}
 	var ids []string
 	if v, ok := rec["data"]; ok {
@@ -163,7 +186,11 @@ func processRequest(r *http.Request) ([]Record, error) {
 			r["metadata"] = metadata
 			data, err := json.Marshal(r)
 			if err != nil {
-				log.Println("Unable to marshal, error: %v", err)
+				if Config.Verbose > 0 {
+					log.Printf("Unable to marshal, error: %v, data: %+v\n", err, r)
+				} else {
+					log.Printf("Unable to marshal, error: %v, data\n", err)
+				}
 				continue
 			}
 
@@ -179,27 +206,33 @@ func processRequest(r *http.Request) ([]Record, error) {
 					ids = append(ids, uid)
 				} else {
 					record := make(Record)
-					record["result"] = "fail"
+					record["status"] = "fail"
 					record["reason"] = fmt.Sprintf("Unable to send data to MONIT, error: %v", err)
 					record["ids"] = ids
 					out = append(out, record)
-					return out, err
+					r := make(Record)
+					r["result"] = out
+					return r, err
 				}
+			} else {
+				ids = append(ids, uid)
 			}
 		}
 	}
 
 	record := make(Record)
 	if len(ids) > 0 {
-		record["result"] = "ok"
+		record["status"] = "ok"
 		record["ids"] = ids
 	} else {
-		record["result"] = "empty"
+		record["status"] = "empty"
 		record["ids"] = ids
 		record["reason"] = "no input data is provided"
 	}
 	out = append(out, record)
-	return out, nil
+	rec = make(Record)
+	rec["result"] = out
+	return rec, nil
 }
 
 func PostHandler(w http.ResponseWriter, r *http.Request) {
