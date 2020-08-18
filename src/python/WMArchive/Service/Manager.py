@@ -168,7 +168,7 @@ class WMArchiveManager(object):
             if  not doc.get('wmaid', ''):
                 doc['wmaid'] = wmaHash(doc)
             if  not doc.get('wmats', 0):
-                doc['wmats'] = time.time()
+                doc['wmats'] = long(time.time())
             if  not doc.get('dtype', ''):
                 doc['dtype'] = dtype
             if  not doc.get('stype', ''):

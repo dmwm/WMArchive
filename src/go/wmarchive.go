@@ -177,6 +177,12 @@ func processRequest(r *http.Request) (Record, error) {
 		for _, rrr := range docs {
 			uid := genUUID()
 			r := rrr.(map[string]interface{})
+			if _, ok := r["wmats"]; !ok {
+				r["wmats"] = time.Now().Unix()
+			}
+			if _, ok := r["wmaid"]; !ok {
+				r["wmaid"] = uid
+			}
 			producer := "wmarchive"
 			metadata := make(Record)
 			metadata["timestamp"] = time.Now().Unix() * 1000
