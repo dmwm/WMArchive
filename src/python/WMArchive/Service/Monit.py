@@ -72,6 +72,9 @@ class MonitManager(object):
                     print("WARNING: doc is too large to be send to MONIT, size: %s" % size)
                     print(json.dumps(doc))
                     continue
+                # convert wmats to long format before sending to MONIT
+                if 'wmats' in doc:
+                    doc['wmats'] = long(doc['wmats'])
                 hid = doc.get("hash", 1)
                 producer = "wmarchive"
                 tstamp = int(time.time())*1000
