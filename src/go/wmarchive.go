@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -29,6 +30,8 @@ import (
 
 	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
 	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
+
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 )
 
 // global pointer to Stomp connection
@@ -46,6 +49,7 @@ type Configuration struct {
 	Images    string `json:"images"`    // images path
 	ServerCrt string `json:"serverCrt"` // path to server crt file
 	ServerKey string `json:"serverKey"` // path to server key file
+	LogFile   string `json:"logFile"`   // log file name
 
 	// Stomp configuration options
 	BufSize         int    `json:"bufSize"`         // buffer size
@@ -62,6 +66,25 @@ var Config Configuration
 
 // Record defines general WMArchive record
 type Record map[string]interface{}
+
+// custom rotate logger
+type rotateLogWriter struct {
+	RotateLogs *rotatelogs.RotateLogs
+}
+
+func (w rotateLogWriter) Write(data []byte) (int, error) {
+	return w.RotateLogs.Write([]byte(utcMsg(data)))
+}
+
+// helper function to use proper UTC message in a logger
+func utcMsg(data []byte) string {
+	s := string(data)
+	v, e := url.QueryUnescape(s)
+	if e == nil {
+		return v
+	}
+	return s
+}
 
 // helper function to parse configuration
 func parseConfig(configFile string) error {
@@ -310,11 +333,27 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to parse config file %s, error: %v", config, err)
 	}
-	// log time, filename, and line number
-	if Config.Verbose > 0 {
-		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	// set log file or log output
+	if Config.LogFile != "" {
+		logName := Config.LogFile + "-%Y%m%d"
+		hostname, err := os.Hostname()
+		if err == nil {
+			logName = Config.LogFile + "-" + hostname + "-%Y%m%d"
+		}
+		rl, err := rotatelogs.New(logName)
+		if err == nil {
+			rotlogs := rotateLogWriter{RotateLogs: rl}
+			log.SetOutput(rotlogs)
+		} else {
+			log.SetFlags(log.LstdFlags | log.Lshortfile)
+		}
 	} else {
-		log.SetFlags(log.LstdFlags)
+		// log time, filename, and line number
+		if Config.Verbose > 0 {
+			log.SetFlags(log.LstdFlags | log.Lshortfile)
+		} else {
+			log.SetFlags(log.LstdFlags)
+		}
 	}
 
 	_, e1 := os.Stat(Config.ServerCrt)
