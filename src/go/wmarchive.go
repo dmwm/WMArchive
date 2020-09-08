@@ -208,7 +208,7 @@ func processRequest(r *http.Request) (Record, error) {
 			}
 			producer := "wmarchive"
 			metadata := make(Record)
-			metadata["timestamp"] = time.Now().Unix() * 1000
+			//metadata["timestamp"] = time.Now().Unix() * 1000
 			metadata["producer"] = producer
 			metadata["_id"] = uid
 			metadata["uuid"] = uid
