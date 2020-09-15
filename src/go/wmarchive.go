@@ -51,6 +51,14 @@ type Configuration struct {
 	ServerKey string `json:"serverKey"` // path to server key file
 	LogFile   string `json:"logFile"`   // log file name
 
+	// NATS configuration options
+	NatsTest    bool     `json:natsTest`    // run nats test, i.e. prepare nats messages
+	NatsServers []string `json:natsServers` // list of NATS server urls
+	NatsTopics  []string `json:natsTopics`  // list of NATS topics to use
+	RootCAs     []string `json:rootCAs`     // list of ROOT CAs
+	NatsKey     string   `json:natsKey`     // NATS user key
+	NatsCert    string   `json:natsCert`    // NATS user cert
+
 	// Stomp configuration options
 	BufSize         int    `json:"bufSize"`         // buffer size
 	StompURI        string `json:"stompURI"`        // StompAMQ URI
@@ -246,9 +254,26 @@ func processRequest(r *http.Request) (Record, error) {
 			} else {
 				ids = append(ids, uid)
 			}
+
+			// if we have NATS servers we'll publish the proper message
+			if Config.NatsTest {
+				nrecords := prepare(r)
+				fmt.Printf("nats records %+v\n", nrecords)
+			} else {
+				if len(Config.NatsServers) > 0 {
+					nrecords := prepare(r)
+					for _, s := range Config.NatsTopics {
+						for _, nrec := range nrecords {
+							if nmsg, e := json.Marshal(nrec); e == nil {
+								publish(s, nmsg)
+							}
+						}
+					}
+				}
+			}
 		}
 	}
-
+	// prepare output wmarhchive response record
 	record := make(Record)
 	if len(ids) > 0 {
 		record["status"] = "ok"
@@ -332,6 +357,9 @@ func main() {
 	err := parseConfig(config)
 	if err != nil {
 		log.Fatalf("Unable to parse config file %s, error: %v", config, err)
+	}
+	if len(Config.NatsServers) > 0 {
+		initNATS()
 	}
 	// set log file or log output
 	if Config.LogFile != "" {
