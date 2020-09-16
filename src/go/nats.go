@@ -42,7 +42,7 @@ func initNATS() {
 // helper function to publish NATS message
 func publish(subj string, msg []byte) error {
 	// Connect to NATS
-	nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), nats.Secure(natsConfig))
+	nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), nats.Secure(natsConfig), nats.Name("WMArchive NATS"))
 	if err != nil {
 		log.Fatal(err)
 	}
