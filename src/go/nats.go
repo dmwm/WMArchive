@@ -1,7 +1,9 @@
 package main
 
 import (
-	"fmt"
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"log"
 	"strings"
 
@@ -10,6 +12,7 @@ import (
 
 // nats options
 var natsOptions []nats.Option
+var natsConfig *tls.Config
 
 // helper function to initialize NATS options
 func initNATS() {
@@ -21,19 +24,35 @@ func initNATS() {
 		natsOptions = append(natsOptions, nats.ClientCert(Config.NatsCert, Config.NatsKey))
 	}
 	// handle root CAs
+	rootCAs := x509.NewCertPool()
 	if len(Config.RootCAs) > 0 {
 		for _, v := range Config.RootCAs {
-			f := strings.Trim(v, " ")
-			natsOptions = append(natsOptions, nats.RootCAs(f))
+			fname := strings.Trim(v, " ")
+			natsOptions = append(natsOptions, nats.RootCAs(fname))
+			caCert, err := ioutil.ReadFile(fname)
+			if err != nil {
+				log.Printf("Unable to read %s\n", fname)
+			}
+			if ok := rootCAs.AppendCertsFromPEM(caCert); !ok {
+				log.Printf("invalid PEM format while importing trust-chain: %q", fname)
+			}
+			log.Println("Load CA file", fname)
 		}
 	}
 
+	// configure TLS
+	natsConfig = &tls.Config{
+		InsecureSkipVerify: true,
+		RootCAs:            rootCAs,
+		MinVersion:         tls.VersionTLS12,
+	}
 }
 
 // helper function to publish NATS message
 func publish(subj string, msg []byte) error {
 	// Connect to NATS
-	nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), natsOptions...)
+	//     nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), natsOptions...)
+	nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), nats.Secure(natsConfig))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,7 +102,6 @@ func prepare(rec Record) []NatsRecord {
 			if v, ok := r["errors"]; ok {
 				errors := v.([]interface{})
 				for _, e := range errors {
-					fmt.Println("doc errors", e)
 					if e == nil {
 						continue
 					}
