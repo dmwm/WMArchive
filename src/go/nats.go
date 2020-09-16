@@ -11,24 +11,15 @@ import (
 )
 
 // nats options
-var natsOptions []nats.Option
 var natsConfig *tls.Config
 
 // helper function to initialize NATS options
 func initNATS() {
-	// Connect Options.
-	natsOptions = []nats.Option{nats.Name("WMArchive NATS Publisher")}
-
-	// handle user certificates
-	if Config.NatsKey != "" && Config.NatsCert != "" {
-		natsOptions = append(natsOptions, nats.ClientCert(Config.NatsCert, Config.NatsKey))
-	}
 	// handle root CAs
 	rootCAs := x509.NewCertPool()
 	if len(Config.RootCAs) > 0 {
 		for _, v := range Config.RootCAs {
 			fname := strings.Trim(v, " ")
-			natsOptions = append(natsOptions, nats.RootCAs(fname))
 			caCert, err := ioutil.ReadFile(fname)
 			if err != nil {
 				log.Printf("Unable to read %s\n", fname)
@@ -51,7 +42,6 @@ func initNATS() {
 // helper function to publish NATS message
 func publish(subj string, msg []byte) error {
 	// Connect to NATS
-	//     nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), natsOptions...)
 	nc, err := nats.Connect(strings.Join(Config.NatsServers, ","), nats.Secure(natsConfig))
 	if err != nil {
 		log.Fatal(err)
