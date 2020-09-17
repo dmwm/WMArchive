@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -52,12 +54,11 @@ type Configuration struct {
 	LogFile   string `json:"logFile"`   // log file name
 
 	// NATS configuration options
-	NatsTest    bool     `json:natsTest`    // run nats test, i.e. prepare nats messages
-	NatsServers []string `json:natsServers` // list of NATS server urls
-	NatsTopics  []string `json:natsTopics`  // list of NATS topics to use
-	RootCAs     []string `json:rootCAs`     // list of ROOT CAs
-	NatsKey     string   `json:natsKey`     // NATS user key
-	NatsCert    string   `json:natsCert`    // NATS user cert
+	NatsTest         bool     `json:natsTest`           // run nats test, i.e. prepare nats messages
+	NatsServers      []string `json:natsServers`        // list of NATS server urls
+	NatsTopics       []string `json:natsTopics`         // list of NATS topics to use
+	NatsDefaultTopic string   `json:"natsDefaultTopic"` // default NATS topic
+	RootCAs          []string `json:rootCAs`            // list of ROOT CAs
 
 	// Stomp configuration options
 	BufSize         int    `json:"bufSize"`         // buffer size
@@ -65,6 +66,7 @@ type Configuration struct {
 	StompLogin      string `json:"stompLogin"`      // StompAQM login name
 	StompPassword   string `json:"stompPassword"`   // StompAQM password
 	StompIterations int    `json:"stompIterations"` // Stomp iterations
+	StompConnTTL    int64  `json:"stompConnTTL"`    // Stomp connection time-to-live
 	Endpoint        string `json:"endpoint"`        // StompAMQ endpoint
 	ContentType     string `json:"contentType"`     // ContentType of UDP packet
 }
@@ -112,66 +114,113 @@ func parseConfig(configFile string) error {
 	if Config.ContentType == "" {
 		Config.ContentType = "application/json"
 	}
+	if Config.StompConnTTL == 0 {
+		Config.StompConnTTL = time.Now().Unix() + 300 // 5 minutes
+	}
 	return nil
 }
 
-// StompConnection returns Stomp connection
-func StompConnection() (*stomp.Conn, error) {
+// helper function to resolve Stomp URI into list of addr:port pairs
+func resolveURI(uri string) ([]string, error) {
+	var out []string
+	arr := strings.Split(uri, ":")
+	host := arr[0]
+	port := arr[1]
+	addrs, err := net.LookupIP(host)
+	if err != nil {
+		log.Printf("Unable to resolve host %s into IP addresses, error %v\n", host, err)
+		return out, err
+	}
+	for _, addr := range addrs {
+		// use only IPv4 addresses
+		if strings.Contains(addr.String(), ".") {
+			out = append(out, fmt.Sprintf("%s:%s", addr, port))
+		}
+	}
+	return out, nil
+}
+
+// StompManager hanles connection to Stomp AMQ Broker
+type StompManager struct {
+	Addresses      []string      // stomp addresses
+	ConnectionPool []*stomp.Conn // pool of connections to stomp AMQ Broker
+	TTL            int64         // stomp connection time-to-live
+}
+
+// global stomp manager
+var stompMgr StompManager
+
+// get new stomp connection
+func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
+	if len(s.ConnectionPool) > 0 && len(s.ConnectionPool) == len(s.Addresses) && s.TTL > time.Now().Unix() {
+		idx := rand.Intn(len(s.ConnectionPool))
+		addr := s.Addresses[idx]
+		conn := s.ConnectionPool[idx]
+		if conn != nil {
+			return conn, addr, nil
+		}
+	}
 	if Config.StompURI == "" {
 		err := errors.New("Unable to connect to Stomp, not URI")
-		return nil, err
+		return nil, "", err
 	}
 	if Config.StompLogin == "" {
 		err := errors.New("Unable to connect to Stomp, not login")
-		return nil, err
+		return nil, "", err
 	}
 	if Config.StompPassword == "" {
 		err := errors.New("Unable to connect to Stomp, not password")
-		return nil, err
+		return nil, "", err
 	}
-	conn, err := stomp.Dial("tcp",
-		Config.StompURI,
-		stomp.ConnOpt.Login(Config.StompLogin, Config.StompPassword))
+	addrs, err := resolveURI(Config.StompURI)
+	s.Addresses = addrs
 	if err != nil {
-		log.Printf("Unable to connect to %s, error %v", Config.StompURI, err)
+		err := errors.New(fmt.Sprintf("Unable to resolve StompURI, error %v", err))
+		return nil, "", err
 	}
-	if Config.Verbose > 0 {
-		log.Printf("connected to StompAMQ server %s", Config.StompURI)
+	for _, addr := range addrs {
+		conn, err := stomp.Dial("tcp", addr,
+			stomp.ConnOpt.Login(Config.StompLogin, Config.StompPassword))
+		if err != nil {
+			log.Printf("Unable to connect to %s, error %v\n", addr, err)
+		} else {
+			log.Printf("connected to StompAMQ server %s\n", addr)
+		}
+		s.ConnectionPool = append(s.ConnectionPool, conn)
 	}
-	return conn, err
+	// pick-up random connection
+	s.TTL = time.Now().Unix() + Config.StompConnTTL
+	idx := rand.Intn(len(s.ConnectionPool))
+	conn := s.ConnectionPool[idx]
+	var addr string
+	if len(s.ConnectionPool) == len(s.Addresses) {
+		addr = s.Addresses[idx]
+	}
+	return conn, addr, nil
 }
 
+// helper function to send data to stomp
 func sendDataToStomp(data []byte) error {
 	var err error
-	//     var stompConn *stomp.Conn
+	conn, addr, err := stompMgr.getConnection()
 	for i := 0; i < Config.StompIterations; i++ {
-		stompConn, err = StompConnection()
-		if err != nil {
-			log.Printf("Unable to get connection, %v", err)
-			if stompConn != nil {
-				stompConn.Disconnect()
-			}
-			continue
-		}
-		err = stompConn.Send(Config.Endpoint, Config.ContentType, data)
-		if err != nil {
-			if i == Config.StompIterations-1 {
-				log.Printf("unable to send data to %s, error %v, iteration %d", Config.Endpoint, err, i)
-			} else {
-				log.Printf("unable to send data to %s, error %v, iteration %d", Config.Endpoint, err, i)
-			}
-			if stompConn != nil {
-				stompConn.Disconnect()
-			}
-			//             stompConn, err = StompConnection()
-		} else {
-			if stompConn != nil {
-				stompConn.Disconnect()
-			}
+		// we send data using existing stomp connection
+		err = conn.Send(Config.Endpoint, Config.ContentType, data)
+		if err == nil {
 			if Config.Verbose > 0 {
-				log.Printf("send data to StompAMQ endpoint %s", Config.Endpoint)
+				log.Printf("send data to %s endpoint %s\n", addr, Config.Endpoint)
 			}
 			return nil
+		}
+		// since we fail we'll acquire new stomp connection and retry
+		if i == Config.StompIterations-1 {
+			log.Printf("unable to send data to %s, error %v, iteration %d\n", Config.Endpoint, err, i)
+		} else {
+			log.Printf("unable to send data to %s, error %v, iteration %d\n", Config.Endpoint, err, i)
+		}
+		conn, addr, err = stompMgr.getConnection()
+		if err != nil {
+			log.Printf("Unable to get connection, %v\n", err)
 		}
 	}
 	return err
@@ -202,6 +251,7 @@ func processRequest(r *http.Request) (Record, error) {
 		}
 		return rec, err
 	}
+	// send data with this stomp connection
 	var ids []string
 	if v, ok := rec["data"]; ok {
 		docs := v.([]interface{})
@@ -261,11 +311,27 @@ func processRequest(r *http.Request) (Record, error) {
 				fmt.Printf("nats records %+v\n", nrecords)
 			} else {
 				if len(Config.NatsServers) > 0 {
+					sitePatterns := []string{"T1_", "T2_", "T3_"}
 					nrecords := prepare(r)
 					for _, s := range Config.NatsTopics {
 						for _, nrec := range nrecords {
 							if nmsg, e := json.Marshal(nrec); e == nil {
-								publish(s, nmsg)
+								// redirect messages to different topics
+								if s != Config.NatsDefaultTopic {
+									// check that our message belongs to given topic
+									for _, pat := range sitePatterns {
+										if strings.Contains(s, pat) && strings.Contains(nrec.Site, pat) {
+											publish(s, nmsg)
+										}
+									}
+									// check if we need to redirect message to exitCodes
+									if strings.Contains(s, "exitCode") && nrec.ExitCode > 0 {
+										publish(s, nmsg)
+									}
+								}
+								if Config.NatsDefaultTopic != "" {
+									publish(Config.NatsDefaultTopic, nmsg)
+								}
 							}
 						}
 					}
@@ -340,11 +406,11 @@ func server(serverCrt, serverKey string) {
 	if serverCrt != "" && serverKey != "" {
 		//start HTTPS server which require user certificates
 		server := &http.Server{Addr: addr}
-		log.Printf("Starting HTTPs server on %s%s", addr, Config.Base)
+		log.Printf("Starting HTTPs server on %s%s\n", addr, Config.Base)
 		log.Fatal(server.ListenAndServeTLS(serverCrt, serverKey))
 	} else {
 		// Start server without user certificates
-		log.Printf("Starting HTTP server on %s%s", addr, Config.Base)
+		log.Printf("Starting HTTP server on %s%s\n", addr, Config.Base)
 		log.Fatal(http.ListenAndServe(addr, nil))
 	}
 }
@@ -358,9 +424,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to parse config file %s, error: %v", config, err)
 	}
-	if len(Config.NatsServers) > 0 {
-		initNATS()
-	}
 	// set log file or log output
 	if Config.LogFile != "" {
 		logName := Config.LogFile + "-%Y%m%d"
@@ -372,9 +435,8 @@ func main() {
 		if err == nil {
 			rotlogs := rotateLogWriter{RotateLogs: rl}
 			log.SetOutput(rotlogs)
-		} else {
-			log.SetFlags(log.LstdFlags | log.Lshortfile)
 		}
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
 	} else {
 		// log time, filename, and line number
 		if Config.Verbose > 0 {
@@ -383,6 +445,16 @@ func main() {
 			log.SetFlags(log.LstdFlags)
 		}
 	}
+
+	// init NATS
+	if len(Config.NatsServers) > 0 {
+		initNATS()
+	}
+
+	// init stomp manager and get first connection
+	rand.Seed(12345)
+	_, addr, err := stompMgr.getConnection()
+	log.Printf("Stomp connection to %v, error %v\n", addr, err)
 
 	_, e1 := os.Stat(Config.ServerCrt)
 	_, e2 := os.Stat(Config.ServerKey)
