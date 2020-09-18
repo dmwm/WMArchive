@@ -37,9 +37,6 @@ import (
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 )
 
-// global pointer to Stomp connection
-var stompConn *stomp.Conn
-
 // version of the code
 var version string
 
@@ -65,14 +62,15 @@ type Configuration struct {
 	RootCAs          []string `json:rootCAs`            // list of ROOT CAs
 
 	// Stomp configuration options
-	BufSize         int    `json:"bufSize"`         // buffer size
-	StompURI        string `json:"stompURI"`        // StompAMQ URI
-	StompLogin      string `json:"stompLogin"`      // StompAQM login name
-	StompPassword   string `json:"stompPassword"`   // StompAQM password
-	StompIterations int    `json:"stompIterations"` // Stomp iterations
-	StompConnTTL    int64  `json:"stompConnTTL"`    // Stomp connection time-to-live
-	Endpoint        string `json:"endpoint"`        // StompAMQ endpoint
-	ContentType     string `json:"contentType"`     // ContentType of UDP packet
+	BufSize          int    `json:"bufSize"`          // buffer size
+	StompURI         string `json:"stompURI"`         // StompAMQ URI
+	StompLogin       string `json:"stompLogin"`       // StompAQM login name
+	StompPassword    string `json:"stompPassword"`    // StompAQM password
+	StompIterations  int    `json:"stompIterations"`  // Stomp iterations
+	StompSendTimeout int    `json:"stompSendTimeout"` // heartbeat send timeout
+	StompRecvTimeout int    `json:"stompRecvTimeout"` // heartbeat recv timeout
+	Endpoint         string `json:"endpoint"`         // StompAMQ endpoint
+	ContentType      string `json:"contentType"`      // ContentType of UDP packet
 }
 
 // Config variable represents configuration object
@@ -118,8 +116,11 @@ func parseConfig(configFile string) error {
 	if Config.ContentType == "" {
 		Config.ContentType = "application/json"
 	}
-	if Config.StompConnTTL == 0 {
-		Config.StompConnTTL = time.Now().Unix() + 60 // 1 minutes
+	if Config.StompSendTimeout == 0 {
+		Config.StompSendTimeout = 1000 // miliseconds
+	}
+	if Config.StompRecvTimeout == 0 {
+		Config.StompRecvTimeout = 1000 // miliseconds
 	}
 	return nil
 }
@@ -148,7 +149,6 @@ func resolveURI(uri string) ([]string, error) {
 type StompManager struct {
 	Addresses      []string      // stomp addresses
 	ConnectionPool []*stomp.Conn // pool of connections to stomp AMQ Broker
-	TTL            int64         // stomp connection time-to-live
 }
 
 // global stomp manager
@@ -157,20 +157,17 @@ var stompMgr StompManager
 // reset all stomp connections
 func (s *StompManager) resetConnection() {
 	log.Println("reset all connections to StompAMQ", Config.StompURI)
-	s.TTL = time.Now().Unix() - 1
 	for _, c := range s.ConnectionPool {
 		if c != nil {
 			c.Disconnect()
 		}
 		c = nil
 	}
-	s.ConnectionPool = nil
-	s.ConnectionPool = make([]*stomp.Conn, 0)
 }
 
 // get new stomp connection
 func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
-	if len(s.ConnectionPool) > 0 && len(s.ConnectionPool) == len(s.Addresses) && s.TTL > time.Now().Unix() {
+	if len(s.ConnectionPool) > 0 && len(s.ConnectionPool) == len(s.Addresses) {
 		idx := rand.Intn(len(s.ConnectionPool))
 		addr := s.Addresses[idx]
 		conn := s.ConnectionPool[idx]
@@ -198,23 +195,25 @@ func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
 		}
 		s.Addresses = addrs
 	}
-	for _, addr := range s.Addresses {
+	// make connection pool equal to number of IP addresses we have
+	s.ConnectionPool = make([]*stomp.Conn, len(s.Addresses))
+	sendTimeout := time.Duration(Config.StompSendTimeout)
+	recvTimeout := time.Duration(Config.StompRecvTimeout)
+	for idx, addr := range s.Addresses {
 		conn, err := stomp.Dial("tcp", addr,
-			stomp.ConnOpt.Login(Config.StompLogin, Config.StompPassword))
+			stomp.ConnOpt.Login(Config.StompLogin, Config.StompPassword),
+			stomp.ConnOpt.HeartBeat(sendTimeout*time.Millisecond, recvTimeout*time.Millisecond),
+		)
 		if err != nil {
 			log.Printf("Unable to connect to %s, error %v\n", addr, err)
 		} else {
 			log.Printf("connected to StompAMQ server %s\n", addr)
 		}
-		s.ConnectionPool = append(s.ConnectionPool, conn)
+		s.ConnectionPool[idx] = conn
 	}
 	// pick-up random connection
-	s.TTL = time.Now().Unix() + Config.StompConnTTL
 	idx := rand.Intn(len(s.ConnectionPool))
 	conn := s.ConnectionPool[idx]
-	if len(s.ConnectionPool) != len(s.Addresses) {
-		log.Fatalf("Length %d of connection pool %+v is not equal to length %d of IP addresses %+v\n", len(s.ConnectionPool), s.ConnectionPool, len(s.Addresses), s.Addresses)
-	}
 	addr := s.Addresses[idx]
 	return conn, addr, nil
 }
