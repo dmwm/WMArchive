@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
@@ -38,6 +39,9 @@ import (
 
 // global pointer to Stomp connection
 var stompConn *stomp.Conn
+
+// version of the code
+var version string
 
 // Configuration stores server configuration parameters
 type Configuration struct {
@@ -115,7 +119,7 @@ func parseConfig(configFile string) error {
 		Config.ContentType = "application/json"
 	}
 	if Config.StompConnTTL == 0 {
-		Config.StompConnTTL = time.Now().Unix() + 300 // 5 minutes
+		Config.StompConnTTL = time.Now().Unix() + 60 // 1 minutes
 	}
 	return nil
 }
@@ -150,6 +154,20 @@ type StompManager struct {
 // global stomp manager
 var stompMgr StompManager
 
+// reset all stomp connections
+func (s *StompManager) resetConnection() {
+	log.Println("reset all connections to StompAMQ", Config.StompURI)
+	s.TTL = time.Now().Unix() - 1
+	for _, c := range s.ConnectionPool {
+		if c != nil {
+			c.Disconnect()
+		}
+		c = nil
+	}
+	s.ConnectionPool = nil
+	s.ConnectionPool = make([]*stomp.Conn, 0)
+}
+
 // get new stomp connection
 func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
 	if len(s.ConnectionPool) > 0 && len(s.ConnectionPool) == len(s.Addresses) && s.TTL > time.Now().Unix() {
@@ -172,13 +190,15 @@ func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
 		err := errors.New("Unable to connect to Stomp, not password")
 		return nil, "", err
 	}
-	addrs, err := resolveURI(Config.StompURI)
-	s.Addresses = addrs
-	if err != nil {
-		err := errors.New(fmt.Sprintf("Unable to resolve StompURI, error %v", err))
-		return nil, "", err
+	if len(s.Addresses) == 0 {
+		addrs, err := resolveURI(Config.StompURI)
+		if err != nil {
+			err := errors.New(fmt.Sprintf("Unable to resolve StompURI, error %v", err))
+			return nil, "", err
+		}
+		s.Addresses = addrs
 	}
-	for _, addr := range addrs {
+	for _, addr := range s.Addresses {
 		conn, err := stomp.Dial("tcp", addr,
 			stomp.ConnOpt.Login(Config.StompLogin, Config.StompPassword))
 		if err != nil {
@@ -192,10 +212,10 @@ func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
 	s.TTL = time.Now().Unix() + Config.StompConnTTL
 	idx := rand.Intn(len(s.ConnectionPool))
 	conn := s.ConnectionPool[idx]
-	var addr string
-	if len(s.ConnectionPool) == len(s.Addresses) {
-		addr = s.Addresses[idx]
+	if len(s.ConnectionPool) != len(s.Addresses) {
+		log.Fatalf("Length %d of connection pool %+v is not equal to length %d of IP addresses %+v\n", len(s.ConnectionPool), s.ConnectionPool, len(s.Addresses), s.Addresses)
 	}
+	addr := s.Addresses[idx]
 	return conn, addr, nil
 }
 
@@ -218,6 +238,7 @@ func sendDataToStomp(data []byte) error {
 		} else {
 			log.Printf("unable to send data to %s, error %v, iteration %d\n", Config.Endpoint, err, i)
 		}
+		stompMgr.resetConnection()
 		conn, addr, err = stompMgr.getConnection()
 		if err != nil {
 			log.Printf("Unable to get connection, %v\n", err)
@@ -355,9 +376,16 @@ func processRequest(r *http.Request) (Record, error) {
 	return rec, nil
 }
 
+func info() string {
+	goVersion := runtime.Version()
+	tstamp := time.Now()
+	return fmt.Sprintf("WArchive server based on git=%s go=%s date=%s", version, goVersion, tstamp)
+}
+
 func PostHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
+	if r.Method == "GET" {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(info()))
 		return
 	}
 	out, err := processRequest(r)
