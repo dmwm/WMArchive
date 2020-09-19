@@ -328,7 +328,7 @@ func processRequest(r *http.Request) (Record, error) {
 			// if we have NATS servers we'll publish the proper message
 			if Config.NatsTest {
 				nrecords := prepare(r)
-				fmt.Printf("nats records %+v\n", nrecords)
+				log.Printf("nats records %+v\n", nrecords)
 			} else {
 				if len(Config.NatsServers) > 0 {
 					sitePatterns := []string{"T1_", "T2_", "T3_"}
