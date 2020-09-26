@@ -377,11 +377,12 @@ func processRequest(r *http.Request) (Record, error) {
 
 func info() string {
 	goVersion := runtime.Version()
-	tstamp := time.Now()
+	tstamp := time.Now().Format("2006-02-01")
 	return fmt.Sprintf("WArchive server based on git=%s go=%s date=%s", version, goVersion, tstamp)
 }
 
-func PostHandler(w http.ResponseWriter, r *http.Request) {
+// DataHandler handles all WMArchive requests
+func DataHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(info()))
@@ -426,7 +427,7 @@ func server(serverCrt, serverKey string) {
 	http.Handle(base+"/js/", http.StripPrefix(base+"/js/", http.FileServer(http.Dir(Config.Jscripts))))
 	http.Handle(base+"/images/", http.StripPrefix(base+"/images/", http.FileServer(http.Dir(Config.Images))))
 	// the request handler
-	http.HandleFunc(fmt.Sprintf("%s", Config.Base), PostHandler)
+	http.HandleFunc(fmt.Sprintf("%s", Config.Base), DataHandler)
 
 	// start HTTP or HTTPs server based on provided configuration
 	addr := fmt.Sprintf(":%d", Config.Port)
