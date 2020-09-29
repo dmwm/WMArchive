@@ -59,7 +59,6 @@ type Configuration struct {
 	RootCAs          []string `json:rootCAs`            // list of ROOT CAs
 
 	// Stomp configuration options
-	BufSize          int    `json:"bufSize"`          // buffer size
 	StompURI         string `json:"stompURI"`         // StompAMQ URI
 	StompLogin       string `json:"stompLogin"`       // StompAQM login name
 	StompPassword    string `json:"stompPassword"`    // StompAQM password
@@ -361,15 +360,15 @@ func main() {
 
 	// init stomp manager and get first connection
 	c := stomp.Config{
-		StompURI:         Config.StompURI,
-		StompLogin:       Config.StompLogin,
-		StompPassword:    Config.StompPassword,
-		StompIterations:  Config.StompIterations,
-		StompSendTimeout: Config.StompSendTimeout,
-		StompRecvTimeout: Config.StompRecvTimeout,
-		Endpoint:         Config.Endpoint,
-		ContentType:      Config.ContentType,
-		Verbose:          Config.Verbose,
+		URI:         Config.StompURI,
+		Login:       Config.StompLogin,
+		Password:    Config.StompPassword,
+		Iterations:  Config.StompIterations,
+		SendTimeout: Config.StompSendTimeout,
+		RecvTimeout: Config.StompRecvTimeout,
+		Endpoint:    Config.Endpoint,
+		ContentType: Config.ContentType,
+		Verbose:     Config.Verbose,
 	}
 	stompMgr = stomp.New(c)
 	log.Println(stompMgr.String())
