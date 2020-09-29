@@ -14,13 +14,10 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"math/rand"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,8 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-stomp/stomp"
 	"github.com/google/uuid"
+	stomp "github.com/vkuznet/lb-stomp"
 
 	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
 	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
@@ -125,126 +122,9 @@ func parseConfig(configFile string) error {
 	return nil
 }
 
-// helper function to resolve Stomp URI into list of addr:port pairs
-func resolveURI(uri string) ([]string, error) {
-	var out []string
-	arr := strings.Split(uri, ":")
-	host := arr[0]
-	port := arr[1]
-	addrs, err := net.LookupIP(host)
-	if err != nil {
-		log.Printf("Unable to resolve host %s into IP addresses, error %v\n", host, err)
-		return out, err
-	}
-	for _, addr := range addrs {
-		// use only IPv4 addresses
-		if strings.Contains(addr.String(), ".") {
-			out = append(out, fmt.Sprintf("%s:%s", addr, port))
-		}
-	}
-	return out, nil
-}
-
-// StompManager hanles connection to Stomp AMQ Broker
-type StompManager struct {
-	Addresses      []string      // stomp addresses
-	ConnectionPool []*stomp.Conn // pool of connections to stomp AMQ Broker
-}
-
 // global stomp manager
-var stompMgr StompManager
+var stompMgr *stomp.StompManager
 
-// reset all stomp connections
-func (s *StompManager) resetConnection() {
-	log.Println("reset all connections to StompAMQ", Config.StompURI)
-	for _, c := range s.ConnectionPool {
-		if c != nil {
-			c.Disconnect()
-		}
-		c = nil
-	}
-}
-
-// get new stomp connection
-func (s *StompManager) getConnection() (*stomp.Conn, string, error) {
-	if len(s.ConnectionPool) > 0 && len(s.ConnectionPool) == len(s.Addresses) {
-		idx := rand.Intn(len(s.ConnectionPool))
-		addr := s.Addresses[idx]
-		conn := s.ConnectionPool[idx]
-		if conn != nil {
-			return conn, addr, nil
-		}
-	}
-	if Config.StompURI == "" {
-		err := errors.New("Unable to connect to Stomp, not URI")
-		return nil, "", err
-	}
-	if Config.StompLogin == "" {
-		err := errors.New("Unable to connect to Stomp, not login")
-		return nil, "", err
-	}
-	if Config.StompPassword == "" {
-		err := errors.New("Unable to connect to Stomp, not password")
-		return nil, "", err
-	}
-	if len(s.Addresses) == 0 {
-		addrs, err := resolveURI(Config.StompURI)
-		if err != nil {
-			err := errors.New(fmt.Sprintf("Unable to resolve StompURI, error %v", err))
-			return nil, "", err
-		}
-		s.Addresses = addrs
-	}
-	// make connection pool equal to number of IP addresses we have
-	s.ConnectionPool = make([]*stomp.Conn, len(s.Addresses))
-	sendTimeout := time.Duration(Config.StompSendTimeout)
-	recvTimeout := time.Duration(Config.StompRecvTimeout)
-	for idx, addr := range s.Addresses {
-		conn, err := stomp.Dial("tcp", addr,
-			stomp.ConnOpt.Login(Config.StompLogin, Config.StompPassword),
-			stomp.ConnOpt.HeartBeat(sendTimeout*time.Millisecond, recvTimeout*time.Millisecond),
-		)
-		if err != nil {
-			log.Printf("Unable to connect to %s, error %v\n", addr, err)
-		} else {
-			log.Printf("connected to StompAMQ server %s\n", addr)
-		}
-		s.ConnectionPool[idx] = conn
-	}
-	// pick-up random connection
-	idx := rand.Intn(len(s.ConnectionPool))
-	conn := s.ConnectionPool[idx]
-	addr := s.Addresses[idx]
-	return conn, addr, nil
-}
-
-// helper function to send data to stomp
-func sendDataToStomp(data []byte) error {
-	var err error
-	conn, addr, err := stompMgr.getConnection()
-	for i := 0; i < Config.StompIterations; i++ {
-		// we send data using existing stomp connection
-		err = conn.Send(Config.Endpoint, Config.ContentType, data)
-		if err == nil {
-			if Config.Verbose > 0 {
-				log.Printf("send data to %s endpoint %s\n", addr, Config.Endpoint)
-			}
-			return nil
-		}
-		// since we fail we'll acquire new stomp connection and retry
-		if i == Config.StompIterations-1 {
-			log.Printf("unable to send data to %s, error %v, iteration %d\n", Config.Endpoint, err, i)
-		} else {
-			log.Printf("unable to send data to %s, error %v, iteration %d\n", Config.Endpoint, err, i)
-		}
-		stompMgr.resetConnection()
-		conn, addr, err = stompMgr.getConnection()
-		if err != nil {
-			log.Printf("Unable to get connection, %v\n", err)
-		}
-	}
-	return err
-}
 func genUUID() string {
 	uuidWithHyphen := uuid.New()
 	uuid := strings.Replace(uuidWithHyphen.String(), "-", "", -1)
@@ -308,7 +188,7 @@ func processRequest(r *http.Request) (Record, error) {
 
 			// send data to Stomp endpoint
 			if Config.Endpoint != "" {
-				err := sendDataToStomp(data)
+				err := stompMgr.Send(data)
 				if err == nil {
 					ids = append(ids, uid)
 				} else {
@@ -480,9 +360,19 @@ func main() {
 	}
 
 	// init stomp manager and get first connection
-	rand.Seed(12345)
-	_, addr, err := stompMgr.getConnection()
-	log.Printf("Stomp connection to %v, error %v\n", addr, err)
+	c := stomp.Config{
+		StompURI:         Config.StompURI,
+		StompLogin:       Config.StompLogin,
+		StompPassword:    Config.StompPassword,
+		StompIterations:  Config.StompIterations,
+		StompSendTimeout: Config.StompSendTimeout,
+		StompRecvTimeout: Config.StompRecvTimeout,
+		Endpoint:         Config.Endpoint,
+		ContentType:      Config.ContentType,
+		Verbose:          Config.Verbose,
+	}
+	stompMgr = stomp.New(c)
+	log.Println(stompMgr.String())
 
 	_, e1 := os.Stat(Config.ServerCrt)
 	_, e2 := os.Stat(Config.ServerKey)
