@@ -326,7 +326,13 @@ func server(serverCrt, serverKey string) {
 func main() {
 	var config string
 	flag.StringVar(&config, "config", "", "configuration file")
+	var version bool
+	flag.BoolVar(&version, "version", false, "version")
 	flag.Parse()
+	if version {
+		log.Println(info())
+		os.Exit(0)
+	}
 	err := parseConfig(config)
 	if err != nil {
 		log.Fatalf("Unable to parse config file %s, error: %v", config, err)
