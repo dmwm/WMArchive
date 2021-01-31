@@ -86,6 +86,9 @@ func prepare(rec Record) []NatsRecord {
 			r := step.(map[string]interface{})
 			nr := NatsRecord{Task: nrec.Task, Campaign: nrec.Campaign}
 			if s, ok := r["site"]; ok {
+				if s == nil {
+					continue
+				}
 				nr.Site = s.(string)
 			}
 			errCount := 0
