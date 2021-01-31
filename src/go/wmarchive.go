@@ -159,6 +159,7 @@ func processRequest(r *http.Request) (Record, error) {
 			r := rrr.(map[string]interface{})
 			if _, ok := r["wmats"]; !ok {
 				r["wmats"] = time.Now().Unix()
+				r["wmats_num"] = r["wmats"]
 			}
 			if _, ok := r["wmaid"]; !ok {
 				r["wmaid"] = uid
