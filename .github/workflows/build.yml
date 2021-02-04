@@ -54,3 +54,42 @@ jobs:
         asset_path: ./src/go/wmarchive
         asset_name: wmarchive
         asset_content_type: application/octet-stream
+
+    - name: Build image
+      run: |
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/wmarchive/Dockerfile
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/wmarchive/run.sh
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/wmarchive/wmarch_go.json
+        sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
+        chmod +x run.sh
+        docker build . --tag docker.pkg.github.com/dmwm/wmarchive/wmarchive
+
+    - name: Login to Registry
+      uses: docker/login-action@v1.6.0
+      with:
+        registry: docker.pkg.github.com
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        load: true
+        tags: cmssw/wmarchive:${{steps.get-ref.outputs.tag}}
+    - run: docker push cmssw/wmarchive:${{steps.get-ref.outputs.tag}}
+
+#     - name: Push new image to k8s
+#       run: |
+#         curl -ksLO https://raw.githubusercontent.com/vkuznet/imagebot/main/imagebot.sh
+#         sed -i -e "s,COMMIT,${{github.sha}},g" -e "s,REPOSITORY,${{github.repository}},g" -e "s,NAMESPACE,das,g" -e "s,TAG,${{steps.get-ref.outputs.tag}},g" -e "s,IMAGE,cmssw/wmarchive,g" -e "s,SERVICE,wmarchive,g" -e "s,HOST,${{secrets.IMAGEBOT_URL}},g" imagebot.sh
+#         chmod +x imagebot.sh
+#         cat imagebot.sh
+#         sh ./imagebot.sh
