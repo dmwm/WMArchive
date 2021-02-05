@@ -192,6 +192,8 @@ func processRequest(r *http.Request) (Record, error) {
 				if err == nil {
 					ids = append(ids, uid)
 				} else {
+					// get new stomp Manager
+					initStompManager()
 					record := make(Record)
 					record["status"] = "fail"
 					record["reason"] = fmt.Sprintf("Unable to send data to MONIT, error: %v", err)
@@ -323,6 +325,23 @@ func server(serverCrt, serverKey string) {
 	}
 }
 
+func initStompManager() {
+	// init stomp manager
+	c := stomp.Config{
+		URI:         Config.StompURI,
+		Login:       Config.StompLogin,
+		Password:    Config.StompPassword,
+		Iterations:  Config.StompIterations,
+		SendTimeout: Config.StompSendTimeout,
+		RecvTimeout: Config.StompRecvTimeout,
+		Endpoint:    Config.Endpoint,
+		ContentType: Config.ContentType,
+		Verbose:     Config.Verbose,
+	}
+	stompMgr = stomp.New(c)
+	log.Println(stompMgr.String())
+}
+
 // main function
 func main() {
 	var config string
@@ -366,19 +385,7 @@ func main() {
 	}
 
 	// init stomp manager and get first connection
-	c := stomp.Config{
-		URI:         Config.StompURI,
-		Login:       Config.StompLogin,
-		Password:    Config.StompPassword,
-		Iterations:  Config.StompIterations,
-		SendTimeout: Config.StompSendTimeout,
-		RecvTimeout: Config.StompRecvTimeout,
-		Endpoint:    Config.Endpoint,
-		ContentType: Config.ContentType,
-		Verbose:     Config.Verbose,
-	}
-	stompMgr = stomp.New(c)
-	log.Println(stompMgr.String())
+	initStompManager()
 
 	_, e1 := os.Stat(Config.ServerCrt)
 	_, e2 := os.Stat(Config.ServerKey)
