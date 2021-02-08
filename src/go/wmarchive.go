@@ -67,6 +67,7 @@ type Configuration struct {
 	StompRecvTimeout int    `json:"stompRecvTimeout"` // heartbeat recv timeout
 	Endpoint         string `json:"endpoint"`         // StompAMQ endpoint
 	ContentType      string `json:"contentType"`      // ContentType of UDP packet
+	Protocol         string `json:"protocol"`         // protocol to use in stomp, e.g. tcp, tcp4 or tcp6
 }
 
 // Config variable represents configuration object
@@ -111,6 +112,9 @@ func parseConfig(configFile string) error {
 	}
 	if Config.ContentType == "" {
 		Config.ContentType = "application/json"
+	}
+	if Config.Protocol == "" {
+		Config.Protocol = "tcp4"
 	}
 	if Config.StompSendTimeout == 0 {
 		Config.StompSendTimeout = 1000 // miliseconds
@@ -336,6 +340,7 @@ func initStompManager() {
 		RecvTimeout: Config.StompRecvTimeout,
 		Endpoint:    Config.Endpoint,
 		ContentType: Config.ContentType,
+		Protocol:    Config.Protocol,
 		Verbose:     Config.Verbose,
 	}
 	stompMgr = stomp.New(c)
