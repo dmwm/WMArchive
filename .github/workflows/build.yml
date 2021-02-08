@@ -94,10 +94,10 @@ jobs:
         tags: cmssw/wmarchive:${{steps.get-ref.outputs.tag}}
     - run: docker push cmssw/wmarchive:${{steps.get-ref.outputs.tag}}
 
-#     - name: Push new image to k8s
-#       run: |
-#         curl -ksLO https://raw.githubusercontent.com/vkuznet/imagebot/main/imagebot.sh
-#         sed -i -e "s,COMMIT,${{github.sha}},g" -e "s,REPOSITORY,${{github.repository}},g" -e "s,NAMESPACE,das,g" -e "s,TAG,${{steps.get-ref.outputs.tag}},g" -e "s,IMAGE,cmssw/wmarchive,g" -e "s,SERVICE,wmarchive,g" -e "s,HOST,${{secrets.IMAGEBOT_URL}},g" imagebot.sh
-#         chmod +x imagebot.sh
-#         cat imagebot.sh
-#         sh ./imagebot.sh
+    - name: Push new image to k8s
+      run: |
+        curl -ksLO https://raw.githubusercontent.com/vkuznet/imagebot/main/imagebot.sh
+        sed -i -e "s,COMMIT,${{github.sha}},g" -e "s,REPOSITORY,${{github.repository}},g" -e "s,NAMESPACE,das,g" -e "s,TAG,${{steps.get-ref.outputs.tag}},g" -e "s,IMAGE,cmssw/wmarchive,g" -e "s,SERVICE,wmarchive,g" -e "s,HOST,${{secrets.IMAGEBOT_URL}},g" imagebot.sh
+        chmod +x imagebot.sh
+        cat imagebot.sh
+        sh ./imagebot.sh
