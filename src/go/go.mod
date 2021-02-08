@@ -13,6 +13,6 @@ require (
 	github.com/nats-io/nats.go v1.10.0
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/vkuznet/lb-stomp v0.0.1
+	github.com/vkuznet/lb-stomp v0.0.2
 	google.golang.org/protobuf v1.25.0 // indirect
 )
