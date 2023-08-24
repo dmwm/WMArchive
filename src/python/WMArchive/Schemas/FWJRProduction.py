@@ -128,7 +128,8 @@ fwjr = \
                       'startTime': 0.0,
                       'endTime': 0.0,
                       'wallClockTime': 0.0,
-                      'systemTime': 0.0
+                      'userTime': 0.0,
+                      'sysTime': 0.0
               },
               'stop': 1454569736}
             ],
