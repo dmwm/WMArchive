@@ -11,6 +11,7 @@ fwjr = \
                'jobtype': "Processing",
                'jobstate': "success", 
                'ts': 1456500229},
+ 'WMTiming': {'WMTotalWallClockTime': 10},
  'LFNArray': ['/store/test/blah.root',
               '/store/unmerged/blah.root',
               '/lfn/fallbackfile.root', '/lfn/skipedfile.root'],
@@ -85,6 +86,8 @@ fwjr = \
                          "GUID": '',
                          "StageOutCommand": "srmv2-lcg"}],
               'performance': {
+                  "cmssw": {
+                  },
                   "multicore": {
                   },
                   "storage": {
