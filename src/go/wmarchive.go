@@ -66,6 +66,7 @@ type Configuration struct {
 	StompSendTimeout int    `json:"stompSendTimeout"` // heartbeat send timeout
 	StompRecvTimeout int    `json:"stompRecvTimeout"` // heartbeat recv timeout
 	Endpoint         string `json:"endpoint"`         // StompAMQ endpoint
+	Producer         string `json:"producer"`         // MONIT producer
 	ContentType      string `json:"contentType"`      // ContentType of UDP packet
 	Protocol         string `json:"protocol"`         // protocol to use in stomp, e.g. tcp, tcp4 or tcp6
 }
@@ -122,6 +123,9 @@ func parseConfig(configFile string) error {
 	if Config.StompRecvTimeout == 0 {
 		Config.StompRecvTimeout = 1000 // miliseconds
 	}
+	if Config.Producer == "" {
+		Config.Producer = "wmarchive"
+	}
 	return nil
 }
 
@@ -168,10 +172,9 @@ func processRequest(r *http.Request) (Record, error) {
 			if _, ok := r["wmaid"]; !ok {
 				r["wmaid"] = uid
 			}
-			producer := "wmarchive"
 			metadata := make(Record)
 			//metadata["timestamp"] = time.Now().Unix() * 1000
-			metadata["producer"] = producer
+			metadata["producer"] = Config.Producer
 			metadata["_id"] = uid
 			metadata["uuid"] = uid
 			r["metadata"] = metadata
