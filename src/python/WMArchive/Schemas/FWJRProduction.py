@@ -127,6 +127,13 @@ fwjr = \
               'site': 'T2_CH_CERN',
               'start': 1454569735,
               'status': 0,
+              'WMCMSSWSubprocess': {
+                      'startTime': 0.0,
+                      'endTime': 0.0,
+                      'wallClockTime': 0.0,
+                      'userTime': 0.0,
+                      'sysTime': 0.0
+              },
               'stop': 1454569736}
             ],
 'fallbackFiles': [0],
